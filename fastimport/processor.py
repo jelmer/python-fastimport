@@ -35,7 +35,7 @@ import errors
 
 class ImportProcessor(object):
     """Base class for import processors.
-    
+
     Subclasses should override the pre_*, post_* and *_handler
     methods as appropriate.
     """

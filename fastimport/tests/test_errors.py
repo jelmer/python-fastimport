@@ -18,7 +18,7 @@
 
 from testtools import TestCase
 
-from bzrlib.plugins.fastimport.fastimport import (
+from fastimport import (
     errors,
     )
 
