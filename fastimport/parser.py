@@ -290,6 +290,8 @@ class ImportParser(LineBasedParser):
                 yield self._parse_commit(line[len('commit '):])
             elif line.startswith('blob'):
                 yield self._parse_blob()
+            elif line.startswith('done'):
+                break
             elif line.startswith('progress '):
                 yield commands.ProgressCommand(line[len('progress '):])
             elif line.startswith('reset '):
