@@ -204,7 +204,7 @@ class LineBasedParser(object):
 
     def push_line(self, line):
         """Push line back onto the line buffer.
-        
+
         :param line: the line with no trailing newline
         """
         self.lineno -= 1
@@ -212,7 +212,7 @@ class LineBasedParser(object):
 
     def read_bytes(self, count):
         """Read a given number of bytes from the input stream.
-        
+
         Throws MissingBytes if the bytes are not found.
 
         Note: This method does not read from the line buffer.
@@ -228,14 +228,14 @@ class LineBasedParser(object):
 
     def read_until(self, terminator):
         """Read the input stream until the terminator is found.
-        
+
         Throws MissingTerminator if the terminator is not found.
 
         Note: This method does not read from the line buffer.
 
         :return: the bytes read up to but excluding the terminator.
         """
-        
+
         lines = []
         term = terminator + '\n'
         while True:
@@ -305,7 +305,7 @@ class ImportParser(LineBasedParser):
 
     def iter_file_commands(self):
         """Iterator returning FileCommand objects.
-        
+
         If an invalid file command is found, the line is silently
         pushed back and iteration ends.
         """
@@ -502,7 +502,7 @@ class ImportParser(LineBasedParser):
 
     def _who_when(self, s, cmd, section, accept_just_who=False):
         """Parse who and when information from a string.
-        
+
         :return: a tuple of (name,email,timestamp,timezone). name may be
             the empty string if only an email address was given.
         """
@@ -602,20 +602,20 @@ class ImportParser(LineBasedParser):
 
     def _mode(self, s):
         """Parse a file mode into executable and kind.
-        
+
         :return (is_executable, kind)
         """
         # Note: Output from git-fast-export slightly different to spec
         if s in ['644', '100644', '0100644']:
-            return False, commands.FILE_KIND
+            return False, 'file'
         elif s in ['755', '100755', '0100755']:
-            return True, commands.FILE_KIND
+            return True, 'file'
         elif s in ['040000', '0040000']:
-            return False, commands.DIRECTORY_KIND
+            return False, 'directory'
         elif s in ['120000', '0120000']:
-            return False, commands.SYMLINK_KIND
+            return False, 'symlink'
         elif s in ['160000', '0160000']:
-            return False, commands.TREE_REFERENCE_KIND
+            return False, 'tree-reference'
         else:
             self.abort(errors.BadFormat, 'filemodify', 'mode', s)
 

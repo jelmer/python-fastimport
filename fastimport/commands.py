@@ -33,12 +33,6 @@ COMMAND_NAMES = ['blob', 'checkpoint', 'commit', 'feature', 'progress',
 FILE_COMMAND_NAMES = ['filemodify', 'filedelete', 'filecopy', 'filerename',
     'filedeleteall']
 
-# Bazaar file kinds
-FILE_KIND = 'file'
-DIRECTORY_KIND = 'directory'
-SYMLINK_KIND = 'symlink'
-TREE_REFERENCE_KIND = 'tree-reference'
-
 # Feature names
 MULTIPLE_AUTHORS_FEATURE = "multiple-authors"
 COMMIT_PROPERTIES_FEATURE = "commit-properties"
