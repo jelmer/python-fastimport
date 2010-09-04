@@ -1,0 +1,5 @@
+python-fastimport (0.9.0~bzr281-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sat, 04 Sep 2010 16:45:00 +0200
