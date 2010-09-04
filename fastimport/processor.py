@@ -24,7 +24,6 @@ import sys
 import time
 
 from bzrlib import debug
-from bzrlib.errors import NotBranchError
 from bzrlib.trace import (
     mutter,
     note,
@@ -42,7 +41,7 @@ class ImportProcessor(object):
 
     known_params = []
 
-    def __init__(self, bzrdir, params=None, verbose=False, outf=None):
+    def __init__(self, params=None, verbose=False, outf=None):
         if outf is None:
             self.outf = sys.stdout
         else:
@@ -53,22 +52,6 @@ class ImportProcessor(object):
         else:
             self.params = params
             self.validate_parameters()
-        self.bzrdir = bzrdir
-        if bzrdir is None:
-            # Some 'importers' don't need a repository to write to
-            self.working_tree = None
-            self.branch = None
-            self.repo = None
-        else:
-            try:
-                # Might be inside a branch
-                (self.working_tree, self.branch) = bzrdir._get_tree_branch()
-                self.repo = self.branch.repository
-            except NotBranchError:
-                # Must be inside a repository
-                self.working_tree = None
-                self.branch = None
-                self.repo = bzrdir.open_repository()
 
         # Handlers can set this to request exiting cleanly without
         # iterating through the remaining commands
