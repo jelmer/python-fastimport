@@ -68,25 +68,7 @@ class ImportProcessor(object):
 
         :param command_iter: an iterator providing commands
         """
-        if self.working_tree is not None:
-            self.working_tree.lock_write()
-        elif self.branch is not None:
-            self.branch.lock_write()
-        elif self.repo is not None:
-            self.repo.lock_write()
-        try:
-            self._process(command_iter)
-        finally:
-            # If an unhandled exception occurred, abort the write group
-            if self.repo is not None and self.repo.is_in_write_group():
-                self.repo.abort_write_group()
-            # Release the locks
-            if self.working_tree is not None:
-                self.working_tree.unlock()
-            elif self.branch is not None:
-                self.branch.unlock()
-            elif self.repo is not None:
-                self.repo.unlock()
+        self._process(command_iter)
 
     def _process(self, command_iter):
         self.pre_process()
