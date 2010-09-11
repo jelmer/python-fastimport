@@ -404,14 +404,14 @@ class ImportParser(LineBasedParser):
         """
         params = info.split(' ', 2)
         path = self._path(params[2])
-        is_executable, kind = self._mode(params[0])
+        mode = self._mode(params[0])
         if params[1] == 'inline':
             dataref = None
             data = self._get_data('filemodify')
         else:
             dataref = params[1]
             data = None
-        return commands.FileModifyCommand(path, kind, is_executable, dataref,
+        return commands.FileModifyCommand(path, mode, dataref,
             data)
 
     def _parse_reset(self, ref):
@@ -603,21 +603,21 @@ class ImportParser(LineBasedParser):
         return map(_unquote_c_string, parts)
 
     def _mode(self, s):
-        """Parse a file mode into executable and kind.
+        """Check file mode format and parse into an int.
 
-        :return (is_executable, kind)
+        :return: mode as integer
         """
         # Note: Output from git-fast-export slightly different to spec
         if s in ['644', '100644', '0100644']:
-            return False, 'file'
+            return 0100644
         elif s in ['755', '100755', '0100755']:
-            return True, 'file'
+            return 0100755
         elif s in ['040000', '0040000']:
-            return False, 'directory'
+            return 040000
         elif s in ['120000', '0120000']:
-            return False, 'symlink'
+            return 0120000
         elif s in ['160000', '0160000']:
-            return False, 'tree-reference'
+            return 0160000
         else:
             self.abort(errors.BadFormat, 'filemodify', 'mode', s)
 

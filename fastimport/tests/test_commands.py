@@ -134,7 +134,7 @@ class TestCommitDisplay(TestCase):
     def test_commit_with_filecommands(self):
         file_cmds = iter([
             commands.FileDeleteCommand('readme.txt'),
-            commands.FileModifyCommand('NEWS', 'file', False, None,
+            commands.FileModifyCommand('NEWS', 0100644, None,
                 'blah blah blah'),
             ])
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
@@ -256,24 +256,24 @@ class TestTagDisplay(TestCase):
 class TestFileModifyDisplay(TestCase):
 
     def test_filemodify_file(self):
-        c = commands.FileModifyCommand("foo/bar", "file", False, ":23", None)
+        c = commands.FileModifyCommand("foo/bar", 0100644, ":23", None)
         self.assertEqual("M 644 :23 foo/bar", repr(c))
 
     def test_filemodify_file_executable(self):
-        c = commands.FileModifyCommand("foo/bar", "file", True, ":23", None)
+        c = commands.FileModifyCommand("foo/bar", 0100755, ":23", None)
         self.assertEqual("M 755 :23 foo/bar", repr(c))
 
     def test_filemodify_file_internal(self):
-        c = commands.FileModifyCommand("foo/bar", "file", False, None,
+        c = commands.FileModifyCommand("foo/bar", 0100644, None,
             "hello world")
         self.assertEqual("M 644 inline foo/bar\ndata 11\nhello world", repr(c))
 
     def test_filemodify_symlink(self):
-        c = commands.FileModifyCommand("foo/bar", "symlink", False, None, "baz")
+        c = commands.FileModifyCommand("foo/bar", 0120000, None, "baz")
         self.assertEqual("M 120000 inline foo/bar\ndata 3\nbaz", repr(c))
 
     def test_filemodify_treeref(self):
-        c = commands.FileModifyCommand("tree-info", "tree-reference", False,
+        c = commands.FileModifyCommand("tree-info", 0160000,
             "revision-id-info", None)
         self.assertEqual("M 160000 revision-id-info tree-info", repr(c))
 
@@ -320,9 +320,9 @@ class TestPathChecking(TestCase):
 
     def test_filemodify_path_checking(self):
         self.assertRaises(ValueError, commands.FileModifyCommand, "",
-            "file", False, None, "text")
+            0100644, None, "text")
         self.assertRaises(ValueError, commands.FileModifyCommand, None,
-            "file", False, None, "text")
+            0100644, None, "text")
 
     def test_filedelete_path_checking(self):
         self.assertRaises(ValueError, commands.FileDeleteCommand, "")

@@ -26,6 +26,7 @@ from fastimport import (
     helpers,
     processor,
     )
+import stat
 
 
 class FilterProcessor(processor.ImportProcessor):
@@ -109,7 +110,7 @@ class FilterProcessor(processor.ImportProcessor):
                 for fc in interesting_filecmds:
                     if isinstance(fc, commands.FileModifyCommand):
                         if (fc.dataref is not None and
-                            fc.kind != 'directory'):
+                            not stat.S_ISDIR(fc.mode)):
                             self.referenced_blobs.append(fc.dataref)
 
                 # Update from and merges to refer to commits in the output
