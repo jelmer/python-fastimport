@@ -99,12 +99,12 @@ def common_directory(paths):
       if there is no common directory, '' is returned;
       otherwise the common directory with a trailing / is returned.
     """
-    from bzrlib import osutils
+    import posixpath
     def get_dir_with_slash(path):
         if path == '' or path.endswith('/'):
             return path
         else:
-            dirname, basename = osutils.split(path)
+            dirname, basename = posixpath.split(path)
             if dirname == '':
                 return dirname
             else:
@@ -121,4 +121,33 @@ def common_directory(paths):
         return get_dir_with_slash(common)
 
 
+def is_inside(dir, fname):
+    """True if fname is inside dir.
 
+    The parameters should typically be passed to osutils.normpath first, so
+    that . and .. and repeated slashes are eliminated, and the separators
+    are canonical for the platform.
+
+    The empty string as a dir name is taken as top-of-tree and matches
+    everything.
+    """
+    # XXX: Most callers of this can actually do something smarter by
+    # looking at the inventory
+    if dir == fname:
+        return True
+
+    if dir == '':
+        return True
+
+    if dir[-1] != '/':
+        dir += '/'
+
+    return fname.startswith(dir)
+
+
+def is_inside_any(dir_list, fname):
+    """True if fname is inside any of given dirs."""
+    for dirname in dir_list:
+        if is_inside(dirname, fname):
+            return True
+    return False

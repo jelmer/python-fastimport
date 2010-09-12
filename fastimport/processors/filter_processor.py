@@ -17,7 +17,6 @@
 """Import processor that filters the input (and doesn't import)."""
 
 
-from bzrlib import osutils
 from fastimport import (
     commands,
     helpers,
@@ -191,11 +190,11 @@ class FilterProcessor(processor.ImportProcessor):
     def _path_to_be_kept(self, path):
         """Does the given path pass the filtering criteria?"""
         if self.excludes and (path in self.excludes
-                or osutils.is_inside_any(self.excludes, path)):
+                or helpers.is_inside_any(self.excludes, path)):
             return False
         if self.includes:
             return (path in self.includes
-                or osutils.is_inside_any(self.includes, path))
+                or helpers.is_inside_any(self.includes, path))
         return True
 
     def _adjust_for_new_root(self, path):
