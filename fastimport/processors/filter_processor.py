@@ -18,9 +18,6 @@
 
 
 from bzrlib import osutils
-from bzrlib.trace import (
-    warning,
-    )
 from fastimport import (
     commands,
     helpers,
@@ -184,7 +181,7 @@ class FilterProcessor(processor.ImportProcessor):
             elif isinstance(fc, commands.FileCopyCommand):
                 fc = self._convert_copy(fc)
             else:
-                warning("cannot handle FileCommands of class %s - ignoring",
+                self.warning("cannot handle FileCommands of class %s - ignoring",
                         fc.__class__)
                 continue
             if fc is not None:
@@ -264,7 +261,7 @@ class FilterProcessor(processor.ImportProcessor):
             # to. Maybe fast-import-info needs to be extended to
             # remember all renames and a config file can be passed
             # into here ala fast-import?
-            warning("cannot turn rename of %s into an add of %s yet" %
+            self.warning("cannot turn rename of %s into an add of %s yet" %
                 (old, new))
         return None
 
@@ -294,6 +291,6 @@ class FilterProcessor(processor.ImportProcessor):
             # to. Maybe fast-import-info needs to be extended to
             # remember all copies and a config file can be passed
             # into here ala fast-import?
-            warning("cannot turn copy of %s into an add of %s yet" %
+            self.warning("cannot turn copy of %s into an add of %s yet" %
                 (src, dest))
         return None

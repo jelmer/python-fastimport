@@ -23,12 +23,6 @@ for basing real processors on. See the processors package for examples.
 import sys
 import time
 
-from bzrlib import debug
-from bzrlib.trace import (
-    mutter,
-    note,
-    warning,
-    )
 import errors
 
 
@@ -85,21 +79,13 @@ class ImportProcessor(object):
                 break
         self.post_process()
 
-    def note(self, msg, *args):
-        """Output a note but timestamp it."""
-        msg = "%s %s" % (self._time_of_day(), msg)
-        note(msg, *args)
-
     def warning(self, msg, *args):
         """Output a warning but timestamp it."""
-        msg = "%s WARNING: %s" % (self._time_of_day(), msg)
-        warning(msg, *args)
+        pass
 
     def debug(self, mgs, *args):
-        """Output a debug message if the appropriate -D option was given."""
-        if "fast-import" in debug.debug_flags:
-            msg = "%s DEBUG: %s" % (self._time_of_day(), msg)
-            mutter(msg, *args)
+        """Output a debug message."""
+        pass
 
     def _time_of_day(self):
         """Time of day as a string."""
@@ -172,26 +158,9 @@ class CommitHandler(object):
                 handler(self, fc)
         self.post_process_files()
 
-    def note(self, msg, *args):
-        """Output a note but add context."""
-        msg = "%s (%s)" % (msg, self.command.id)
-        note(msg, *args)
-
     def warning(self, msg, *args):
         """Output a warning but add context."""
-        msg = "WARNING: %s (%s)" % (msg, self.command.id)
-        warning(msg, *args)
-
-    def mutter(self, msg, *args):
-        """Output a mutter but add context."""
-        msg = "%s (%s)" % (msg, self.command.id)
-        mutter(msg, *args)
-
-    def debug(self, msg, *args):
-        """Output a mutter if the appropriate -D option was given."""
-        if "fast-import" in debug.debug_flags:
-            msg = "%s (%s)" % (msg, self.command.id)
-            mutter(msg, *args)
+        pass
 
     def pre_process_files(self):
         """Prepare for committing."""
