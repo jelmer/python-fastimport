@@ -16,6 +16,7 @@
 
 """Import command classes."""
 
+import stat
 
 # There is a bug in git 1.5.4.3 and older by which unquoting a string consumes
 # one extra character. Set this variable to True to work-around it. It only
@@ -290,12 +291,11 @@ class FileCommand(ImportCommand):
 
 class FileModifyCommand(FileCommand):
 
-    def __init__(self, path, kind, is_executable, dataref, data):
+    def __init__(self, path, mode, dataref, data):
         # Either dataref or data should be null
         FileCommand.__init__(self, 'filemodify')
         self.path = check_path(path)
-        self.kind = kind
-        self.is_executable = is_executable
+        self.mode = mode
         self.dataref = dataref
         self.data = data
         self._binary = ['data']
@@ -306,21 +306,23 @@ class FileModifyCommand(FileCommand):
     def __str__(self):
         return self.to_string(include_file_contents=False)
 
-    def to_string(self, include_file_contents=False):
-        if self.is_executable:
-            mode = "755"
-        elif self.kind == 'file':
-            mode = "644"
-        elif self.kind == 'directory':
-            mode = "040000"
-        elif self.kind == 'symlink':
-            mode = "120000"
-        elif self.kind == 'tree-reference':
-            mode = "160000"
+    def _format_mode(self, mode):
+        if mode in (0755, 0100755):
+            return "755"
+        elif mode in (0644, 0100644):
+            return "644"
+        elif mode == 040000:
+            return "040000"
+        elif mode == 0120000:
+            return "120000"
+        elif mode == 0160000:
+            return "160000"
         else:
-            raise AssertionError("unknown kind %s" % (self.kind,))
+            raise AssertionError("Unknown mode %o" % mode)
+
+    def to_string(self, include_file_contents=False):
         datastr = ""
-        if self.kind == 'directory':
+        if stat.S_ISDIR(self.mode):
             dataref = '-'
         elif self.dataref is None:
             dataref = "inline"
@@ -329,7 +331,7 @@ class FileModifyCommand(FileCommand):
         else:
             dataref = "%s" % (self.dataref,)
         path = format_path(self.path)
-        return "M %s %s %s%s" % (mode, dataref, path, datastr)
+        return "M %s %s %s%s" % (self._format_mode(self.mode), dataref, path, datastr)
 
 
 class FileDeleteCommand(FileCommand):

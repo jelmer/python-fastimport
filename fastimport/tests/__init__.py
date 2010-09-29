@@ -26,6 +26,10 @@ def test_suite():
     names = [
         'test_commands',
         'test_errors',
+        'test_filter_processor',
+        'test_helpers',
+        'test_head_tracking',
+        'test_parser',
         ]
     module_names = ['fastimport.tests.' + name for name in names]
     result = unittest.TestSuite()

@@ -23,13 +23,6 @@ for basing real processors on. See the processors package for examples.
 import sys
 import time
 
-from bzrlib import debug
-from bzrlib.errors import NotBranchError
-from bzrlib.trace import (
-    mutter,
-    note,
-    warning,
-    )
 import errors
 
 
@@ -42,7 +35,7 @@ class ImportProcessor(object):
 
     known_params = []
 
-    def __init__(self, bzrdir, params=None, verbose=False, outf=None):
+    def __init__(self, params=None, verbose=False, outf=None):
         if outf is None:
             self.outf = sys.stdout
         else:
@@ -53,22 +46,6 @@ class ImportProcessor(object):
         else:
             self.params = params
             self.validate_parameters()
-        self.bzrdir = bzrdir
-        if bzrdir is None:
-            # Some 'importers' don't need a repository to write to
-            self.working_tree = None
-            self.branch = None
-            self.repo = None
-        else:
-            try:
-                # Might be inside a branch
-                (self.working_tree, self.branch) = bzrdir._get_tree_branch()
-                self.repo = self.branch.repository
-            except NotBranchError:
-                # Must be inside a repository
-                self.working_tree = None
-                self.branch = None
-                self.repo = bzrdir.open_repository()
 
         # Handlers can set this to request exiting cleanly without
         # iterating through the remaining commands
@@ -85,25 +62,7 @@ class ImportProcessor(object):
 
         :param command_iter: an iterator providing commands
         """
-        if self.working_tree is not None:
-            self.working_tree.lock_write()
-        elif self.branch is not None:
-            self.branch.lock_write()
-        elif self.repo is not None:
-            self.repo.lock_write()
-        try:
-            self._process(command_iter)
-        finally:
-            # If an unhandled exception occurred, abort the write group
-            if self.repo is not None and self.repo.is_in_write_group():
-                self.repo.abort_write_group()
-            # Release the locks
-            if self.working_tree is not None:
-                self.working_tree.unlock()
-            elif self.branch is not None:
-                self.branch.unlock()
-            elif self.repo is not None:
-                self.repo.unlock()
+        self._process(command_iter)
 
     def _process(self, command_iter):
         self.pre_process()
@@ -120,21 +79,13 @@ class ImportProcessor(object):
                 break
         self.post_process()
 
-    def note(self, msg, *args):
-        """Output a note but timestamp it."""
-        msg = "%s %s" % (self._time_of_day(), msg)
-        note(msg, *args)
-
     def warning(self, msg, *args):
         """Output a warning but timestamp it."""
-        msg = "%s WARNING: %s" % (self._time_of_day(), msg)
-        warning(msg, *args)
+        pass
 
     def debug(self, mgs, *args):
-        """Output a debug message if the appropriate -D option was given."""
-        if "fast-import" in debug.debug_flags:
-            msg = "%s DEBUG: %s" % (self._time_of_day(), msg)
-            mutter(msg, *args)
+        """Output a debug message."""
+        pass
 
     def _time_of_day(self):
         """Time of day as a string."""
@@ -207,26 +158,9 @@ class CommitHandler(object):
                 handler(self, fc)
         self.post_process_files()
 
-    def note(self, msg, *args):
-        """Output a note but add context."""
-        msg = "%s (%s)" % (msg, self.command.id)
-        note(msg, *args)
-
     def warning(self, msg, *args):
         """Output a warning but add context."""
-        msg = "WARNING: %s (%s)" % (msg, self.command.id)
-        warning(msg, *args)
-
-    def mutter(self, msg, *args):
-        """Output a mutter but add context."""
-        msg = "%s (%s)" % (msg, self.command.id)
-        mutter(msg, *args)
-
-    def debug(self, msg, *args):
-        """Output a mutter if the appropriate -D option was given."""
-        if "fast-import" in debug.debug_flags:
-            msg = "%s (%s)" % (msg, self.command.id)
-            mutter(msg, *args)
+        pass
 
     def pre_process_files(self):
         """Prepare for committing."""
