@@ -5,7 +5,7 @@ Maintainer: Jelmer Vernooij <jelmer@debian.org>
 Homepage: http://launchpad.net/python-fastimport
 Build-Depends: python-support (>= 0.90), cdbs (>= 0.4.43), python-all, debhelper (>= 5.0.37.2), python-testtools
 Standards-Version: 3.9.1
-Vcs-Bzr: http://bzr.debian.org/users/jelmer/dulwich/unstable
+Vcs-Bzr: http://bzr.debian.org/users/jelmer/python-fastimport/unstable
 
 Package: python-fastimport
 Architecture: all
