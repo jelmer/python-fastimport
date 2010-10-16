@@ -8,4 +8,4 @@ setup(name="fastimport",
       author_email="bazaar@lists.canonical.com",
       license = "GNU GPL v2",
       url="https://launchpad.net/python-fastimport",
-      packages=['fastimport', 'fastimport.tests'])
+      packages=['fastimport', 'fastimport.tests', 'fastimport.processors'])
