@@ -26,6 +26,7 @@ from fastimport.helpers import (
     invert_dict,
     invert_dictset,
     )
+import stat
 
 
 class InfoProcessor(processor.ImportProcessor):
@@ -194,9 +195,9 @@ class InfoProcessor(processor.ImportProcessor):
         for fc in cmd.file_iter():
             self.file_cmd_counts[fc.name] += 1
             if isinstance(fc, commands.FileModifyCommand):
-                if fc.is_executable:
+                if fc.mode & 0111:
                     self.executables_found = True
-                if fc.kind == commands.SYMLINK_KIND:
+                if stat.S_ISLNK(fc.mode):
                     self.symlinks_found = True
                 if fc.dataref is not None:
                     if fc.dataref[0] == ':':
