@@ -153,7 +153,7 @@ class TestImportParser(testtools.TestCase):
         for cmd in p.iter_commands():
             result.append(cmd)
             if cmd.name == 'commit':
-                for fc in cmd.file_iter():
+                for fc in cmd.iter_files():
                     result.append(fc)
         self.assertEqual(len(result), 17)
         cmd1 = result.pop(0)

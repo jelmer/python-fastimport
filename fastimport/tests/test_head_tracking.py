@@ -227,7 +227,7 @@ class TestHeadTracking(testtools.TestCase):
             if isinstance(cmd, commands.CommitCommand):
                 reftracker.track_heads(cmd)
                 # eat the file commands
-                list(cmd.file_iter())
+                list(cmd.iter_files())
             elif isinstance(cmd, commands.ResetCommand):
                 if cmd.from_ is not None:
                     reftracker.track_heads_for_ref(cmd.ref, cmd.from_)

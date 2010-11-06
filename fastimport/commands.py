@@ -208,8 +208,7 @@ class CommitCommand(ImportCommand):
         # file_iter may be a callable or an iterator
         if callable(self.file_iter):
             return self.file_iter()
-        elif self.file_iter:
-            return iter(self.file_iter)
+        return iter(self.file_iter)
 
 
 class FeatureCommand(ImportCommand):
