@@ -91,7 +91,7 @@ class FilterProcessor(processor.ImportProcessor):
     def commit_handler(self, cmd):
         """Process a CommitCommand."""
         # These pass through if they meet the filtering conditions
-        interesting_filecmds = self._filter_filecommands(cmd.file_iter)
+        interesting_filecmds = self._filter_filecommands(cmd.iter_files)
         if interesting_filecmds:
             # If all we have is a single deleteall, skip this commit
             if len(interesting_filecmds) == 1 and isinstance(
