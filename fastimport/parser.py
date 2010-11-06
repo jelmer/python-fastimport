@@ -1,4 +1,4 @@
-# Copyright (C) 2008 Canonical Ltd
+# Copyright (C) 2008-2010 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -383,7 +383,7 @@ class ImportParser(LineBasedParser):
             else:
                 break
         return commands.CommitCommand(ref, mark, author, committer, message,
-            from_, merges, self.iter_file_commands, lineno=lineno,
+            from_, merges, list(self.iter_file_commands()), lineno=lineno,
             more_authors=more_authors, properties=properties)
 
     def _parse_feature(self, info):
