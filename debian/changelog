@@ -1,3 +1,10 @@
+python-fastimport (0.9.0~bzr292-1) UNRELEASED; urgency=low
+
+  * New upstream snapshot.
+  * Add replaces line for python-fastimport. Closes: #602595
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sat, 06 Nov 2010 17:54:54 +0100
+
 python-fastimport (0.9.0~bzr291-1) unstable; urgency=low
 
   * Initial release. Closes: #598490

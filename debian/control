@@ -12,7 +12,7 @@ Architecture: all
 Provides: ${python:Provides}
 Depends: ${python:Depends}, ${misc:Depends}
 Suggests: git-core, bzr-fastimport
-Conflicts: bzr-fastimport (<< 0.9.0)
+Replaces: bzr-fastimport (<< 0.9.0+bzr279)
 Description: Fastimport file format parser and generator library
  Python library for parsing and generating the fastimport file format.
  The fastimport format is used for serializing version control histories.
