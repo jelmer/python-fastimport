@@ -77,8 +77,7 @@ class QueryProcessor(processor.ImportProcessor):
 
     def commit_handler(self, cmd):
         """Process a CommitCommand."""
-        for fc in cmd.file_iter():
-            pass
+        pass
 
     def reset_handler(self, cmd):
         """Process a ResetCommand."""
