@@ -1,3 +1,10 @@
+python-fastimport (0.9.0~bzr294-1) unstable; urgency=low
+
+  * New upstream snapshot.
+  * Drop versioned dependency on python-support. Closes: #603232
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Wed, 17 Nov 2010 14:34:03 +0100
+
 python-fastimport (0.9.0~bzr293-1) unstable; urgency=low
 
   * New upstream snapshot.
