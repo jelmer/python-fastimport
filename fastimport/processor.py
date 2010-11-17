@@ -149,7 +149,7 @@ class CommitHandler(object):
 
     def process(self):
         self.pre_process_files()
-        for fc in self.command.file_iter():
+        for fc in self.command.iter_files():
             try:
                 handler = self.__class__.__dict__[fc.name[4:] + "_handler"]
             except KeyError:
