@@ -121,7 +121,8 @@ class FilterProcessor(processor.ImportProcessor):
             parents = [cmd.from_]
         else:
             parents = None
-        self.parents[":" + cmd.mark] = parents
+        if cmd.mark is not None:
+            self.parents[":" + cmd.mark] = parents
 
     def reset_handler(self, cmd):
         """Process a ResetCommand."""
