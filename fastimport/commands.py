@@ -159,7 +159,7 @@ class CommitCommand(ImportCommand):
         if self.message is None:
             msg_section = ""
         else:
-            msg = self.message.encode('utf8')
+            msg = self.message
             msg_section = "\ndata %d\n%s" % (len(msg), msg)
         if self.from_ is None:
             from_line = ""
@@ -278,7 +278,7 @@ class TagCommand(ImportCommand):
         if self.message is None:
             msg_section = ""
         else:
-            msg = self.message.encode('utf8')
+            msg = self.message
             msg_section = "\ndata %d\n%s" % (len(msg), msg)
         return "tag %s%s%s%s" % (self.id, from_line, tagger_line, msg_section)
 
@@ -402,7 +402,7 @@ def format_path(p, quote_spaces=False):
     if quote:
         extra = GIT_FAST_IMPORT_NEEDS_EXTRA_SPACE_AFTER_QUOTE and ' ' or ''
         p = '"%s"%s' % (p, extra)
-    return p.encode('utf8')
+    return p
 
 
 def format_who_when(fields):
