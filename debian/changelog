@@ -1,3 +1,10 @@
+python-fastimport (0.9.0~bzr295-1) UNRELEASED; urgency=low
+
+  * New upstream snapshot.
+   + Avoids tracking unset marks. LP: #477886
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sun, 12 Dec 2010 02:16:31 +0100
+
 python-fastimport (0.9.0~bzr294-1) unstable; urgency=low
 
   * New upstream snapshot.
