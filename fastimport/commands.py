@@ -384,8 +384,10 @@ def check_path(path):
     :return: the path if all is OK
     :raise ValueError: if the path is illegal
     """
-    if path is None or path == '':
+    if path is None or path == '' or path[0] == "/":
         raise ValueError("illegal path '%s'" % path)
+    if type(path) != str:
+        raise TypeError("illegale type for path '%r'" % path)
     return path
 
 
