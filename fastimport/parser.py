@@ -356,12 +356,6 @@ class ImportParser(LineBasedParser):
                 break
         committer = self._get_user_info('commit', 'committer')
         message = self._get_data('commit', 'message')
-        try:
-            message = message.decode('utf_8')
-        except UnicodeDecodeError:
-            self.warning(
-                "commit message not in utf8 - replacing unknown characters")
-            message = message.decode('utf_8', 'replace')
         from_ = self._get_from()
         merges = []
         while True:
@@ -423,7 +417,7 @@ class ImportParser(LineBasedParser):
         """Parse a tag command."""
         from_ = self._get_from('tag')
         tagger = self._get_user_info('tag', 'tagger', accept_just_who=True)
-        message = self._get_data('tag', 'message').decode('utf_8')
+        message = self._get_data('tag', 'message')
         return commands.TagCommand(name, from_, tagger, message)
 
     def _get_mark_if_any(self):
@@ -581,11 +575,7 @@ class ImportParser(LineBasedParser):
                 self.abort(errors.BadFormat, '?', '?', s)
             else:
                 return _unquote_c_string(s[1:-1])
-        try:
-            return s.decode('utf_8')
-        except UnicodeDecodeError:
-            # The spec recommends utf8 encoding but that isn't enforced
-            return s
+        return s
 
     def _path_pair(self, s):
         """Parse two paths separated by a space."""
