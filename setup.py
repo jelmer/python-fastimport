@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(name="fastimport",
       version="0.9.0dev0",
-      description="VCS fastimport/fsatexport parser",
+      description="VCS fastimport/fastexport parser",
       author="Canonical Ltd",
       author_email="bazaar@lists.canonical.com",
       license = "GNU GPL v2",
