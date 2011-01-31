@@ -192,7 +192,7 @@ class InfoProcessor(processor.ImportProcessor):
         self.committers.add(cmd.committer)
         if cmd.author is not None:
             self.separate_authors_found = True
-        for fc in cmd.file_iter():
+        for fc in cmd.iter_files():
             self.file_cmd_counts[fc.name] += 1
             if isinstance(fc, commands.FileModifyCommand):
                 if fc.mode & 0111:

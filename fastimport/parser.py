@@ -356,12 +356,6 @@ class ImportParser(LineBasedParser):
                 break
         committer = self._get_user_info('commit', 'committer')
         message = self._get_data('commit', 'message')
-        try:
-            message = message.decode('utf_8')
-        except UnicodeDecodeError:
-            self.warning(
-                "commit message not in utf8 - replacing unknown characters")
-            message = message.decode('utf_8', 'replace')
         from_ = self._get_from()
         merges = []
         while True:
@@ -423,7 +417,7 @@ class ImportParser(LineBasedParser):
         """Parse a tag command."""
         from_ = self._get_from('tag')
         tagger = self._get_user_info('tag', 'tagger', accept_just_who=True)
-        message = self._get_data('tag', 'message').decode('utf_8')
+        message = self._get_data('tag', 'message')
         return commands.TagCommand(name, from_, tagger, message)
 
     def _get_mark_if_any(self):
@@ -536,24 +530,11 @@ class ImportParser(LineBasedParser):
         name = match.group(1)
         if len(name) > 0:
             if name[-1] == " ":
-                try:
-                    name = name[:-1].decode('utf_8')
-                except UnicodeDecodeError:
-                    # The spec says names are *typically* utf8 encoded
-                    # but that isn't enforced by git-fast-export (at least)
-                    self.warning("%s name not in utf8 - replacing unknown "
-                        "characters" % (section,))
-                    name = name[:-1].decode('utf_8', 'replace')
+                name = name[:-1]
         email = match.group(2)
         # While it shouldn't happen, some datasets have email addresses
         # which contain unicode characters. See bug 338186. We sanitize
         # the data at this level just in case.
-        try:
-            email = email.decode('utf_8')
-        except UnicodeDecodeError:
-            self.warning("%s email not in utf8 - replacing unknown characters"
-                % (section,))
-            email = email.decode('utf_8', 'replace')
         if self.user_mapper:
             name, email = self.user_mapper.map_name_and_email(name, email)
         return (name, email, when[0], when[1])
@@ -581,11 +562,7 @@ class ImportParser(LineBasedParser):
                 self.abort(errors.BadFormat, '?', '?', s)
             else:
                 return _unquote_c_string(s[1:-1])
-        try:
-            return s.decode('utf_8')
-        except UnicodeDecodeError:
-            # The spec recommends utf8 encoding but that isn't enforced
-            return s
+        return s
 
     def _path_pair(self, s):
         """Parse two paths separated by a space."""
