@@ -4,6 +4,22 @@ python-fastimport (0.9.0-1) unstable; urgency=low
 
  -- Jelmer Vernooij <jelmer@debian.org>  Mon, 31 Jan 2011 01:45:24 +0100
 
+python-fastimport (0.9.0~bzr299-1) UNRELEASED; urgency=low
+
+  * New upstream snapshot.
+   + Fixes typo in setup.py. Thanks Jonathan Nieder. Closes: #611511
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sun, 30 Jan 2011 10:41:54 +0100
+
+python-fastimport (0.9.0~bzr298-1) unstable; urgency=low
+
+  * New upstream snapshot.
+   + Avoids tracking unset marks. LP: #477886
+  * Require testtools 0.9.2 to run the test suite.
+  * Drop versioned dependency on python-support. Closes: #603232
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Wed, 17 Nov 2010 14:34:03 +0100
+
 python-fastimport (0.9.0~bzr293-1) unstable; urgency=low
 
   * New upstream snapshot.
