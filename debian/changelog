@@ -1,15 +1,9 @@
 python-fastimport (0.9.0-1) unstable; urgency=low
 
   * New upstream release.
-
- -- Jelmer Vernooij <jelmer@debian.org>  Mon, 31 Jan 2011 01:45:24 +0100
-
-python-fastimport (0.9.0~bzr299-1) UNRELEASED; urgency=low
-
-  * New upstream snapshot.
    + Fixes typo in setup.py. Thanks Jonathan Nieder. Closes: #611511
 
- -- Jelmer Vernooij <jelmer@debian.org>  Sun, 30 Jan 2011 10:41:54 +0100
+ -- Jelmer Vernooij <jelmer@debian.org>  Mon, 31 Jan 2011 01:45:24 +0100
 
 python-fastimport (0.9.0~bzr298-1) unstable; urgency=low
 
