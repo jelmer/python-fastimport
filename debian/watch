@@ -1,0 +1,3 @@
+version=3
+opts="uversionmangle=s/(b(eta)?[0-9]+)$/~\\1/" \
+https://launchpad.net/python-fastimport/+download http://launchpad.net/python-fastimport/.*/python-fastimport-(.*)\.tar\.gz
