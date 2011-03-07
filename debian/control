@@ -3,7 +3,7 @@ Section: python
 Priority: optional
 Maintainer: Jelmer Vernooij <jelmer@debian.org>
 Homepage: http://launchpad.net/python-fastimport
-Build-Depends: cdbs (>= 0.4.90~), python-all (>= 2.6.6-3), debhelper (>= 5.0.37.2), python-testtools (>= 0.9.2)
+Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 7.0.50~), python-testtools (>= 0.9.2)
 Standards-Version: 3.9.1
 X-Python-Version: >= 2.4
 Vcs-Bzr: http://bzr.debian.org/users/jelmer/python-fastimport/unstable
@@ -13,6 +13,7 @@ Architecture: all
 Provides: ${python:Provides}
 Depends: ${python:Depends}, ${misc:Depends}
 Suggests: git-core, bzr-fastimport
+Breaks: ${python:Breaks}
 Replaces: bzr-fastimport (<< 0.9.0+bzr279)
 Description: Fastimport file format parser and generator library
  Python library for parsing and generating the fastimport file format.

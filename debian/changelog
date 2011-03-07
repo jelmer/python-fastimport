@@ -1,8 +1,9 @@
-python-fastimport (0.9.0-3) UNRELEASED; urgency=low
+python-fastimport (0.9.0-3) unstable; urgency=low
 
   * Switch to dh_python2.
+  * Switch to debhelper 7, drop cdbs.
 
- -- Jelmer Vernooij <jelmer@debian.org>  Mon, 07 Mar 2011 15:43:58 +0100
+ -- Jelmer Vernooij <jelmer@debian.org>  Mon, 07 Mar 2011 15:44:44 +0100
 
 python-fastimport (0.9.0-2) unstable; urgency=low
 

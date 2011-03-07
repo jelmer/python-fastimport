@@ -1,11 +1,12 @@
 #!/usr/bin/make -f
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/python-distutils.mk
+%:
+	dh --with python2 --buildsystem=python_distutils $*
 
-DEB_PYTHON_BUILD_ARGS += --executable=/usr/bin/python
+override_dh_auto_build:
+	dh_auto_build --buildsystem=python_distutils -- --executable=/usr/bin/python
 
 ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
-common-post-build-indep::
+override_dh_auto_test:
 	python -m testtools.run fastimport.tests.test_suite
 endif
