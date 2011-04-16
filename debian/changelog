@@ -1,3 +1,10 @@
+python-fastimport (0.9.0-3.1) unstable; urgency=low
+
+  * Non-maintainer upload (just a rebuild to add Python 2.7 and
+    dropPython 2.5 support)
+
+ -- Piotr Ożarowski <piotr@debian.org>  Sat, 16 Apr 2011 13:00:23 +0200
+
 python-fastimport (0.9.0-3) unstable; urgency=low
 
   * Switch to dh_python2.
