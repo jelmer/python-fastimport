@@ -917,7 +917,7 @@ committer Joe <joe@example.com> 1234567890 +1000
 data 19
 unknown from commit
 from :999
-M 644 :2 DATA
+M 644 :2 data/DATA
 blob
 mark :99
 data 4
@@ -930,12 +930,12 @@ merge commit
 from :3
 merge :4
 merge :1001
-M 644 :99 DATA2
+M 644 :99 data/DATA2
 """
 
-class TestPreserveHistoryFlag(TestCaseWithFiltering):
+class TestSquashEmptyCommitsFlag(TestCaseWithFiltering):
     
-    def test_squashing_empty_commits(self):
+    def test_squash_empty_commit(self):
         params = {'include_paths': None, 'exclude_paths': None}
         self.assertFiltering(_SAMPLE_EMPTY_COMMIT, params, \
 """blob
@@ -950,8 +950,8 @@ Initial import
 M 644 :1 COPYING
 """)
         
-    def test_keep_empty_commits(self):
-        params = {'include_paths': None, 'exclude_paths': None, 'preserve_all_history': True}
+    def test_keep_empty_commit(self):
+        params = {'include_paths': None, 'exclude_paths': None, 'squash_empty_commits': False}
         self.assertFiltering(_SAMPLE_EMPTY_COMMIT, params, _SAMPLE_EMPTY_COMMIT)
 
     def test_squash_unresolved_references(self):
@@ -976,6 +976,118 @@ mark :4
 committer Joe <joe@example.com> 1234567890 +1000
 data 19
 unknown from commit
+M 644 :2 data/DATA
+blob
+mark :99
+data 4
+bar
+commit refs/heads/master
+mark :5
+committer Joe <joe@example.com> 1234567890 +1000
+data 12
+merge commit
+from :3
+merge :4
+M 644 :99 data/DATA2
+""")
+        
+    def test_keep_unresolved_from_and_merge(self):
+        params = {'include_paths': None, 'exclude_paths': None, 'squash_empty_commits': False}
+        self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, _SAMPLE_FROM_MERGE_COMMIT)
+
+    def test_with_excludes(self):
+        params = {'include_paths': None,
+                  'exclude_paths': ['data/DATA'],
+                  'squash_empty_commits': False}
+        self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, \
+"""blob
+mark :1
+data 4
+foo
+commit refs/heads/master
+mark :3
+committer Joe <joe@example.com> 1234567890 +1000
+data 6
+import
+M 644 :1 COPYING
+commit refs/heads/master
+mark :4
+committer Joe <joe@example.com> 1234567890 +1000
+data 19
+unknown from commit
+from :999
+blob
+mark :99
+data 4
+bar
+commit refs/heads/master
+mark :5
+committer Joe <joe@example.com> 1234567890 +1000
+data 12
+merge commit
+from :3
+merge :4
+merge :1001
+M 644 :99 data/DATA2
+""")
+
+    def test_with_file_includes(self):
+        params = {'include_paths': ['COPYING', 'data/DATA2'],
+                  'exclude_paths': None,
+                  'squash_empty_commits': False}
+        self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, \
+"""blob
+mark :1
+data 4
+foo
+commit refs/heads/master
+mark :3
+committer Joe <joe@example.com> 1234567890 +1000
+data 6
+import
+M 644 :1 COPYING
+commit refs/heads/master
+mark :4
+committer Joe <joe@example.com> 1234567890 +1000
+data 19
+unknown from commit
+from :999
+blob
+mark :99
+data 4
+bar
+commit refs/heads/master
+mark :5
+committer Joe <joe@example.com> 1234567890 +1000
+data 12
+merge commit
+from :3
+merge :4
+merge :1001
+M 644 :99 data/DATA2
+"""
+)
+        
+    def test_with_directory_includes(self):
+        params = {'include_paths': ['data/'],
+                  'exclude_paths': None,
+                  'squash_empty_commits': False}
+        self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, \
+"""commit refs/heads/master
+mark :3
+committer Joe <joe@example.com> 1234567890 +1000
+data 6
+import
+blob
+mark :2
+data 4
+bar
+commit refs/heads/master
+mark :4
+committer Joe <joe@example.com> 1234567890 +1000
+data 19
+unknown from commit
+from :999
 M 644 :2 DATA
 blob
 mark :99
@@ -988,9 +1100,6 @@ data 12
 merge commit
 from :3
 merge :4
+merge :1001
 M 644 :99 DATA2
 """)
-        
-    def test_keep_unresolved_from_and_merge(self):
-        params = {'include_paths': None, 'exclude_paths': None, 'preserve_all_history': True}
-        self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, _SAMPLE_FROM_MERGE_COMMIT)

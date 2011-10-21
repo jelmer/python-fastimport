@@ -37,22 +37,22 @@ class FilterProcessor(processor.ImportProcessor):
     * exclude_paths - a list of paths that should not appear in the output
       stream
 
-    * preserve_all_history - if  True filter processeor will be much more conservative
-      w.r.t. history handling -- it will preserve all commits and links between them,
-      including those to unknown revisions. This is primarily usefull for filtering
-      incremental streams
+    * squash_empty_commits - if set to False, filter processor will be much more
+      conservative w.r.t. history handling -- it will preserve all commits and
+      links between them, including those to unknown revisions. This is primarily
+      usefull for filtering incremental streams
     """
 
     known_params = [
         'include_paths',
         'exclude_paths',
-        'preserve_all_history'
+        'squash_empty_commits'
         ]
 
     def pre_process(self):
         self.includes = self.params.get('include_paths')
         self.excludes = self.params.get('exclude_paths')
-        self.preserve_all_history = bool(self.params.get('preserve_all_history'))
+        self.squash_empty_commits = bool(self.params.get('squash_empty_commits', True))
         # What's the new root, if any
         self.new_root = helpers.common_directory(self.includes)
         # Buffer of blobs until we know we need them: mark -> cmd
@@ -98,7 +98,7 @@ class FilterProcessor(processor.ImportProcessor):
         """Process a CommitCommand."""
         # These pass through if they meet the filtering conditions
         interesting_filecmds = self._filter_filecommands(cmd.iter_files)
-        if interesting_filecmds or self.preserve_all_history:
+        if interesting_filecmds or not self.squash_empty_commits:
             # If all we have is a single deleteall, skip this commit
             if len(interesting_filecmds) == 1 and isinstance(
                 interesting_filecmds[0], commands.FileDeleteAllCommand):
@@ -116,7 +116,7 @@ class FilterProcessor(processor.ImportProcessor):
                             self.referenced_blobs.append(fc.dataref)
 
                 # Update from and merges to refer to commits in the output
-                if not self.preserve_all_history:
+                if self.squash_empty_commits:
                     cmd.from_ = self._find_interesting_from(cmd.from_)
                     cmd.merges = self._find_interesting_merges(cmd.merges)
                 self.interesting_commits.add(cmd.id)
