@@ -798,6 +798,7 @@ committer d <b@c> 1234798653 +0000
 data 8
 test
 ing
+from :100
 deleteall
 M 644 :4 index.txt
 """)

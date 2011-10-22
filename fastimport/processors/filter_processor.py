@@ -50,8 +50,8 @@ class FilterProcessor(processor.ImportProcessor):
         self.new_root = helpers.common_directory(self.includes)
         # Buffer of blobs until we know we need them: mark -> cmd
         self.blobs = {}
-        # These are the commits we've output so far
-        self.interesting_commits = set()
+        # These are the commits we've squashed so far
+        self.squashed_commits = set()
         # Map of commit-id to list of parents
         self.parents = {}
 
@@ -111,7 +111,8 @@ class FilterProcessor(processor.ImportProcessor):
                 # Update from and merges to refer to commits in the output
                 cmd.from_ = self._find_interesting_from(cmd.from_)
                 cmd.merges = self._find_interesting_merges(cmd.merges)
-                self.interesting_commits.add(cmd.id)
+        else:
+            self.squashed_commits.add(cmd.id)
 
         # Keep track of the parents
         if cmd.from_ and cmd.merges:
@@ -208,7 +209,7 @@ class FilterProcessor(processor.ImportProcessor):
 
     def _find_interesting_parent(self, commit_ref):
         while True:
-            if commit_ref in self.interesting_commits:
+            if commit_ref not in self.squashed_commits:
                 return commit_ref
             parents = self.parents.get(commit_ref)
             if not parents:
