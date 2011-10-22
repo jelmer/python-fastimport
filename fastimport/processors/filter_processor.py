@@ -36,16 +36,22 @@ class FilterProcessor(processor.ImportProcessor):
 
     * exclude_paths - a list of paths that should not appear in the output
       stream
+
+    * squash_empty_commits - if set to False, squash commits that don't have
+      any changes after the filter has been applied
     """
 
     known_params = [
         'include_paths',
         'exclude_paths',
+        'squash_empty_commits'
         ]
 
     def pre_process(self):
         self.includes = self.params.get('include_paths')
         self.excludes = self.params.get('exclude_paths')
+        self.squash_empty_commits = bool(
+            self.params.get('squash_empty_commits', True))
         # What's the new root, if any
         self.new_root = helpers.common_directory(self.includes)
         # Buffer of blobs until we know we need them: mark -> cmd
@@ -91,7 +97,7 @@ class FilterProcessor(processor.ImportProcessor):
         """Process a CommitCommand."""
         # These pass through if they meet the filtering conditions
         interesting_filecmds = self._filter_filecommands(cmd.iter_files)
-        if interesting_filecmds:
+        if interesting_filecmds or not self.squash_empty_commits:
             # If all we have is a single deleteall, skip this commit
             if len(interesting_filecmds) == 1 and isinstance(
                 interesting_filecmds[0], commands.FileDeleteAllCommand):
