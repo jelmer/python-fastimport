@@ -1,5 +1,8 @@
 0.9.2	UNRELEASED
 
+ * Remove reftracker and idmapfile, which are bzr-specific.
+   (Jelmer Vernooij, #693507)
+
 0.9.1	2012-02-28
 
  * Update FSF address in headers. (Dan Callaghan, #868800)
