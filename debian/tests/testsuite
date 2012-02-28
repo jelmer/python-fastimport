@@ -1,0 +1,2 @@
+#!/bin/sh
+python -m unittest fastimport.tests.test_suite
