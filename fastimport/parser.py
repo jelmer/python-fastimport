@@ -11,8 +11,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Parser of import data into command objects.
 
@@ -273,6 +272,7 @@ class ImportParser(LineBasedParser):
         self.user_mapper = user_mapper
         # We auto-detect the date format when a date is first encountered
         self.date_parser = None
+        self.features = {}
 
     def warning(self, msg):
         sys.stderr.write("warning line %d: %s\n" % (self.lineno, msg))
@@ -282,6 +282,8 @@ class ImportParser(LineBasedParser):
         while True:
             line = self.next_line()
             if line is None:
+                if 'done' in self.features:
+                    raise errors.PrematureEndOfStream(self.lineno)
                 break
             elif len(line) == 0 or line.startswith('#'):
                 continue
@@ -388,6 +390,7 @@ class ImportParser(LineBasedParser):
             value = self._path(parts[1])
         else:
             value = None
+        self.features[name] = value
         return commands.FeatureCommand(name, value, lineno=self.lineno)
 
     def _parse_file_modify(self, info):
