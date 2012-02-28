@@ -11,8 +11,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Exception classes for fastimport"""
 
@@ -164,6 +163,15 @@ class InvalidTimezone(ParsingError):
             self.reason = ' ' + reason
         else:
             self.reason = ''
+
+
+class PrematureEndOfStream(ParsingError):
+    """Raised when the 'done' feature was specified but missing."""
+
+    _fmt = (_LOCATION_FMT + "Stream end before 'done' command")
+
+    def __init__(self, lineno):
+        ParsingError.__init__(self, lineno)
 
 
 class UnknownDateFormat(ImportError):

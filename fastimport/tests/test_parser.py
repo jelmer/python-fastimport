@@ -11,8 +11,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test the Import parsing"""
 
@@ -259,6 +258,32 @@ class TestImportParser(testtools.TestCase):
         self.assertEqual('daffy@duck.org', cmd.more_authors[0][1])
         self.assertEqual('Donald', cmd.more_authors[1][0])
         self.assertEqual('donald@duck.org', cmd.more_authors[1][1])
+
+    def test_done_feature_missing_done(self):
+        s = StringIO.StringIO("""feature done
+""")
+        p = parser.ImportParser(s)
+        cmds = p.iter_commands()
+        self.assertEquals("feature", cmds.next().name)
+        self.assertRaises(errors.PrematureEndOfStream, cmds.next)
+
+    def test_done_with_feature(self):
+        s = StringIO.StringIO("""feature done
+done
+more data
+""")
+        p = parser.ImportParser(s)
+        cmds = p.iter_commands()
+        self.assertEquals("feature", cmds.next().name)
+        self.assertRaises(StopIteration, cmds.next)
+
+    def test_done_without_feature(self):
+        s = StringIO.StringIO("""done
+more data
+""")
+        p = parser.ImportParser(s)
+        cmds = p.iter_commands()
+        self.assertEquals([], list(cmds))
 
 
 class TestStringParsing(testtools.TestCase):

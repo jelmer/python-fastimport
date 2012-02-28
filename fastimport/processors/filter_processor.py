@@ -11,8 +11,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Import processor that filters the input (and doesn't import)."""
 
@@ -37,22 +36,28 @@ class FilterProcessor(processor.ImportProcessor):
 
     * exclude_paths - a list of paths that should not appear in the output
       stream
+
+    * squash_empty_commits - if set to False, squash commits that don't have
+      any changes after the filter has been applied
     """
 
     known_params = [
         'include_paths',
         'exclude_paths',
+        'squash_empty_commits'
         ]
 
     def pre_process(self):
         self.includes = self.params.get('include_paths')
         self.excludes = self.params.get('exclude_paths')
+        self.squash_empty_commits = bool(
+            self.params.get('squash_empty_commits', True))
         # What's the new root, if any
         self.new_root = helpers.common_directory(self.includes)
         # Buffer of blobs until we know we need them: mark -> cmd
         self.blobs = {}
-        # These are the commits we've output so far
-        self.interesting_commits = set()
+        # These are the commits we've squashed so far
+        self.squashed_commits = set()
         # Map of commit-id to list of parents
         self.parents = {}
 
@@ -92,7 +97,7 @@ class FilterProcessor(processor.ImportProcessor):
         """Process a CommitCommand."""
         # These pass through if they meet the filtering conditions
         interesting_filecmds = self._filter_filecommands(cmd.iter_files)
-        if interesting_filecmds:
+        if interesting_filecmds or not self.squash_empty_commits:
             # If all we have is a single deleteall, skip this commit
             if len(interesting_filecmds) == 1 and isinstance(
                 interesting_filecmds[0], commands.FileDeleteAllCommand):
@@ -112,7 +117,8 @@ class FilterProcessor(processor.ImportProcessor):
                 # Update from and merges to refer to commits in the output
                 cmd.from_ = self._find_interesting_from(cmd.from_)
                 cmd.merges = self._find_interesting_merges(cmd.merges)
-                self.interesting_commits.add(cmd.id)
+        else:
+            self.squashed_commits.add(cmd.id)
 
         # Keep track of the parents
         if cmd.from_ and cmd.merges:
@@ -209,7 +215,7 @@ class FilterProcessor(processor.ImportProcessor):
 
     def _find_interesting_parent(self, commit_ref):
         while True:
-            if commit_ref in self.interesting_commits:
+            if commit_ref not in self.squashed_commits:
                 return commit_ref
             parents = self.parents.get(commit_ref)
             if not parents:

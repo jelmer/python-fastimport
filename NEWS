@@ -1,0 +1,11 @@
+0.9.1	2012-02-28
+
+ * Update FSF address in headers. (Dan Callaghan, #868800)
+
+ * Support 'done' feature. (Jelmer Vernooij, #942563)
+
+ * Rename tarball for the benefit of pip. (Jelmer Vernooij, #779690)
+
+0.9.0	2011-01-30
+
+ Initial release.
