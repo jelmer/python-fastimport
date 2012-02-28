@@ -4,6 +4,8 @@
 
  * Support 'done' feature. (Jelmer Vernooij, #942563)
 
+ * Rename tarball for the benefit of pip. (Jelmer Vernooij, #779690)
+
 0.9.0	2011-01-30
 
  Initial release.
