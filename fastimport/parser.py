@@ -272,6 +272,7 @@ class ImportParser(LineBasedParser):
         self.user_mapper = user_mapper
         # We auto-detect the date format when a date is first encountered
         self.date_parser = None
+        self.features = {}
 
     def warning(self, msg):
         sys.stderr.write("warning line %d: %s\n" % (self.lineno, msg))
@@ -281,6 +282,8 @@ class ImportParser(LineBasedParser):
         while True:
             line = self.next_line()
             if line is None:
+                if 'done' in self.features:
+                    raise errors.PrematureEndOfStream(self.lineno)
                 break
             elif len(line) == 0 or line.startswith('#'):
                 continue
@@ -387,6 +390,7 @@ class ImportParser(LineBasedParser):
             value = self._path(parts[1])
         else:
             value = None
+        self.features[name] = value
         return commands.FeatureCommand(name, value, lineno=self.lineno)
 
     def _parse_file_modify(self, info):

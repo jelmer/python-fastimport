@@ -259,6 +259,32 @@ class TestImportParser(testtools.TestCase):
         self.assertEqual('Donald', cmd.more_authors[1][0])
         self.assertEqual('donald@duck.org', cmd.more_authors[1][1])
 
+    def test_done_feature_missing_done(self):
+        s = StringIO.StringIO("""feature done
+""")
+        p = parser.ImportParser(s)
+        cmds = p.iter_commands()
+        self.assertEquals("feature", cmds.next().name)
+        self.assertRaises(errors.PrematureEndOfStream, cmds.next)
+
+    def test_done_with_feature(self):
+        s = StringIO.StringIO("""feature done
+done
+more data
+""")
+        p = parser.ImportParser(s)
+        cmds = p.iter_commands()
+        self.assertEquals("feature", cmds.next().name)
+        self.assertRaises(StopIteration, cmds.next)
+
+    def test_done_without_feature(self):
+        s = StringIO.StringIO("""done
+more data
+""")
+        p = parser.ImportParser(s)
+        cmds = p.iter_commands()
+        self.assertEquals([], list(cmds))
+
 
 class TestStringParsing(testtools.TestCase):
 

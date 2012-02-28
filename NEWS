@@ -1,3 +1,9 @@
+0.9.1	UNRELEASED
+
+ * Update FSF address in headers. (Dan Callaghan, #868800)
+
+ * Support 'done' feature. (Jelmer Vernooij, #942563)
+
 0.9.0	2011-01-30
 
  Initial release.
