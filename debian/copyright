@@ -1,19 +1,19 @@
-Format-Specification: http://wiki.debian.org/Proposals/CopyrightFormat?action=recall&rev=143
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: python-fastimport
-Debianized-By: Jelmer Vernooij <jelmer@debian.org>
-Debianized-Date: Sat Sep  4 16:41:31 CEST 2010
+Upstream-Contact: Jelmer Vernooij <jelmer@canonical.com>
+Source: https://launchpad.net/python-fastimport
 
 It was downloaded from http://launchpad.net/python-fastimport.
 
 Files: *
-Copyright: Copyright (C) 2008-2010 Canonical Ltd
-Authors: Ian Clatworthy, Miklos Vajna and others
+Copyright: Copyright (C) 2008-2012 Canonical Ltd
+Authors: Ian Clatworthy, Jelmer Vernooij and others
 License: GPL-2+
  On Debian systems the full text of the GNU General Public License version 2 
  can be found in the `/usr/share/common-licenses/GPL-2' file.
 
 Files: debian/*
-Copyright: Copyright (C) 2010 Jelmer Vernooij <jelmer@ubuntu.com>
+Copyright: Copyright (C) 2008-2010 Jelmer Vernooij <jelmer@debian.org>
 License: GPL-2+
  On Debian systems the full text of the GNU General Public License version 2 
  can be found in the `/usr/share/common-licenses/GPL-2' file.
