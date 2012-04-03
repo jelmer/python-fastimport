@@ -23,6 +23,7 @@ import unittest
 def test_suite():
     names = [
         'test_commands',
+        'test_dates',
         'test_errors',
         'test_filter_processor',
         'test_helpers',

@@ -162,9 +162,11 @@ The grammar is:
 import re
 import sys
 
-import commands
-import dates
-import errors
+from fastimport import (
+    commands,
+    dates,
+    errors,
+    )
 
 
 ## Stream parsing ##

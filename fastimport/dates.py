@@ -35,18 +35,21 @@ def parse_raw(s, lineno=0):
     """
     timestamp_str, timezone_str = s.split(' ', 1)
     timestamp = float(timestamp_str)
-    timezone = _parse_tz(timezone_str, lineno)
+    try:
+        timezone = parse_tz(timezone_str)
+    except ValueError:
+        raise errors.InvalidTimezone(lineno, timezone_str)
     return timestamp, timezone
 
 
-def _parse_tz(tz, lineno):
+def parse_tz(tz):
     """Parse a timezone specification in the [+|-]HHMM format.
 
     :return: the timezone offset in seconds.
     """
     # from git_repository.py in bzr-git
     if len(tz) != 5:
-        raise errors.InvalidTimezone(lineno, tz)
+        raise ValueError(tz)
     sign = {'+': +1, '-': -1}[tz[0]]
     hours = int(tz[1:3])
     minutes = int(tz[3:])
