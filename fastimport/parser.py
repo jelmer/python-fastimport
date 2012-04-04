@@ -259,7 +259,7 @@ _WHO_RE = re.compile(r'([^<]*)<(.*)>')
 class ImportParser(LineBasedParser):
 
     def __init__(self, input, verbose=False, output=sys.stdout,
-        user_mapper=None):
+        user_mapper=None, strict=True):
         """A Parser of import commands.
 
         :param input: the file-like object to read from
@@ -267,11 +267,13 @@ class ImportParser(LineBasedParser):
         :param output: the file-like object to write messages to (YAGNI?)
         :param user_mapper: if not None, the UserMapper used to adjust
           user-ids for authors, committers and taggers.
+        :param strict: Raise errors on strictly invalid data
         """
         LineBasedParser.__init__(self, input)
         self.verbose = verbose
         self.output = output
         self.user_mapper = user_mapper
+        self.strict = strict
         # We auto-detect the date format when a date is first encountered
         self.date_parser = None
         self.features = {}
@@ -421,7 +423,8 @@ class ImportParser(LineBasedParser):
     def _parse_tag(self, name):
         """Parse a tag command."""
         from_ = self._get_from('tag')
-        tagger = self._get_user_info('tag', 'tagger', accept_just_who=True)
+        tagger = self._get_user_info('tag', 'tagger',
+                accept_just_who=True)
         message = self._get_data('tag', 'message')
         return commands.TagCommand(name, from_, tagger, message)
 
@@ -524,19 +527,25 @@ class ImportParser(LineBasedParser):
             except ValueError:
                 print "failed to parse datestr '%s'" % (datestr,)
                 raise
+            name = match.group(1)
+            email = match.group(2)
         else:
             match = _WHO_RE.search(s)
             if accept_just_who and match:
                 # HACK around missing time
                 # TODO: output a warning here
                 when = dates.DATE_PARSERS_BY_NAME['now']('now')
-            else:
+                name = match.group(1)
+                email = match.group(2)
+            elif self.strict:
                 self.abort(errors.BadFormat, cmd, section, s)
-        name = match.group(1)
+            else:
+                name = s
+                email = None
+                when = dates.DATE_PARSERS_BY_NAME['now']('now')
         if len(name) > 0:
             if name[-1] == " ":
                 name = name[:-1]
-        email = match.group(2)
         # While it shouldn't happen, some datasets have email addresses
         # which contain unicode characters. See bug 338186. We sanitize
         # the data at this level just in case.
