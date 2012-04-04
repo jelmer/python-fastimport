@@ -1,8 +1,10 @@
 python-fastimport (0.9.2-1) unstable; urgency=low
 
   * New upstream release.
+    + Add breaks for bzr-fastimport << 0.13 since this release removes some
+      bzr-fastimport-specific code which now lives in bzr-fastimport itself.
 
- -- Jelmer Vernooij <jelmer@debian.org>  Wed, 04 Apr 2012 03:03:49 +0200
+ -- Jelmer Vernooij <jelmer@debian.org>  Wed, 04 Apr 2012 03:07:49 +0200
 
 python-fastimport (0.9.1-1) unstable; urgency=low
 
