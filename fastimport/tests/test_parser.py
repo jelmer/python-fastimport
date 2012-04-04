@@ -20,6 +20,7 @@ import StringIO
 import testtools
 
 from fastimport import (
+    commands,
     errors,
     parser,
     )
@@ -304,3 +305,40 @@ class TestPathPairParsing(testtools.TestCase):
         p = parser.ImportParser("")
         self.assertEqual(['foo bar', 'baz'],
             p._path_pair('"foo bar" baz'))
+
+
+class TestTagParsing(testtools.TestCase):
+
+    def test_tagger_with_email(self):
+        p = parser.ImportParser(StringIO.StringIO(
+            "tag refs/tags/v1.0\n"
+            "from :xxx\n"
+            "tagger Joe Wong <joe@example.com> 1234567890 -0600\n"
+            "data 11\n"
+            "create v1.0"))
+        cmds = list(p.iter_commands())
+        self.assertEquals(1, len(cmds))
+        self.assertIsInstance(cmds[0], commands.TagCommand)
+        self.assertEquals(cmds[0].tagger,
+            ('Joe Wong', 'joe@example.com', 1234567890.0, -21600))
+
+    def test_tagger_no_email_strict(self):
+        p = parser.ImportParser(StringIO.StringIO(
+            "tag refs/tags/v1.0\n"
+            "from :xxx\n"
+            "tagger Joe Wong\n"
+            "data 11\n"
+            "create v1.0"))
+        self.assertRaises(errors.BadFormat, list, p.iter_commands())
+
+    def test_tagger_no_email_not_strict(self):
+        p = parser.ImportParser(StringIO.StringIO(
+            "tag refs/tags/v1.0\n"
+            "from :xxx\n"
+            "tagger Joe Wong\n"
+            "data 11\n"
+            "create v1.0"), strict=False)
+        cmds = list(p.iter_commands())
+        self.assertEquals(1, len(cmds))
+        self.assertIsInstance(cmds[0], commands.TagCommand)
+        self.assertEquals(cmds[0].tagger[:2], ('Joe Wong', None))
