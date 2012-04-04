@@ -1,3 +1,4 @@
 Ian Clatworthy wrote bzr-fastimport, which included a lot of generic code for
-parsing and generating fastimport streams. This code has since been split out
-into its own separate package (python-fastimport) so it can be used by other projects.
+parsing and generating fastimport streams. Jelmer Vernooij split out
+into its own separate package (python-fastimport) so it can be used by other
+projects, and is its current maintainer.
