@@ -48,11 +48,11 @@ def parse_tz(tz):
     :return: the timezone offset in seconds.
     """
     # from git_repository.py in bzr-git
-    if len(tz) != 5:
+    if tz[0] not in ('+', '-'):
         raise ValueError(tz)
     sign = {'+': +1, '-': -1}[tz[0]]
-    hours = int(tz[1:3])
-    minutes = int(tz[3:])
+    hours = int(tz[1:-2])
+    minutes = int(tz[-2:])
     return sign * 60 * (60 * hours + minutes)
 
 

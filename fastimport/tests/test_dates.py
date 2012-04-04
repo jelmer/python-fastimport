@@ -29,3 +29,6 @@ class ParseTzTests(TestCase):
 
     def test_parse_tz_cet(self):
         self.assertEquals(3600, dates.parse_tz("+0100"))
+
+    def test_parse_tz_odd(self):
+        self.assertEquals(1864800, dates.parse_tz("+51800"))
