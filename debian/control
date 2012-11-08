@@ -7,6 +7,7 @@ Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 7.0.50~), python-testtools
 Standards-Version: 3.9.3
 X-Python-Version: >= 2.4
 Vcs-Bzr: http://bzr.debian.org/users/jelmer/python-fastimport/unstable
+XS-Testsuite: autopkgtest
 
 Package: python-fastimport
 Architecture: all
