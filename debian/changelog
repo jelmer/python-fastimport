@@ -4,6 +4,7 @@ python-fastimport (0.9.3-1) UNRELEASED; urgency=low
   * Add upstream signing key.
   * Update watch file.
   * New upstream release.
+  * Bump standards version to 3.9.5 (no changes).
 
  -- Jelmer Vernooij <jelmer@debian.org>  Sat, 01 Mar 2014 15:42:21 +0000
 
