@@ -15,7 +15,9 @@
 
 """Date parsing routines.
 
-Each routine returns timestamp,timezone where
+Each routine represents a date format that can be specified in a
+stream using the date-format feature.  The return value is
+timestamp,timezone where
 
 * timestamp is seconds since epoch
 * timezone is the offset from UTC in seconds.

@@ -13,6 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Fastimport streams."""
+"""Fastimport file format parser and generator
+
+This is a Python parser for git's fast-import format.  It was
+originally developed for bzr-fastimport but has been extracted so
+it can be used by other projects.  Use it like so:
+
+   import fastimport.processor
+   import fastimport.parser
+
+   class ImportProcessor(fastimport.processor.ImportProcessor):
+       ...
+
+   parser = fastimport.parser.ImportParser(sys.stdin)
+   processor = ImportProcessor(...)
+   processor.process(parser.parse())
+"""
 
 __version__ = (0, 9, 4)

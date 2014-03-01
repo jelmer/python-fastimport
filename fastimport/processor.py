@@ -13,10 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Processor of import commands.
+"""Processor for fast-import commands.
 
-This module provides core processing functionality including an abstract class
-for basing real processors on. See the processors package for examples.
+This module provides the skeleton of a fast-import backend.
+To import from a fast-import stream to your version-control system:
+
+ - derive a class from the abstract ImportProcessor class and
+   implement the *_helper methods.
+
+ - parse a fast-import stream into a sequence of commands, for example
+   using the helpers from the parser module.
+
+ - pass that command sequence to the process method of your processor.
+
+See git-fast-import.1 for the meaning of each command and the
+processors package for examples.
 """
 
 import sys
@@ -26,7 +37,7 @@ import errors
 
 
 class ImportProcessor(object):
-    """Base class for import processors.
+    """Base class for fast-import stream processors.
 
     Subclasses should override the pre_*, post_* and *_handler
     methods as appropriate.

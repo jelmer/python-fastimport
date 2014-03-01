@@ -13,7 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Import command classes."""
+"""fast-import command classes.
+
+These objects are used by the parser to represent the content of
+a fast-import stream.
+"""
 
 import stat
 
@@ -57,6 +61,8 @@ class ImportCommand(object):
 
     def dump_str(self, names=None, child_lists=None, verbose=False):
         """Dump fields as a string.
+
+        For debugging.
 
         :param names: the list of fields to include or
             None for all public fields
