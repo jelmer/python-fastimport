@@ -17,7 +17,7 @@
 
 import StringIO
 
-import testtools
+import unittest
 
 from fastimport import (
     commands,
@@ -26,7 +26,7 @@ from fastimport import (
     )
 
 
-class TestLineBasedParser(testtools.TestCase):
+class TestLineBasedParser(unittest.TestCase):
 
     def test_push_line(self):
         s = StringIO.StringIO("foo\nbar\nbaz\n")
@@ -144,7 +144,7 @@ multi-author test
 """
 
 
-class TestImportParser(testtools.TestCase):
+class TestImportParser(unittest.TestCase):
 
     def test_iter_commands(self):
         s = StringIO.StringIO(_sample_import_text)
@@ -287,7 +287,7 @@ more data
         self.assertEquals([], list(cmds))
 
 
-class TestStringParsing(testtools.TestCase):
+class TestStringParsing(unittest.TestCase):
 
     def test_unquote(self):
         s = r'hello \"sweet\" wo\\r\tld'
@@ -295,7 +295,7 @@ class TestStringParsing(testtools.TestCase):
             parser._unquote_c_string(s))
 
 
-class TestPathPairParsing(testtools.TestCase):
+class TestPathPairParsing(unittest.TestCase):
 
     def test_path_pair_simple(self):
         p = parser.ImportParser("")
@@ -307,7 +307,7 @@ class TestPathPairParsing(testtools.TestCase):
             p._path_pair('"foo bar" baz'))
 
 
-class TestTagParsing(testtools.TestCase):
+class TestTagParsing(unittest.TestCase):
 
     def test_tagger_with_email(self):
         p = parser.ImportParser(StringIO.StringIO(
@@ -318,7 +318,7 @@ class TestTagParsing(testtools.TestCase):
             "create v1.0"))
         cmds = list(p.iter_commands())
         self.assertEquals(1, len(cmds))
-        self.assertIsInstance(cmds[0], commands.TagCommand)
+        self.assertTrue(isinstance(cmds[0], commands.TagCommand))
         self.assertEquals(cmds[0].tagger,
             ('Joe Wong', 'joe@example.com', 1234567890.0, -21600))
 
@@ -340,5 +340,5 @@ class TestTagParsing(testtools.TestCase):
             "create v1.0"), strict=False)
         cmds = list(p.iter_commands())
         self.assertEquals(1, len(cmds))
-        self.assertIsInstance(cmds[0], commands.TagCommand)
+        self.assertTrue(isinstance(cmds[0], commands.TagCommand))
         self.assertEquals(cmds[0].tagger[:2], ('Joe Wong', None))

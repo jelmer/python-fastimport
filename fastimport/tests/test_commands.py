@@ -15,7 +15,7 @@
 
 """Test how Commands are displayed"""
 
-from testtools import TestCase
+from unittest import TestCase
 
 from fastimport import (
     commands,
