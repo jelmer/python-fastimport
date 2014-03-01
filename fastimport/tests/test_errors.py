@@ -15,7 +15,7 @@
 
 """Test the Import errors"""
 
-from testtools import TestCase
+from unittest import TestCase
 
 from fastimport import (
     errors,

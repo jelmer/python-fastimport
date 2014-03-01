@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: fastimport
+Version: 0.9.3
+Summary: VCS fastimport/fastexport parser
+Home-page: https://launchpad.net/python-fastimport
+Author: Canonical Ltd
+Author-email: bazaar@lists.canonical.com
+License: GNU GPL v2 or later
+Description: UNKNOWN
+Platform: UNKNOWN

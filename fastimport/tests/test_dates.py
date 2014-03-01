@@ -15,7 +15,7 @@
 
 """Test parsing of dates."""
 
-from testtools import TestCase
+from unittest import TestCase
 
 from fastimport import (
     dates,

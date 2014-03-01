@@ -15,14 +15,14 @@
 
 """Test the helper functions."""
 
-import testtools
+import unittest
 
 from fastimport import (
     helpers,
     )
 
 
-class TestCommonDirectory(testtools.TestCase):
+class TestCommonDirectory(unittest.TestCase):
 
     def test_no_paths(self):
         c = helpers.common_directory(None)
