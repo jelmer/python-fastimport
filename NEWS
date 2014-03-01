@@ -1,4 +1,4 @@
-0.9.3	UNRELEASED
+0.9.3	2014-03-01
 
  * Remove unused and untested helper single_plural,
    invert_dict, invert_dictset, defines_to_dict and
