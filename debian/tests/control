@@ -1,2 +1,2 @@
 Tests: testsuite
-Features: no-build-needed
+Restrictions: allow-stderr
