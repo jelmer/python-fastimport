@@ -1,4 +1,4 @@
-python-fastimport (0.9.3-1) UNRELEASED; urgency=low
+python-fastimport (0.9.3-1) unstable; urgency=low
 
   * Add XS-Testsuite header. Closes: #692669
   * Add upstream signing key.
