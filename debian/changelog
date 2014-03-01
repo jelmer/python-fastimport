@@ -1,10 +1,11 @@
-python-fastimport (0.9.2-2) UNRELEASED; urgency=low
+python-fastimport (0.9.3-1) UNRELEASED; urgency=low
 
   * Add XS-Testsuite header. Closes: #692669
   * Add upstream signing key.
   * Update watch file.
+  * New upstream release.
 
- -- Jelmer Vernooij <jelmer@debian.org>  Thu, 08 Nov 2012 15:19:26 +0100
+ -- Jelmer Vernooij <jelmer@debian.org>  Sat, 01 Mar 2014 15:42:21 +0000
 
 python-fastimport (0.9.2-1) unstable; urgency=low
 
