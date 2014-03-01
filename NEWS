@@ -1,5 +1,9 @@
 0.9.3	UNRELEASED
 
+ * Remove unused and untested helper single_plural,
+   invert_dict, invert_dictset and defines_to_dict.
+   (Jelmer Vernooij)
+
 0.9.2	2012-04-03
 
  * Remove reftracker and idmapfile, which are bzr-specific.
