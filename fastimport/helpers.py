@@ -29,25 +29,6 @@ def common_path(path1, path2):
     return ''.join(_common_path_and_rest(path1, path2)[0])
 
 
-def binary_stream(stream):
-    """Ensure a stream is binary on Windows.
-
-    :return: the stream
-    """
-    try:
-        import os
-        if os.name == 'nt':
-            fileno = getattr(stream, 'fileno', None)
-            if fileno:
-                no = fileno()
-                if no >= 0:     # -1 means we're working as subprocess
-                    import msvcrt
-                    msvcrt.setmode(no, os.O_BINARY)
-    except ImportError:
-        pass
-    return stream
-
-
 def common_directory(paths):
     """Find the deepest common directory of a list of paths.
 
