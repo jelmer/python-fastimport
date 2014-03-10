@@ -142,6 +142,13 @@ class CommitCommand(ImportCommand):
         else:
             self.id = ':%s' % mark
 
+    def copy(self, **kwargs):
+        fields = dict((k, v) for k, v in self.__dict__.iteritems()
+                      if k != 'id'
+                      if not k.startswith('_'))
+        fields.update(kwargs)
+        return CommitCommand(**fields)
+
     def __repr__(self):
         return self.to_string(include_file_contents=True)
 
