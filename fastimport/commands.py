@@ -382,6 +382,20 @@ class FileDeleteAllCommand(FileCommand):
     def __repr__(self):
         return "deleteall"
 
+class NoteModifyCommand(FileCommand):
+
+    def __init__(self, from_, data):
+        super(NoteModifyCommand, self).__init__('notemodify')
+        self.from_ = from_
+        self.data = data
+        self._binary = ['data']
+
+    def __str__(self):
+        return "N inline :%s" % self.from_
+
+    def __repr__(self):
+        return "%s\ndata %d\n%s" % (self, len(self.data), self.data)
+
 
 def check_path(path):
     """Check that a path is legal.
