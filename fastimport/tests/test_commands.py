@@ -197,6 +197,24 @@ class TestCommitDisplay(TestCase):
             "property planet 5 world",
             repr(c))
 
+class TestCommitCopy(TestCase):
+    def setUp(self):
+        super(TestCommitCopy, self).setUp()
+        file_cmds = iter([
+            commands.FileDeleteCommand('readme.txt'),
+            commands.FileModifyCommand('NEWS', 0100644, None, 'blah blah blah'),
+        ])
+        # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
+        committer = ('Joe Wong', 'joe@example.com', 1234567890, -6 * 3600)
+        self.c = commands.CommitCommand(
+            "refs/heads/master", "bbb", None, committer,
+            "release v1.0", ":aaa", None, file_cmds)
+
+    def test_noop(self):
+        c2 = self.c.copy()
+
+        self.assertIsNot(self.c, c2)
+        self.assertEqual(repr(self.c), repr(c2))
 
 class TestFeatureDisplay(TestCase):
 

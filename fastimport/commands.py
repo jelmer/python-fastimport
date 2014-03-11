@@ -143,8 +143,11 @@ class CommitCommand(ImportCommand):
             self.id = ':%s' % mark
 
     def copy(self, **kwargs):
+        if not isinstance(self.file_iter, list):
+            self.file_iter = list(self.file_iter)
+
         fields = dict((k, v) for k, v in self.__dict__.iteritems()
-                      if k != 'id'
+                      if k not in ('id', 'name')
                       if not k.startswith('_'))
         fields.update(kwargs)
         return CommitCommand(**fields)
