@@ -198,23 +198,34 @@ class TestCommitDisplay(TestCase):
             repr(c))
 
 class TestCommitCopy(TestCase):
+
     def setUp(self):
         super(TestCommitCopy, self).setUp()
         file_cmds = iter([
             commands.FileDeleteCommand('readme.txt'),
             commands.FileModifyCommand('NEWS', 0100644, None, 'blah blah blah'),
         ])
-        # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
+
         committer = ('Joe Wong', 'joe@example.com', 1234567890, -6 * 3600)
         self.c = commands.CommitCommand(
             "refs/heads/master", "bbb", None, committer,
             "release v1.0", ":aaa", None, file_cmds)
 
-    def test_noop(self):
+    def test_simple_copy(self):
         c2 = self.c.copy()
 
-        self.assertIsNot(self.c, c2)
+        self.assertFalse(self.c is c2)
         self.assertEqual(repr(self.c), repr(c2))
+
+    def test_replace_attr(self):
+        c2 = self.c.copy(mark='ccc')
+
+        self.assertEqual(
+            repr(self.c).replace('mark :bbb', 'mark :ccc'),
+            repr(c2))
+
+    def test_invalid_attribute(self):
+        self.assertRaises(TypeError, self.c.copy, invalid=True)
 
 class TestFeatureDisplay(TestCase):
 
