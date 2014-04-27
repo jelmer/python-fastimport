@@ -2,6 +2,9 @@
 
  * Fix 'check-pypy' by removing use of nonexistant target. (masklinn)
 
+ * Use namedtuple for authorship tuple in Commit.{author,committer}.
+   (masklinn)
+
 0.9.3	2014-03-01
 
  * Remove unused and untested helper single_plural,
