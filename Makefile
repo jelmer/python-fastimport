@@ -21,7 +21,7 @@ check:: build
 	$(RUNTEST) fastimport.tests.test_suite
 
 check-pypy:: clean
-	$(MAKE) check-noextensions PYTHON=pypy
+	$(MAKE) check PYTHON=pypy
 
 check-all: check check-pypy
 
