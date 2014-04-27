@@ -16,7 +16,7 @@
 """Test the Import parsing"""
 
 import StringIO
-
+import time
 import unittest
 
 from fastimport import (
@@ -143,8 +143,14 @@ data 17
 multi-author test
 """
 
-
+_timefunc = time.time
 class TestImportParser(unittest.TestCase):
+    def setUp(self):
+        self.fake_time = 42.0123
+        time.time = lambda: self.fake_time
+    def tearDown(self):
+        time.time = _timefunc
+        del self.fake_time
 
     def test_iter_commands(self):
         s = StringIO.StringIO(_sample_import_text)
@@ -155,6 +161,7 @@ class TestImportParser(unittest.TestCase):
             if cmd.name == 'commit':
                 for fc in cmd.iter_files():
                     result.append(fc)
+
         self.assertEqual(len(result), 17)
         cmd1 = result.pop(0)
         self.assertEqual('progress', cmd1.name)
@@ -176,9 +183,14 @@ class TestImportParser(unittest.TestCase):
         self.assertEqual('2', cmd4.mark)
         self.assertEqual(':2', cmd4.id)
         self.assertEqual('initial import', cmd4.message)
-        self.assertEqual('bugs bunny', cmd4.committer[0])
-        self.assertEqual('bugs@bunny.org', cmd4.committer[1])
-        # FIXME: check timestamp and timezone as well
+
+        self.assertEqual(('bugs bunny', 'bugs@bunny.org', self.fake_time, 0), cmd4.committer)
+        # namedtuple attributes
+        self.assertEqual('bugs bunny', cmd4.committer.name)
+        self.assertEqual('bugs@bunny.org', cmd4.committer.email)
+        self.assertEqual(self.fake_time, cmd4.committer.timestamp)
+        self.assertEqual(0, cmd4.committer.timezone)
+
         self.assertEqual(None, cmd4.author)
         self.assertEqual(11, cmd4.lineno)
         self.assertEqual('refs/heads/master', cmd4.ref)
@@ -194,9 +206,7 @@ class TestImportParser(unittest.TestCase):
         self.assertEqual(None, cmd5.mark)
         self.assertEqual('@19', cmd5.id)
         self.assertEqual('second commit', cmd5.message)
-        self.assertEqual('', cmd5.committer[0])
-        self.assertEqual('bugs@bunny.org', cmd5.committer[1])
-        # FIXME: check timestamp and timezone as well
+        self.assertEqual(('', 'bugs@bunny.org', self.fake_time, 0), cmd5.committer)
         self.assertEqual(None, cmd5.author)
         self.assertEqual(19, cmd5.lineno)
         self.assertEqual('refs/heads/master', cmd5.ref)

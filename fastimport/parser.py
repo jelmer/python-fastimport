@@ -159,6 +159,7 @@ The grammar is:
 """
 
 
+import collections
 import re
 import sys
 
@@ -551,7 +552,7 @@ class ImportParser(LineBasedParser):
         # the data at this level just in case.
         if self.user_mapper:
             name, email = self.user_mapper.map_name_and_email(name, email)
-        return (name, email, when[0], when[1])
+        return Authorship(name, email, when[0], when[1])
 
     def _name_value(self, s):
         """Parse a (name,value) tuple from 'name value-length value'."""
@@ -617,3 +618,5 @@ def _unquote_c_string(s):
     """replace C-style escape sequences (\n, \", etc.) with real chars."""
     # HACK: Python strings are close enough
     return s.decode('string_escape', 'replace')
+
+Authorship = collections.namedtuple('Authorship', 'name email timestamp timezone')
