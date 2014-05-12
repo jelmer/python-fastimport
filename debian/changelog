@@ -1,3 +1,11 @@
+python-fastimport (0.9.3-2) UNRELEASED; urgency=medium
+
+  * Add Breaks: for bzr-fastimport without version, as all versions that
+    have been packaged in Debian break with the current version of
+    python-fastimport. Closes: #747900
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Tue, 13 May 2014 01:23:15 +0200
+
 python-fastimport (0.9.3-1) unstable; urgency=low
 
   * Add XS-Testsuite header. Closes: #692669
