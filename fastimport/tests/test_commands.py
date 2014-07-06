@@ -197,6 +197,35 @@ class TestCommitDisplay(TestCase):
             "property planet 5 world",
             repr(c))
 
+class TestCommitCopy(TestCase):
+
+    def setUp(self):
+        super(TestCommitCopy, self).setUp()
+        file_cmds = iter([
+            commands.FileDeleteCommand('readme.txt'),
+            commands.FileModifyCommand('NEWS', 0100644, None, 'blah blah blah'),
+        ])
+
+        committer = ('Joe Wong', 'joe@example.com', 1234567890, -6 * 3600)
+        self.c = commands.CommitCommand(
+            "refs/heads/master", "bbb", None, committer,
+            "release v1.0", ":aaa", None, file_cmds)
+
+    def test_simple_copy(self):
+        c2 = self.c.copy()
+
+        self.assertFalse(self.c is c2)
+        self.assertEqual(repr(self.c), repr(c2))
+
+    def test_replace_attr(self):
+        c2 = self.c.copy(mark='ccc')
+
+        self.assertEqual(
+            repr(self.c).replace('mark :bbb', 'mark :ccc'),
+            repr(c2))
+
+    def test_invalid_attribute(self):
+        self.assertRaises(TypeError, self.c.copy, invalid=True)
 
 class TestFeatureDisplay(TestCase):
 
@@ -313,6 +342,81 @@ class TestFileDeleteAllDisplay(TestCase):
     def test_filedeleteall(self):
         c = commands.FileDeleteAllCommand()
         self.assertEqual("deleteall", repr(c))
+
+class TestNotesDisplay(TestCase):
+
+    def test_noteonly(self):
+        c = commands.NoteModifyCommand('foo', "A basic note")
+        self.assertEqual('N inline :foo\ndata 12\nA basic note', repr(c))
+
+    def test_notecommit(self):
+        committer = ("Ed Mund", 'ed@example.org', 1234565432, 0)
+
+        commits = [
+            commands.CommitCommand(
+                ref='refs/heads/master',
+                mark='1',
+                author=committer,
+                committer=committer,
+                message="test\n",
+                from_=None,
+                merges=[],
+                file_iter=[
+                    commands.FileModifyCommand('bar', 0100644, None, '')
+                ]),
+            commands.CommitCommand(
+                ref='refs/notes/commits',
+                mark=None,
+                author=None,
+                committer=committer,
+                message="Notes added by 'git notes add'\n",
+                from_=None,
+                merges=[],
+                file_iter=[
+                    commands.NoteModifyCommand('1', "Test note\n")
+                ]),
+            commands.CommitCommand(
+                ref='refs/notes/test',
+                mark=None,
+                author=None,
+                committer=committer,
+                message="Notes added by 'git notes add'\n",
+                from_=None,
+                merges=[],
+                file_iter=[
+                    commands.NoteModifyCommand('1', "Test test\n")
+                ])
+        ]
+
+        self.assertEqual(
+            """commit refs/heads/master
+mark :1
+author %(user)s
+committer %(user)s
+data 5
+test
+
+M 644 inline bar
+data 0
+commit refs/notes/commits
+committer %(user)s
+data 31
+Notes added by 'git notes add'
+
+N inline :1
+data 10
+Test note
+commit refs/notes/test
+committer %(user)s
+data 31
+Notes added by 'git notes add'
+
+N inline :1
+data 10
+Test test
+""" % {
+    'user': '%s <%s> %d %+05d' % committer,
+}, ''.join(map(repr, commits)))
 
 
 class TestPathChecking(TestCase):

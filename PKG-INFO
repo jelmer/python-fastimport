@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: fastimport
-Version: 0.9.3
+Version: 0.9.4
 Summary: VCS fastimport/fastexport parser
 Home-page: https://launchpad.net/python-fastimport
 Author: Canonical Ltd

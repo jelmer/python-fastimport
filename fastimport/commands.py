@@ -13,7 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Import command classes."""
+"""fast-import command classes.
+
+These objects are used by the parser to represent the content of
+a fast-import stream.
+"""
 
 import stat
 
@@ -57,6 +61,8 @@ class ImportCommand(object):
 
     def dump_str(self, names=None, child_lists=None, verbose=False):
         """Dump fields as a string.
+
+        For debugging.
 
         :param names: the list of fields to include or
             None for all public fields
@@ -135,6 +141,16 @@ class CommitCommand(ImportCommand):
             self.id = '@%d' % lineno
         else:
             self.id = ':%s' % mark
+
+    def copy(self, **kwargs):
+        if not isinstance(self.file_iter, list):
+            self.file_iter = list(self.file_iter)
+
+        fields = dict((k, v) for k, v in self.__dict__.iteritems()
+                      if k not in ('id', 'name')
+                      if not k.startswith('_'))
+        fields.update(kwargs)
+        return CommitCommand(**fields)
 
     def __repr__(self):
         return self.to_string(include_file_contents=True)
@@ -375,6 +391,20 @@ class FileDeleteAllCommand(FileCommand):
 
     def __repr__(self):
         return "deleteall"
+
+class NoteModifyCommand(FileCommand):
+
+    def __init__(self, from_, data):
+        super(NoteModifyCommand, self).__init__('notemodify')
+        self.from_ = from_
+        self.data = data
+        self._binary = ['data']
+
+    def __str__(self):
+        return "N inline :%s" % self.from_
+
+    def __repr__(self):
+        return "%s\ndata %d\n%s" % (self, len(self.data), self.data)
 
 
 def check_path(path):
