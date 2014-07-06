@@ -1,4 +1,4 @@
-python-fastimport (0.9.4-1) UNRELEASED; urgency=medium
+python-fastimport (0.9.4-1) unstable; urgency=medium
 
   * New upstream release.
   * Use canonical URL in Vcs-Git header.
