@@ -3,7 +3,7 @@ Section: python
 Priority: optional
 Maintainer: Jelmer Vernooij <jelmer@debian.org>
 Homepage: http://launchpad.net/python-fastimport
-Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 7.0.50~), python-testtools (>= 0.9.2)
+Build-Depends: python-all (>= 2.6.6-3), debhelper (>= 7.0.50~), python-testtools (>= 0.9.2), pypy, dh-python
 Standards-Version: 3.9.5
 X-Python-Version: >= 2.4
 Vcs-Git: git://anonscm.debian.org/users/jelmer/python-fastimport.git -b unstable
@@ -19,3 +19,16 @@ Replaces: bzr-fastimport (<< 0.9.0+bzr279)
 Description: Fastimport file format parser and generator library
  Python library for parsing and generating the fastimport file format.
  The fastimport format is used for serializing version control histories.
+ .
+ This package contains the module built for Python version 2.x.
+
+Package: pypy-fastimport
+Architecture: all
+Provides: ${python:Provides}
+Depends: ${python:Depends}, ${misc:Depends}
+Suggests: git-core
+Description: Fastimport file format parser and generator library
+ Python library for parsing and generating the fastimport file format.
+ The fastimport format is used for serializing version control histories.
+ .
+ This package contains the module built for pypy.
