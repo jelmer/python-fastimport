@@ -1,3 +1,11 @@
+python-fastimport (0.9.4-3) UNRELEASED; urgency=medium
+
+  * Update Vcs-Git, Vcs-Browser and Maintainer fields to reflect the
+    dulwich package is now maintained by the Debian Python Modules
+    packaging team.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sat, 07 Feb 2015 17:49:21 +0100
+
 python-fastimport (0.9.4-2) unstable; urgency=medium
 
   * Add pypy package.
