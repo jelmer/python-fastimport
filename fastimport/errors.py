@@ -20,67 +20,11 @@ _LOCATION_FMT = "line %(lineno)d: "
 
 # ImportError is heavily based on BzrError
 
-class ImportError(StandardError):
+class ImportError(Exception):
     """The base exception class for all import processing exceptions."""
 
-    _fmt = "Unknown Import Error"
-
-    def __init__(self, msg=None, **kwds):
-        StandardError.__init__(self)
-        if msg is not None:
-            self._preformatted_string = msg
-        else:
-            self._preformatted_string = None
-            for key, value in kwds.items():
-                setattr(self, key, value)
-
-    def _format(self):
-        s = getattr(self, '_preformatted_string', None)
-        if s is not None:
-            # contains a preformatted message
-            return s
-        try:
-            fmt = self._fmt
-            if fmt:
-                d = dict(self.__dict__)
-                s = fmt % d
-                # __str__() should always return a 'str' object
-                # never a 'unicode' object.
-                return s
-        except (AttributeError, TypeError, NameError, ValueError, KeyError), e:
-            return 'Unprintable exception %s: dict=%r, fmt=%r, error=%r' \
-                % (self.__class__.__name__,
-                   self.__dict__,
-                   getattr(self, '_fmt', None),
-                   e)
-
-    def __unicode__(self):
-        u = self._format()
-        if isinstance(u, str):
-            # Try decoding the str using the default encoding.
-            u = unicode(u)
-        elif not isinstance(u, unicode):
-            # Try to make a unicode object from it, because __unicode__ must
-            # return a unicode object.
-            u = unicode(u)
-        return u
-
-    def __str__(self):
-        s = self._format()
-        if isinstance(s, unicode):
-            s = s.encode('utf8')
-        else:
-            # __str__ must return a str.
-            s = str(s)
-        return s
-
-    def __repr__(self):
-        return '%s(%s)' % (self.__class__.__name__, str(self))
-
-    def __eq__(self, other):
-        if self.__class__ is not other.__class__:
-            return NotImplemented
-        return self.__dict__ == other.__dict__
+    def __init__(self):
+        super(ImportError, self).__init__(self._fmt % self.__dict__)
 
 
 class ParsingError(ImportError):
@@ -89,8 +33,8 @@ class ParsingError(ImportError):
     _fmt = _LOCATION_FMT + "Unknown Import Parsing Error"
 
     def __init__(self, lineno):
-        ImportError.__init__(self)
         self.lineno = lineno
+        ImportError.__init__(self)
 
 
 class MissingBytes(ParsingError):
@@ -100,9 +44,9 @@ class MissingBytes(ParsingError):
         " found %(found)d")
 
     def __init__(self, lineno, expected, found):
-        ParsingError.__init__(self, lineno)
         self.expected = expected
         self.found = found
+        ParsingError.__init__(self, lineno)
 
 
 class MissingTerminator(ParsingError):
@@ -112,8 +56,8 @@ class MissingTerminator(ParsingError):
         "Unexpected EOF - expected '%(terminator)s' terminator")
 
     def __init__(self, lineno, terminator):
-        ParsingError.__init__(self, lineno)
         self.terminator = terminator
+        ParsingError.__init__(self, lineno)
 
 
 class InvalidCommand(ParsingError):
@@ -122,8 +66,8 @@ class InvalidCommand(ParsingError):
     _fmt = (_LOCATION_FMT + "Invalid command '%(cmd)s'")
 
     def __init__(self, lineno, cmd):
-        ParsingError.__init__(self, lineno)
         self.cmd = cmd
+        ParsingError.__init__(self, lineno)
 
 
 class MissingSection(ParsingError):
@@ -132,9 +76,9 @@ class MissingSection(ParsingError):
     _fmt = (_LOCATION_FMT + "Command %(cmd)s is missing section %(section)s")
 
     def __init__(self, lineno, cmd, section):
-        ParsingError.__init__(self, lineno)
         self.cmd = cmd
         self.section = section
+        ParsingError.__init__(self, lineno)
 
 
 class BadFormat(ParsingError):
@@ -144,10 +88,10 @@ class BadFormat(ParsingError):
         "command %(cmd)s: found '%(text)s'")
 
     def __init__(self, lineno, cmd, section, text):
-        ParsingError.__init__(self, lineno)
         self.cmd = cmd
         self.section = section
         self.text = text
+        ParsingError.__init__(self, lineno)
 
 
 class InvalidTimezone(ParsingError):
@@ -157,12 +101,12 @@ class InvalidTimezone(ParsingError):
         "Timezone %(timezone)r could not be converted.%(reason)s")
 
     def __init__(self, lineno, timezone, reason=None):
-        ParsingError.__init__(self, lineno)
         self.timezone = timezone
         if reason:
             self.reason = ' ' + reason
         else:
             self.reason = ''
+        ParsingError.__init__(self, lineno)
 
 
 class PrematureEndOfStream(ParsingError):
@@ -180,8 +124,8 @@ class UnknownDateFormat(ImportError):
     _fmt = ("Unknown date format '%(format)s'")
 
     def __init__(self, format):
-        ImportError.__init__(self)
         self.format = format
+        ImportError.__init__(self)
 
 
 class MissingHandler(ImportError):
@@ -190,8 +134,8 @@ class MissingHandler(ImportError):
     _fmt = ("Missing handler for command %(cmd)s")
 
     def __init__(self, cmd):
-        ImportError.__init__(self)
         self.cmd = cmd
+        ImportError.__init__(self)
 
 
 class UnknownParameter(ImportError):
@@ -200,9 +144,9 @@ class UnknownParameter(ImportError):
     _fmt = ("Unknown parameter - '%(param)s' not in %(knowns)s")
 
     def __init__(self, param, knowns):
-        ImportError.__init__(self)
         self.param = param
         self.knowns = knowns
+        ImportError.__init__(self)
 
 
 class BadRepositorySize(ImportError):
@@ -212,9 +156,9 @@ class BadRepositorySize(ImportError):
         "%(expected)d expected")
 
     def __init__(self, expected, found):
-        ImportError.__init__(self)
         self.expected = expected
         self.found = found
+        ImportError.__init__(self)
 
 
 class BadRestart(ImportError):
@@ -224,8 +168,8 @@ class BadRestart(ImportError):
         "but matching revision-id is unknown")
 
     def __init__(self, commit_id):
-        ImportError.__init__(self)
         self.commit_id = commit_id
+        ImportError.__init__(self)
 
 
 class UnknownFeature(ImportError):
@@ -235,5 +179,5 @@ class UnknownFeature(ImportError):
         "an earlier data format")
 
     def __init__(self, feature):
-        ImportError.__init__(self)
         self.feature = feature
+        ImportError.__init__(self)
