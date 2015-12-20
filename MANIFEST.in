@@ -1,4 +1,4 @@
-AUTHORS
-NEWS
-COPYING
-README.md
+include AUTHORS
+include NEWS
+include COPYING
+include README.md
