@@ -1,4 +1,4 @@
-python-fastimport (0.9.4-4) UNRELEASED; urgency=medium
+python-fastimport (0.9.4-4) unstable; urgency=medium
 
   * Fix license names in debian/copyright.
   * Drop '-b unstable' from Vcs-Git header.
