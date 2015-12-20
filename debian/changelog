@@ -1,3 +1,9 @@
+python-fastimport (0.9.4-4) UNRELEASED; urgency=medium
+
+  * Fix license names in debian/copyright.
+
+ -- Jelmer Vernooij <jelmer@debian.org>  Sun, 20 Dec 2015 01:06:55 +0000
+
 python-fastimport (0.9.4-3) unstable; urgency=medium
 
   * Update Vcs-Git, Vcs-Browser and Maintainer fields to reflect the
