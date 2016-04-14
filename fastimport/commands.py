@@ -20,7 +20,9 @@ a fast-import stream.
 """
 from __future__ import division
 from past.utils import old_div
+from past.builtins import basestring
 from builtins import object
+
 
 import stat
 
@@ -418,7 +420,8 @@ def check_path(path):
     """
     if path is None or path == '' or path[0] == "/":
         raise ValueError("illegal path '%s'" % path)
-    if type(path) != str:
+    if not isinstance(path, basestring):
+        import ipdb;ipdb.set_trace()
         raise TypeError("illegale type for path '%r'" % path)
     return path
 
@@ -453,10 +456,10 @@ def format_who_when(fields):
         sep = ''
     else:
         sep = ' '
-    if isinstance(name, str):
+    if isinstance(name, basestring):
         name = name.encode('utf8')
     email = fields[1]
-    if isinstance(email, str):
+    if isinstance(email, basestring):
         email = email.encode('utf8')
     result = "%s%s<%s> %d %s" % (name, sep, email, fields[2], offset_str)
     return result

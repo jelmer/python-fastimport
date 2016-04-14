@@ -14,8 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test FilterProcessor"""
+from __future__ import unicode_literals
 from future import standard_library
 standard_library.install_aliases()
+from builtins import str
 
 from io import StringIO
 
@@ -937,7 +939,7 @@ M 644 :99 data/DATA2
 """
 
 class TestSquashEmptyCommitsFlag(TestCaseWithFiltering):
-    
+
     def test_squash_empty_commit(self):
         params = {'include_paths': None, 'exclude_paths': None}
         self.assertFiltering(_SAMPLE_EMPTY_COMMIT, params, \
@@ -1072,7 +1074,7 @@ merge :1001
 M 644 :99 data/DATA2
 """
 )
-        
+
     def test_with_directory_includes(self):
         params = {'include_paths': ['data/'],
                   'exclude_paths': None,

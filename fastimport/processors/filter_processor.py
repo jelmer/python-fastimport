@@ -16,7 +16,7 @@
 """Import processor that filters the input (and doesn't import)."""
 from future import standard_library
 standard_library.install_aliases()
-
+from builtins import str as _text
 
 from fastimport import (
     commands,
@@ -161,13 +161,13 @@ class FilterProcessor(processor.ImportProcessor):
     def _print_command(self, cmd):
         """Wrapper to avoid adding unnecessary blank lines."""
         text = repr(cmd)
-        self.outf.write(text)
-        if not text.endswith("\n"):
-            self.outf.write("\n")
+        self.outf.write(_text(text))
+        if not text.endswith(u"\n"):
+            self.outf.write(u"\n")
 
     def _filter_filecommands(self, filecmd_iter):
         """Return the filecommands filtered by includes & excludes.
-        
+
         :return: a list of FileCommand objects
         """
         if self.includes is None and self.excludes is None:
@@ -244,7 +244,7 @@ class FilterProcessor(processor.ImportProcessor):
 
     def _convert_rename(self, fc):
         """Convert a FileRenameCommand into a new FileCommand.
-        
+
         :return: None if the rename is being ignored, otherwise a
           new FileCommand based on the whether the old and new paths
           are inside or outside of the interesting locations.
@@ -275,7 +275,7 @@ class FilterProcessor(processor.ImportProcessor):
 
     def _convert_copy(self, fc):
         """Convert a FileCopyCommand into a new FileCommand.
-        
+
         :return: None if the copy is being ignored, otherwise a
           new FileCommand based on the whether the source and destination
           paths are inside or outside of the interesting locations.

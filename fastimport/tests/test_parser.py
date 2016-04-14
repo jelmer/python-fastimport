@@ -16,6 +16,7 @@
 """Test the Import parsing"""
 from future import standard_library
 standard_library.install_aliases()
+from builtins import str as _text
 
 import io
 import time
@@ -31,7 +32,7 @@ from fastimport import (
 class TestLineBasedParser(unittest.TestCase):
 
     def test_push_line(self):
-        s = io.StringIO("foo\nbar\nbaz\n")
+        s = io.StringIO(u"foo\nbar\nbaz\n")
         p = parser.LineBasedParser(s)
         self.assertEqual('foo', p.next_line())
         self.assertEqual('bar', p.next_line())
@@ -41,7 +42,7 @@ class TestLineBasedParser(unittest.TestCase):
         self.assertEqual(None, p.next_line())
 
     def test_read_bytes(self):
-        s = io.StringIO("foo\nbar\nbaz\n")
+        s = io.StringIO(u"foo\nbar\nbaz\n")
         p = parser.LineBasedParser(s)
         self.assertEqual('fo', p.read_bytes(2))
         self.assertEqual('o\nb', p.read_bytes(3))
@@ -55,7 +56,7 @@ class TestLineBasedParser(unittest.TestCase):
     def test_read_until(self):
         # TODO
         return
-        s = io.StringIO("foo\nbar\nbaz\nabc\ndef\nghi\n")
+        s = io.StringIO(u"foo\nbar\nbaz\nabc\ndef\nghi\n")
         p = parser.LineBasedParser(s)
         self.assertEqual('foo\nbar', p.read_until('baz'))
         self.assertEqual('abc', p.next_line())
@@ -155,7 +156,7 @@ class TestImportParser(unittest.TestCase):
         del self.fake_time
 
     def test_iter_commands(self):
-        s = io.StringIO(_sample_import_text)
+        s = io.StringIO(_text(_sample_import_text))
         p = parser.ImportParser(s)
         result = []
         for cmd in p.iter_commands():
@@ -273,30 +274,30 @@ class TestImportParser(unittest.TestCase):
         self.assertEqual('donald@duck.org', cmd.more_authors[1][1])
 
     def test_done_feature_missing_done(self):
-        s = io.StringIO("""feature done
+        s = io.StringIO(u"""feature done
 """)
         p = parser.ImportParser(s)
         cmds = p.iter_commands()
-        self.assertEquals("feature", cmds.next().name)
-        self.assertRaises(errors.PrematureEndOfStream, cmds.__next__)
+        self.assertEqual("feature", next(cmds).name)
+        self.assertRaises(errors.PrematureEndOfStream, lambda: next(cmds))
 
     def test_done_with_feature(self):
-        s = io.StringIO("""feature done
+        s = io.StringIO(u"""feature done
 done
 more data
 """)
         p = parser.ImportParser(s)
         cmds = p.iter_commands()
-        self.assertEquals("feature", cmds.next().name)
-        self.assertRaises(StopIteration, cmds.__next__)
+        self.assertEqual("feature", next(cmds).name)
+        self.assertRaises(StopIteration, lambda: next(cmds))
 
     def test_done_without_feature(self):
-        s = io.StringIO("""done
+        s = io.StringIO(u"""done
 more data
 """)
         p = parser.ImportParser(s)
         cmds = p.iter_commands()
-        self.assertEquals([], list(cmds))
+        self.assertEqual([], list(cmds))
 
 
 class TestStringParsing(unittest.TestCase):
@@ -323,11 +324,11 @@ class TestTagParsing(unittest.TestCase):
 
     def test_tagger_with_email(self):
         p = parser.ImportParser(io.StringIO(
-            "tag refs/tags/v1.0\n"
-            "from :xxx\n"
-            "tagger Joe Wong <joe@example.com> 1234567890 -0600\n"
-            "data 11\n"
-            "create v1.0"))
+            u"tag refs/tags/v1.0\n"
+            u"from :xxx\n"
+            u"tagger Joe Wong <joe@example.com> 1234567890 -0600\n"
+            u"data 11\n"
+            u"create v1.0"))
         cmds = list(p.iter_commands())
         self.assertEquals(1, len(cmds))
         self.assertTrue(isinstance(cmds[0], commands.TagCommand))
@@ -336,20 +337,20 @@ class TestTagParsing(unittest.TestCase):
 
     def test_tagger_no_email_strict(self):
         p = parser.ImportParser(io.StringIO(
-            "tag refs/tags/v1.0\n"
-            "from :xxx\n"
-            "tagger Joe Wong\n"
-            "data 11\n"
-            "create v1.0"))
+            u"tag refs/tags/v1.0\n"
+            u"from :xxx\n"
+            u"tagger Joe Wong\n"
+            u"data 11\n"
+            u"create v1.0"))
         self.assertRaises(errors.BadFormat, list, p.iter_commands())
 
     def test_tagger_no_email_not_strict(self):
         p = parser.ImportParser(io.StringIO(
-            "tag refs/tags/v1.0\n"
-            "from :xxx\n"
-            "tagger Joe Wong\n"
-            "data 11\n"
-            "create v1.0"), strict=False)
+            u"tag refs/tags/v1.0\n"
+            u"from :xxx\n"
+            u"tagger Joe Wong\n"
+            u"data 11\n"
+            u"create v1.0"), strict=False)
         cmds = list(p.iter_commands())
         self.assertEquals(1, len(cmds))
         self.assertTrue(isinstance(cmds[0], commands.TagCommand))

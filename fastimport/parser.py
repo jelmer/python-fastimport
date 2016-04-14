@@ -158,10 +158,12 @@ The grammar is:
   not_lf  ::= # Any byte that is not ASCII newline (LF);
 """
 from __future__ import print_function
+from __future__ import unicode_literals
 from future import standard_library
 standard_library.install_aliases()
 from builtins import map
 from builtins import object
+from builtins import str
 
 
 import collections
@@ -622,6 +624,8 @@ class ImportParser(LineBasedParser):
 def _unquote_c_string(s):
     """replace C-style escape sequences (\n, \", etc.) with real chars."""
     # HACK: Python strings are close enough
+    #s = str(s)
+    #import ipdb;ipdb.set_trace()
     return s.decode('string_escape', 'replace')
 
 Authorship = collections.namedtuple('Authorship', 'name email timestamp timezone')

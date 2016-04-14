@@ -17,7 +17,6 @@
 from future import standard_library
 standard_library.install_aliases()
 from builtins import map
-
 from unittest import TestCase
 
 from fastimport import (
@@ -66,14 +65,17 @@ class TestCommitDisplay(TestCase):
         committer = (name, 'test@example.com', 1234567890, -6 * 3600)
         c = commands.CommitCommand("refs/heads/master", "bbb", None, committer,
             "release v1.0", ":aaa", None, None)
-        self.assertEqual(
-            "commit refs/heads/master\n"
-            "mark :bbb\n"
-            "committer %s <test@example.com> 1234567890 -0600\n"
-            "data 12\n"
-            "release v1.0\n"
-            "from :aaa" % (name_utf8,),
-            repr(c))
+        try:
+            self.assertEqual(
+                "commit refs/heads/master\n"
+                "mark :bbb\n"
+                "committer %s <test@example.com> 1234567890 -0600\n"
+                "data 12\n"
+                "release v1.0\n"
+                "from :aaa" % (name_utf8,),
+                repr(c))
+        except UnicodeEncodeError:
+            import ipdb;ipdb.set_trace()
 
     def test_commit_no_mark(self):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
