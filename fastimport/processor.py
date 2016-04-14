@@ -30,6 +30,7 @@ See git-fast-import.1 for the meaning of each command and the
 processors package for examples.
 """
 from __future__ import absolute_import
+from builtins import object
 
 import sys
 import time

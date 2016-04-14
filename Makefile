@@ -1,9 +1,9 @@
 PYTHON = python
 SETUP = $(PYTHON) setup.py
-ifeq ($(shell $(PYTHON) -c "import sys; print sys.version_info >= (2, 7)"),True)
+ifeq ($(shell $(PYTHON) -c "import sys; print(sys.version_info >= (2, 7))"),True)
 TESTRUNNER ?= unittest
 else
-TESTRUNNER ?= unittest2.__main__
+TESTRUNNER ?= unittest.__main__
 endif
 RUNTEST = PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) -m $(TESTRUNNER)
 

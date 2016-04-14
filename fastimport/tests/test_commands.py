@@ -14,6 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test how Commands are displayed"""
+from future import standard_library
+standard_library.install_aliases()
+from builtins import map
 
 from unittest import TestCase
 

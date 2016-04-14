@@ -158,6 +158,10 @@ The grammar is:
   not_lf  ::= # Any byte that is not ASCII newline (LF);
 """
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import map
+from builtins import object
 
 
 import collections
@@ -593,7 +597,7 @@ class ImportParser(LineBasedParser):
             parts[1] = parts[1][1:-1]
         elif parts[1].startswith('"') or parts[1].endswith('"'):
             self.abort(errors.BadFormat, '?', '?', s)
-        return map(_unquote_c_string, parts)
+        return list(map(_unquote_c_string, parts))
 
     def _mode(self, s):
         """Check file mode format and parse into an int.

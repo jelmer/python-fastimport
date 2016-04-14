@@ -14,8 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test the Import parsing"""
+from future import standard_library
+standard_library.install_aliases()
 
-import StringIO
+import io
 import time
 import unittest
 
@@ -29,7 +31,7 @@ from fastimport import (
 class TestLineBasedParser(unittest.TestCase):
 
     def test_push_line(self):
-        s = StringIO.StringIO("foo\nbar\nbaz\n")
+        s = io.StringIO("foo\nbar\nbaz\n")
         p = parser.LineBasedParser(s)
         self.assertEqual('foo', p.next_line())
         self.assertEqual('bar', p.next_line())
@@ -39,7 +41,7 @@ class TestLineBasedParser(unittest.TestCase):
         self.assertEqual(None, p.next_line())
 
     def test_read_bytes(self):
-        s = StringIO.StringIO("foo\nbar\nbaz\n")
+        s = io.StringIO("foo\nbar\nbaz\n")
         p = parser.LineBasedParser(s)
         self.assertEqual('fo', p.read_bytes(2))
         self.assertEqual('o\nb', p.read_bytes(3))
@@ -53,7 +55,7 @@ class TestLineBasedParser(unittest.TestCase):
     def test_read_until(self):
         # TODO
         return
-        s = StringIO.StringIO("foo\nbar\nbaz\nabc\ndef\nghi\n")
+        s = io.StringIO("foo\nbar\nbaz\nabc\ndef\nghi\n")
         p = parser.LineBasedParser(s)
         self.assertEqual('foo\nbar', p.read_until('baz'))
         self.assertEqual('abc', p.next_line())
@@ -153,7 +155,7 @@ class TestImportParser(unittest.TestCase):
         del self.fake_time
 
     def test_iter_commands(self):
-        s = StringIO.StringIO(_sample_import_text)
+        s = io.StringIO(_sample_import_text)
         p = parser.ImportParser(s)
         result = []
         for cmd in p.iter_commands():
@@ -271,25 +273,25 @@ class TestImportParser(unittest.TestCase):
         self.assertEqual('donald@duck.org', cmd.more_authors[1][1])
 
     def test_done_feature_missing_done(self):
-        s = StringIO.StringIO("""feature done
+        s = io.StringIO("""feature done
 """)
         p = parser.ImportParser(s)
         cmds = p.iter_commands()
         self.assertEquals("feature", cmds.next().name)
-        self.assertRaises(errors.PrematureEndOfStream, cmds.next)
+        self.assertRaises(errors.PrematureEndOfStream, cmds.__next__)
 
     def test_done_with_feature(self):
-        s = StringIO.StringIO("""feature done
+        s = io.StringIO("""feature done
 done
 more data
 """)
         p = parser.ImportParser(s)
         cmds = p.iter_commands()
         self.assertEquals("feature", cmds.next().name)
-        self.assertRaises(StopIteration, cmds.next)
+        self.assertRaises(StopIteration, cmds.__next__)
 
     def test_done_without_feature(self):
-        s = StringIO.StringIO("""done
+        s = io.StringIO("""done
 more data
 """)
         p = parser.ImportParser(s)
@@ -320,7 +322,7 @@ class TestPathPairParsing(unittest.TestCase):
 class TestTagParsing(unittest.TestCase):
 
     def test_tagger_with_email(self):
-        p = parser.ImportParser(StringIO.StringIO(
+        p = parser.ImportParser(io.StringIO(
             "tag refs/tags/v1.0\n"
             "from :xxx\n"
             "tagger Joe Wong <joe@example.com> 1234567890 -0600\n"
@@ -333,7 +335,7 @@ class TestTagParsing(unittest.TestCase):
             ('Joe Wong', 'joe@example.com', 1234567890.0, -21600))
 
     def test_tagger_no_email_strict(self):
-        p = parser.ImportParser(StringIO.StringIO(
+        p = parser.ImportParser(io.StringIO(
             "tag refs/tags/v1.0\n"
             "from :xxx\n"
             "tagger Joe Wong\n"
@@ -342,7 +344,7 @@ class TestTagParsing(unittest.TestCase):
         self.assertRaises(errors.BadFormat, list, p.iter_commands())
 
     def test_tagger_no_email_not_strict(self):
-        p = parser.ImportParser(StringIO.StringIO(
+        p = parser.ImportParser(io.StringIO(
             "tag refs/tags/v1.0\n"
             "from :xxx\n"
             "tagger Joe Wong\n"

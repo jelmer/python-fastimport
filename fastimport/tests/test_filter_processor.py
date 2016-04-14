@@ -14,8 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test FilterProcessor"""
+from future import standard_library
+standard_library.install_aliases()
 
-from cStringIO import StringIO
+from io import StringIO
 
 from unittest import TestCase
 

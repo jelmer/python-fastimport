@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Import processor that filters the input (and doesn't import)."""
+from future import standard_library
+standard_library.install_aliases()
 
 
 from fastimport import (

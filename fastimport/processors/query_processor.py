@@ -15,6 +15,8 @@
 
 """Import processor that queries the input (and doesn't import)."""
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 
 
 from fastimport import (
@@ -41,7 +43,7 @@ class QueryProcessor(processor.ImportProcessor):
             if 'commit-mark' in params:
                 self.interesting_commit = params['commit-mark']
                 del params['commit-mark']
-            for name, value in params.iteritems():
+            for name, value in params.items():
                 if value == 1:
                     # All fields
                     fields = None

@@ -18,6 +18,9 @@
 These objects are used by the parser to represent the content of
 a fast-import stream.
 """
+from __future__ import division
+from past.utils import old_div
+from builtins import object
 
 import stat
 
@@ -74,7 +77,7 @@ class ImportCommand(object):
         """
         interesting = {}
         if names is None:
-            fields = [k for k in self.__dict__.keys() if not k.startswith('_')]
+            fields = [k for k in list(self.__dict__.keys()) if not k.startswith('_')]
         else:
             fields = names
         for field in fields:
@@ -146,7 +149,7 @@ class CommitCommand(ImportCommand):
         if not isinstance(self.file_iter, list):
             self.file_iter = list(self.file_iter)
 
-        fields = dict((k, v) for k, v in self.__dict__.iteritems()
+        fields = dict((k, v) for k, v in self.__dict__.items()
                       if k not in ('id', 'name')
                       if not k.startswith('_'))
         fields.update(kwargs)
@@ -442,18 +445,18 @@ def format_who_when(fields):
         offset = abs(offset)
     else:
         offset_sign = '+'
-    offset_hours = offset / 3600
-    offset_minutes = offset / 60 - offset_hours * 60
+    offset_hours = old_div(offset, 3600)
+    offset_minutes = old_div(offset, 60) - offset_hours * 60
     offset_str = "%s%02d%02d" % (offset_sign, offset_hours, offset_minutes)
     name = fields[0]
     if name == '':
         sep = ''
     else:
         sep = ' '
-    if isinstance(name, unicode):
+    if isinstance(name, str):
         name = name.encode('utf8')
     email = fields[1]
-    if isinstance(email, unicode):
+    if isinstance(email, str):
         email = email.encode('utf8')
     result = "%s%s<%s> %d %s" % (name, sep, email, fields[2], offset_str)
     return result

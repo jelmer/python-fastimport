@@ -10,4 +10,7 @@ setup(name="fastimport",
       author_email="bazaar@lists.canonical.com",
       license="GNU GPL v2 or later",
       url="https://launchpad.net/python-fastimport",
+      requires=[
+          'future',
+      ],
       packages=['fastimport', 'fastimport.tests', 'fastimport.processors'])
