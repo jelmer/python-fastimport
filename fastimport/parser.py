@@ -157,6 +157,7 @@ The grammar is:
   comment ::= '#' not_lf* lf;
   not_lf  ::= # Any byte that is not ASCII newline (LF);
 """
+from __future__ import print_function
 
 
 import collections
@@ -526,7 +527,7 @@ class ImportParser(LineBasedParser):
             try:
                 when = self.date_parser(datestr, self.lineno)
             except ValueError:
-                print "failed to parse datestr '%s'" % (datestr,)
+                print("failed to parse datestr '%s'" % (datestr,))
                 raise
             name = match.group(1)
             email = match.group(2)
@@ -601,15 +602,15 @@ class ImportParser(LineBasedParser):
         """
         # Note: Output from git-fast-export slightly different to spec
         if s in ['644', '100644', '0100644']:
-            return 0100644
+            return 0o100644
         elif s in ['755', '100755', '0100755']:
-            return 0100755
+            return 0o100755
         elif s in ['040000', '0040000']:
-            return 040000
+            return 0o40000
         elif s in ['120000', '0120000']:
-            return 0120000
+            return 0o120000
         elif s in ['160000', '0160000']:
-            return 0160000
+            return 0o160000
         else:
             self.abort(errors.BadFormat, 'filemodify', 'mode', s)
 

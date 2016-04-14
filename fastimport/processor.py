@@ -29,11 +29,12 @@ To import from a fast-import stream to your version-control system:
 See git-fast-import.1 for the meaning of each command and the
 processors package for examples.
 """
+from __future__ import absolute_import
 
 import sys
 import time
 
-import errors
+from . import errors
 
 
 class ImportProcessor(object):
