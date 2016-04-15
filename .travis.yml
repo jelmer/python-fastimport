@@ -4,5 +4,5 @@ python:
   - "2.6"
   - "pypy"
 install:
-  - pip install unittest2
+  - pip install unittest2 future
 script: python -m unittest2.__main__ fastimport.tests.test_suite
