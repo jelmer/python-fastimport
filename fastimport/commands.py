@@ -19,12 +19,18 @@ These objects are used by the parser to represent the content of
 a fast-import stream.
 """
 from __future__ import division
+
 from past.utils import old_div
 from past.builtins import basestring
+from future.utils import PY2
+
 from builtins import object
+from builtins import str as _text
 
 
+import sys
 import stat
+
 
 # There is a bug in git 1.5.4.3 and older by which unquoting a string consumes
 # one extra character. Set this variable to True to work-around it. It only
@@ -175,7 +181,9 @@ class CommitCommand(ImportCommand):
             if use_features and self.more_authors:
                 for author in self.more_authors:
                     author_section += "\nauthor %s" % format_who_when(author)
+
         committer = "committer %s" % format_who_when(self.committer)
+
         if self.message is None:
             msg_section = ""
         else:
@@ -421,7 +429,6 @@ def check_path(path):
     if path is None or path == '' or path[0] == "/":
         raise ValueError("illegal path '%s'" % path)
     if not isinstance(path, basestring):
-        import ipdb;ipdb.set_trace()
         raise TypeError("illegale type for path '%r'" % path)
     return path
 
@@ -452,24 +459,36 @@ def format_who_when(fields):
     offset_minutes = old_div(offset, 60) - offset_hours * 60
     offset_str = "%s%02d%02d" % (offset_sign, offset_hours, offset_minutes)
     name = fields[0]
+
     if name == '':
         sep = ''
     else:
         sep = ' '
-    if isinstance(name, basestring):
+
+    if isinstance(name, basestring) and PY2:
         name = name.encode('utf8')
+
     email = fields[1]
-    if isinstance(email, basestring):
+
+    if isinstance(email, basestring) and PY2:
         email = email.encode('utf8')
+
     result = "%s%s<%s> %d %s" % (name, sep, email, fields[2], offset_str)
+
     return result
 
 
 def format_property(name, value):
     """Format the name and value (both unicode) of a property as a string."""
-    utf8_name = name.encode('utf8')
+    utf8_name = name
+
+    if PY2:
+        utf8_name = name.encode('utf8')
+
     if value is not None:
-        utf8_value = value.encode('utf8')
+        utf8_value = value
+        if PY2:
+            utf8_name = name.encode('utf8')
         result = "property %s %d %s" % (utf8_name, len(utf8_value), utf8_value)
     else:
         result = "property %s" % (utf8_name,)

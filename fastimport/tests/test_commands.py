@@ -16,6 +16,7 @@
 """Test how Commands are displayed"""
 from future import standard_library
 standard_library.install_aliases()
+from future.utils import PY2
 from builtins import map
 from unittest import TestCase
 
@@ -61,21 +62,24 @@ class TestCommitDisplay(TestCase):
     def test_commit_unicode_committer(self):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         name = u'\u013d\xf3r\xe9m \xcdp\u0161\xfam'
-        name_utf8 = name.encode('utf8')
+
+        commit_utf8 = (
+            u"commit refs/heads/master\n"
+            u"mark :bbb\n"
+            u"committer %s <test@example.com> 1234567890 -0600\n"
+            u"data 12\n"
+            u"release v1.0\n"
+            u"from :aaa" % (name,)
+        )
+
+        if PY2:
+            commit_utf8 = commit_utf8.encode('utf8')
+
         committer = (name, 'test@example.com', 1234567890, -6 * 3600)
         c = commands.CommitCommand("refs/heads/master", "bbb", None, committer,
             "release v1.0", ":aaa", None, None)
-        try:
-            self.assertEqual(
-                "commit refs/heads/master\n"
-                "mark :bbb\n"
-                "committer %s <test@example.com> 1234567890 -0600\n"
-                "data 12\n"
-                "release v1.0\n"
-                "from :aaa" % (name_utf8,),
-                repr(c))
-        except UnicodeEncodeError:
-            import ipdb;ipdb.set_trace()
+
+        self.assertEqual(commit_utf8, repr(c))
 
     def test_commit_no_mark(self):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)

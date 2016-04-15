@@ -304,7 +304,7 @@ class TestStringParsing(unittest.TestCase):
 
     def test_unquote(self):
         s = r'hello \"sweet\" wo\\r\tld'
-        self.assertEquals(r'hello "sweet" wo\r' + "\tld",
+        self.assertEqual(r'hello "sweet" wo\r' + "\tld",
             parser._unquote_c_string(s))
 
 
@@ -330,9 +330,9 @@ class TestTagParsing(unittest.TestCase):
             u"data 11\n"
             u"create v1.0"))
         cmds = list(p.iter_commands())
-        self.assertEquals(1, len(cmds))
+        self.assertEqual(1, len(cmds))
         self.assertTrue(isinstance(cmds[0], commands.TagCommand))
-        self.assertEquals(cmds[0].tagger,
+        self.assertEqual(cmds[0].tagger,
             ('Joe Wong', 'joe@example.com', 1234567890.0, -21600))
 
     def test_tagger_no_email_strict(self):
@@ -352,6 +352,6 @@ class TestTagParsing(unittest.TestCase):
             u"data 11\n"
             u"create v1.0"), strict=False)
         cmds = list(p.iter_commands())
-        self.assertEquals(1, len(cmds))
+        self.assertEqual(1, len(cmds))
         self.assertTrue(isinstance(cmds[0], commands.TagCommand))
-        self.assertEquals(cmds[0].tagger[:2], ('Joe Wong', None))
+        self.assertEqual(cmds[0].tagger[:2], ('Joe Wong', None))

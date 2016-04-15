@@ -117,7 +117,7 @@ class TestCaseWithFiltering(TestCase):
         p = parser.ImportParser(s)
         proc.process(p.iter_commands)
         out = outf.getvalue()
-        self.assertEquals(expected, out)
+        self.assertEqual(expected, out)
 
 class TestNoFiltering(TestCaseWithFiltering):
 

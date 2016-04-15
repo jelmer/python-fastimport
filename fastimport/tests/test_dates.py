@@ -24,11 +24,11 @@ from fastimport import (
 class ParseTzTests(TestCase):
 
     def test_parse_tz_utc(self):
-        self.assertEquals(0, dates.parse_tz("+0000"))
-        self.assertEquals(0, dates.parse_tz("-0000"))
+        self.assertEqual(0, dates.parse_tz("+0000"))
+        self.assertEqual(0, dates.parse_tz("-0000"))
 
     def test_parse_tz_cet(self):
-        self.assertEquals(3600, dates.parse_tz("+0100"))
+        self.assertEqual(3600, dates.parse_tz("+0100"))
 
     def test_parse_tz_odd(self):
-        self.assertEquals(1864800, dates.parse_tz("+51800"))
+        self.assertEqual(1864800, dates.parse_tz("+51800"))

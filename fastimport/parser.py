@@ -158,17 +158,17 @@ The grammar is:
   not_lf  ::= # Any byte that is not ASCII newline (LF);
 """
 from __future__ import print_function
-from __future__ import unicode_literals
 from future import standard_library
 standard_library.install_aliases()
 from builtins import map
 from builtins import object
-from builtins import str
+from builtins import str as _text
 
 
 import collections
 import re
 import sys
+import codecs
 
 from fastimport import (
     commands,
@@ -574,7 +574,7 @@ class ImportParser(LineBasedParser):
             if still_to_read > 0:
                 read_bytes = self.read_bytes(still_to_read)
                 value += "\n" + read_bytes[:still_to_read - 1]
-            value = value.decode('utf8')
+            value = _text(value)
         return (name, value)
 
     def _path(self, s):
@@ -621,11 +621,26 @@ class ImportParser(LineBasedParser):
             self.abort(errors.BadFormat, 'filemodify', 'mode', s)
 
 
+ESCAPE_SEQUENCE_RE = re.compile(r'''
+    ( \\U........      # 8-digit hex escapes
+    | \\u....          # 4-digit hex escapes
+    | \\x..            # 2-digit hex escapes
+    | \\[0-7]{1,3}     # Octal escapes
+    | \\N\{[^}]+\}     # Unicode characters by name
+    | \\[\\'"abfnrtv]  # Single-character escapes
+    )''', re.UNICODE | re.VERBOSE
+)
+
 def _unquote_c_string(s):
     """replace C-style escape sequences (\n, \", etc.) with real chars."""
-    # HACK: Python strings are close enough
-    #s = str(s)
-    #import ipdb;ipdb.set_trace()
-    return s.decode('string_escape', 'replace')
+
+    # doing a s.encode('utf-8').decode('unicode_escape') can return an
+    # incorrect output with unicode string (both in py2 and py3) the safest way
+    # is to match the escape sequences and decoding them alone.
+    def decode_match(match):
+        return codecs.decode(match.group(0), 'unicode-escape')
+
+    return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
+
 
 Authorship = collections.namedtuple('Authorship', 'name email timestamp timezone')
