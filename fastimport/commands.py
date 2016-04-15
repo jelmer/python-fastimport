@@ -27,7 +27,6 @@ from future.utils import PY2
 from builtins import object
 from builtins import str as _text
 
-
 import sys
 import stat
 

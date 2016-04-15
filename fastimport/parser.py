@@ -158,8 +158,6 @@ The grammar is:
   not_lf  ::= # Any byte that is not ASCII newline (LF);
 """
 from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
 from builtins import map
 from builtins import object
 from builtins import str as _text

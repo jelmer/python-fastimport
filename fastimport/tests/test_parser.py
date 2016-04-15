@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test the Import parsing"""
-from future import standard_library
-standard_library.install_aliases()
 from builtins import str as _text
 
 import io

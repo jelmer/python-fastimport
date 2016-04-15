@@ -14,11 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test FilterProcessor"""
-from __future__ import unicode_literals
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-
 from io import StringIO
 
 from unittest import TestCase
@@ -34,7 +29,7 @@ from fastimport.processors import (
 
 # A sample input stream containing all (top level) import commands
 _SAMPLE_ALL = \
-"""blob
+u"""blob
 mark :1
 data 4
 foo
@@ -62,7 +57,7 @@ release v0.1
 #  doc/README.txt
 #  doc/index.txt
 _SAMPLE_WITH_DIR = \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -137,7 +132,7 @@ class TestIncludePaths(TestCaseWithFiltering):
         # * from clause is dropped from the first command
         params = {'include_paths': ['NEWS']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :2
 data 17
 Life
@@ -158,7 +153,7 @@ M 644 :2 NEWS
         # * other files changed in matching commits are excluded
         params = {'include_paths': ['doc/index.txt']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :4
 data 11
 == Docs ==
@@ -176,7 +171,7 @@ M 644 :4 index.txt
         # * from updated to reference parents in the output
         params = {'include_paths': ['doc/README.txt']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -204,7 +199,7 @@ M 644 :3 README.txt
     def test_subdir(self):
         params = {'include_paths': ['doc/']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -238,7 +233,7 @@ M 644 :4 index.txt
         # The new root should be the subdrectory
         params = {'include_paths': ['doc/README.txt', 'doc/index.txt']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -274,7 +269,7 @@ class TestExcludePaths(TestCaseWithFiltering):
     def test_file_in_root(self):
         params = {'exclude_paths': ['NEWS']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -307,7 +302,7 @@ M 644 :4 doc/index.txt
     def test_file_in_subdir(self):
         params = {'exclude_paths': ['doc/README.txt']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :2
 data 17
 Life
@@ -337,7 +332,7 @@ M 644 :4 doc/index.txt
     def test_subdir(self):
         params = {'exclude_paths': ['doc/']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :2
 data 17
 Life
@@ -355,7 +350,7 @@ M 644 :2 NEWS
     def test_multple_files(self):
         params = {'exclude_paths': ['doc/index.txt', 'NEWS']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -386,7 +381,7 @@ class TestIncludeAndExcludePaths(TestCaseWithFiltering):
     def test_included_dir_and_excluded_file(self):
         params = {'include_paths': ['doc/'], 'exclude_paths': ['doc/index.txt']}
         self.assertFiltering(_SAMPLE_WITH_DIR, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -420,7 +415,7 @@ M 644 :3 README.txt
 #
 # It then renames doc/README.txt => doc/README
 _SAMPLE_WITH_RENAME_INSIDE = _SAMPLE_WITH_DIR + \
-"""commit refs/heads/master
+u"""commit refs/heads/master
 mark :103
 committer d <b@c> 1234798653 +0000
 data 10
@@ -437,7 +432,7 @@ R doc/README.txt doc/README
 #
 # It then renames doc/README.txt => README
 _SAMPLE_WITH_RENAME_TO_OUTSIDE = _SAMPLE_WITH_DIR + \
-"""commit refs/heads/master
+u"""commit refs/heads/master
 mark :103
 committer d <b@c> 1234798653 +0000
 data 10
@@ -454,7 +449,7 @@ R doc/README.txt README
 #
 # It then renames NEWS => doc/NEWS
 _SAMPLE_WITH_RENAME_TO_INSIDE = _SAMPLE_WITH_DIR + \
-"""commit refs/heads/master
+u"""commit refs/heads/master
 mark :103
 committer d <b@c> 1234798653 +0000
 data 10
@@ -469,7 +464,7 @@ class TestIncludePathsWithRenames(TestCaseWithFiltering):
         # These rename commands ought to be kept but adjusted for the new root
         params = {'include_paths': ['doc/']}
         self.assertFiltering(_SAMPLE_WITH_RENAME_INSIDE, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -510,7 +505,7 @@ R README.txt README
         # These rename commands become deletes
         params = {'include_paths': ['doc/']}
         self.assertFiltering(_SAMPLE_WITH_RENAME_TO_OUTSIDE, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -551,7 +546,7 @@ D README.txt
         # This ought to create a new file but doesn't yet
         params = {'include_paths': ['doc/']}
         self.assertFiltering(_SAMPLE_WITH_RENAME_TO_INSIDE, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -607,7 +602,7 @@ C doc/README.txt doc/README
 #
 # It then copies doc/README.txt => README
 _SAMPLE_WITH_COPY_TO_OUTSIDE = _SAMPLE_WITH_DIR + \
-"""commit refs/heads/master
+u"""commit refs/heads/master
 mark :103
 committer d <b@c> 1234798653 +0000
 data 10
@@ -624,7 +619,7 @@ C doc/README.txt README
 #
 # It then copies NEWS => doc/NEWS
 _SAMPLE_WITH_COPY_TO_INSIDE = _SAMPLE_WITH_DIR + \
-"""commit refs/heads/master
+u"""commit refs/heads/master
 mark :103
 committer d <b@c> 1234798653 +0000
 data 10
@@ -640,7 +635,7 @@ class TestIncludePathsWithCopies(TestCaseWithFiltering):
         # These copy commands ought to be kept but adjusted for the new root
         params = {'include_paths': ['doc/']}
         self.assertFiltering(_SAMPLE_WITH_COPY_INSIDE, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -715,7 +710,7 @@ M 644 :4 index.txt
         # This ought to create a new file but doesn't yet
         params = {'include_paths': ['doc/']}
         self.assertFiltering(_SAMPLE_WITH_COPY_TO_INSIDE, params, \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -752,7 +747,7 @@ M 644 :4 index.txt
 #  doc/README.txt
 #  doc/index.txt
 _SAMPLE_WITH_DELETEALL = \
-"""blob
+u"""blob
 mark :1
 data 9
 Welcome!
@@ -790,7 +785,7 @@ class TestIncludePathsWithDeleteAll(TestCaseWithFiltering):
     def test_deleteall(self):
         params = {'include_paths': ['doc/index.txt']}
         self.assertFiltering(_SAMPLE_WITH_DELETEALL, params, \
-"""blob
+u"""blob
 mark :4
 data 11
 == Docs ==
@@ -807,7 +802,7 @@ M 644 :4 index.txt
 
 
 _SAMPLE_WITH_TAGS = _SAMPLE_WITH_DIR + \
-"""tag v0.1
+u"""tag v0.1
 from :100
 tagger d <b@c> 1234798653 +0000
 data 12
@@ -827,7 +822,7 @@ class TestIncludePathsWithTags(TestCaseWithFiltering):
         # Otherwise, delete the tag command.
         params = {'include_paths': ['NEWS']}
         self.assertFiltering(_SAMPLE_WITH_TAGS, params, \
-"""blob
+u"""blob
 mark :2
 data 17
 Life
@@ -849,7 +844,7 @@ release v0.2
 
 
 _SAMPLE_WITH_RESETS = _SAMPLE_WITH_DIR + \
-"""reset refs/heads/foo
+u"""reset refs/heads/foo
 reset refs/heads/bar
 from :102
 """
@@ -862,7 +857,7 @@ class TestIncludePathsWithResets(TestCaseWithFiltering):
         # keep the reset but adjust 'from' accordingly.
         params = {'include_paths': ['NEWS']}
         self.assertFiltering(_SAMPLE_WITH_RESETS, params, \
-"""blob
+u"""blob
 mark :2
 data 17
 Life
@@ -883,7 +878,7 @@ from :101
 
 # A sample input stream containing empty commit
 _SAMPLE_EMPTY_COMMIT = \
-"""blob
+u"""blob
 mark :1
 data 4
 foo
@@ -902,7 +897,7 @@ empty commit
 
 # A sample input stream containing unresolved from and merge references
 _SAMPLE_FROM_MERGE_COMMIT = \
-"""blob
+u"""blob
 mark :1
 data 4
 foo
@@ -943,7 +938,7 @@ class TestSquashEmptyCommitsFlag(TestCaseWithFiltering):
     def test_squash_empty_commit(self):
         params = {'include_paths': None, 'exclude_paths': None}
         self.assertFiltering(_SAMPLE_EMPTY_COMMIT, params, \
-"""blob
+u"""blob
 mark :1
 data 4
 foo
@@ -962,7 +957,7 @@ M 644 :1 COPYING
     def test_squash_unresolved_references(self):
         params = {'include_paths': None, 'exclude_paths': None}
         self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, \
-"""blob
+u"""blob
 mark :1
 data 4
 foo
@@ -1007,7 +1002,7 @@ M 644 :99 data/DATA2
                   'exclude_paths': ['data/DATA'],
                   'squash_empty_commits': False}
         self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, \
-"""blob
+u"""blob
 mark :1
 data 4
 foo
@@ -1043,7 +1038,7 @@ M 644 :99 data/DATA2
                   'exclude_paths': None,
                   'squash_empty_commits': False}
         self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, \
-"""blob
+u"""blob
 mark :1
 data 4
 foo
@@ -1080,7 +1075,7 @@ M 644 :99 data/DATA2
                   'exclude_paths': None,
                   'squash_empty_commits': False}
         self.assertFiltering(_SAMPLE_FROM_MERGE_COMMIT, params, \
-"""commit refs/heads/master
+u"""commit refs/heads/master
 mark :3
 committer Joe <joe@example.com> 1234567890 +1000
 data 6
