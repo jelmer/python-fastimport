@@ -7,7 +7,7 @@ python-fastimport (0.9.5-1) UNRELEASED; urgency=medium
   [ Jelmer Vernooĳ ]
   * Bump standards version (no changes).
 
- -- Ondřej Nový <novy@ondrej.org>  Tue, 29 Mar 2016 22:09:05 +0200
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 18 Apr 2016 22:09:05 +0200
 
 python-fastimport (0.9.4-4) unstable; urgency=medium
 
