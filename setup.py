@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from distutils.core import setup
 
-version = "0.9.5dev"
+version = "0.9.5"
 
 setup(name="fastimport",
       description="VCS fastimport/fastexport parser",
