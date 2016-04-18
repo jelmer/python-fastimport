@@ -5,4 +5,5 @@ python-fastimport
 tmp
 files
 pypy-fastimport
+python3-fastimport
 debhelper-build-stamp
