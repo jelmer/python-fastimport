@@ -1,0 +1,7 @@
+*.debhelper
+*.debhelper.log
+*.substvars
+python-fastimport
+tmp
+files
+pypy-fastimport
