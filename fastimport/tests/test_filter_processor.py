@@ -676,7 +676,7 @@ C README.txt README
         # This can be ignored
         params = {b'include_paths': [b'doc/']}
         self.assertFiltering(_SAMPLE_WITH_COPY_TO_OUTSIDE, params, \
-"""blob
+b"""blob
 mark :1
 data 9
 Welcome!
