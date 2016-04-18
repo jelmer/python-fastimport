@@ -22,8 +22,6 @@ timestamp,timezone where
 * timestamp is seconds since epoch
 * timezone is the offset from UTC in seconds.
 """
-
-
 import time
 
 from fastimport import errors
@@ -31,11 +29,11 @@ from fastimport import errors
 
 def parse_raw(s, lineno=0):
     """Parse a date from a raw string.
-    
+
     The format must be exactly "seconds-since-epoch offset-utc".
     See the spec for details.
     """
-    timestamp_str, timezone_str = s.split(' ', 1)
+    timestamp_str, timezone_str = s.split(b' ', 1)
     timestamp = float(timestamp_str)
     try:
         timezone = parse_tz(timezone_str)
@@ -50,17 +48,22 @@ def parse_tz(tz):
     :return: the timezone offset in seconds.
     """
     # from git_repository.py in bzr-git
-    if tz[0] not in ('+', '-'):
+    sign_byte = tz[0:1]
+    # in python 3 b'+006'[0] would return an integer,
+    # but b'+006'[0:1] return a new bytes string.
+    if sign_byte not in (b'+', b'-'):
         raise ValueError(tz)
-    sign = {'+': +1, '-': -1}[tz[0]]
+
+    sign = {b'+': +1, b'-': -1}[sign_byte]
     hours = int(tz[1:-2])
     minutes = int(tz[-2:])
+
     return sign * 60 * (60 * hours + minutes)
 
 
 def parse_rfc2822(s, lineno=0):
     """Parse a date from a rfc2822 string.
-    
+
     See the spec for details.
     """
     raise NotImplementedError(parse_rfc2822)
@@ -77,7 +80,7 @@ def parse_now(s, lineno=0):
 
 # Lookup tabel of date parsing routines
 DATE_PARSERS_BY_NAME = {
-    'raw':      parse_raw,
-    'rfc2822':  parse_rfc2822,
-    'now':      parse_now,
+    u'raw':      parse_raw,
+    u'rfc2822':  parse_rfc2822,
+    u'now':      parse_now,
     }

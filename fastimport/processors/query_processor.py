@@ -29,8 +29,11 @@ class QueryProcessor(processor.ImportProcessor):
     No changes to the current repository are made.
     """
 
-    known_params = commands.COMMAND_NAMES + commands.FILE_COMMAND_NAMES + \
-        ['commit-mark']
+    known_params = (
+        commands.COMMAND_NAMES +
+        commands.FILE_COMMAND_NAMES +
+        [b'commit-mark']
+    )
 
     def __init__(self, params=None, verbose=False):
         processor.ImportProcessor.__init__(self, params, verbose)

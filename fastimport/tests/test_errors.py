@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test the Import errors"""
-from builtins import str
-
 from unittest import TestCase
 
 from fastimport import (
