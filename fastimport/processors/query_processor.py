@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Import processor that queries the input (and doesn't import)."""
+from __future__ import print_function
 
 
 from fastimport import (
@@ -28,8 +29,11 @@ class QueryProcessor(processor.ImportProcessor):
     No changes to the current repository are made.
     """
 
-    known_params = commands.COMMAND_NAMES + commands.FILE_COMMAND_NAMES + \
-        ['commit-mark']
+    known_params = (
+        commands.COMMAND_NAMES +
+        commands.FILE_COMMAND_NAMES +
+        [b'commit-mark']
+    )
 
     def __init__(self, params=None, verbose=False):
         processor.ImportProcessor.__init__(self, params, verbose)
@@ -40,7 +44,7 @@ class QueryProcessor(processor.ImportProcessor):
             if 'commit-mark' in params:
                 self.interesting_commit = params['commit-mark']
                 del params['commit-mark']
-            for name, value in params.iteritems():
+            for name, value in params.items():
                 if value == 1:
                     # All fields
                     fields = None
@@ -54,13 +58,13 @@ class QueryProcessor(processor.ImportProcessor):
             return
         if self.interesting_commit and cmd.name == 'commit':
             if cmd.mark == self.interesting_commit:
-                print cmd.to_string()
+                print(cmd.to_string())
                 self._finished = True
             return
-        if self.parsed_params.has_key(cmd.name):
+        if cmd.name in self.parsed_params:
             fields = self.parsed_params[cmd.name]
             str = cmd.dump_str(fields, self.parsed_params, self.verbose)
-            print "%s" % (str,)
+            print("%s" % (str,))
 
     def progress_handler(self, cmd):
         """Process a ProgressCommand."""

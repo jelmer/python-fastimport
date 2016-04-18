@@ -34,4 +34,5 @@ def test_suite():
     loader = unittest.TestLoader()
     suite = loader.loadTestsFromNames(module_names)
     result.addTests(suite)
+
     return result
