@@ -21,13 +21,13 @@ a fast-import stream.
 from __future__ import division
 
 import re
-import sys
 import stat
+import sys
 
-from fastimport.helpers import utf8_bytes_string
-from fastimport.helpers import is_unicode
-from fastimport.helpers import PY2, PY3, PY3_OR_LATER
-from fastimport.helpers import newobject as object
+from fastimport.helpers import (
+    newobject as object,
+    utf8_bytes_string,
+    )
 
 
 # There is a bug in git 1.5.4.3 and older by which unquoting a string consumes
@@ -69,7 +69,7 @@ class ImportCommand(object):
         return repr(self)
 
     def __repr__(self):
-        if PY2:
+        if sys.version_info[0] == 2:
             return self.__bytes__()
         else:
             return bytes(self).decode('utf8')
@@ -451,8 +451,8 @@ def check_path(path):
         raise ValueError("illegal path '%s'" % path)
 
     if (
-        (PY3_OR_LATER and not isinstance(path, bytes)) and
-        (PY2 and not isinstance(path, str))
+        (sys.version_info[0] >= 3 and not isinstance(path, bytes)) and
+        (sys.version_info[0] == 2 and not isinstance(path, str))
     ):
         raise TypeError("illegale type for path '%r'" % path)
 
@@ -490,13 +490,11 @@ def format_who_when(fields):
     else:
         sep = b' '
 
-    if is_unicode(name):
-        name = utf8_bytes_string(name)
+    name = utf8_bytes_string(name)
 
     email = fields[1]
 
-    if is_unicode(email):
-        email = utf8_bytes_string(email)
+    email = utf8_bytes_string(email)
 
     result = b'%s%s<%s> %d %s' % (name, sep, email, fields[2], offset_str)
 

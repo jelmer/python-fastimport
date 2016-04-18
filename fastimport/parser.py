@@ -169,10 +169,10 @@ from fastimport import (
     dates,
     errors,
     )
-from fastimport.helpers import utf8_bytes_string
-from fastimport.helpers import PY2
-from fastimport.helpers import newmap as map
-from fastimport.helpers import newobject as object
+from fastimport.helpers import (
+    newobject as object,
+    utf8_bytes_string,
+    )
 
 
 ## Stream parsing ##
@@ -597,7 +597,7 @@ class ImportParser(LineBasedParser):
             parts[1] = parts[1][1:-1]
         elif parts[1].startswith(b'"') or parts[1].endswith(b'"'):
             self.abort(errors.BadFormat, '?', '?', s)
-        return list(map(_unquote_c_string, parts))
+        return [_unquote_c_string(s) for s in parts]
 
     def _mode(self, s):
         """Check file mode format and parse into an int.
@@ -650,7 +650,7 @@ def _unquote_c_string(s):
                codecs.decode(match.group(0), 'unicode-escape')
           )
 
-     if not PY2 and isinstance(s, bytes):
+     if sys.version_info[0] >= 3 and isinstance(s, bytes):
           return ESCAPE_SEQUENCE_BYTES_RE.sub(decode_match, s)
      else:
           return ESCAPE_SEQUENCE_RE.sub(decode_match, s)

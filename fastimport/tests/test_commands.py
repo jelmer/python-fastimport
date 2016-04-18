@@ -17,9 +17,10 @@
 
 from unittest import TestCase
 
-from fastimport.helpers import utf8_bytes_string
-from fastimport.helpers import repr_bytes
-from fastimport.helpers import newmap as map
+from fastimport.helpers import (
+    repr_bytes,
+    utf8_bytes_string,
+    )
 
 from fastimport import (
     commands,
@@ -424,7 +425,7 @@ data 10
 Test test
 """ % {
     b'user': b'%s <%s> %d %+05d' % committer,
-}, b''.join(map(repr_bytes, commits)))
+}, b''.join([repr_bytes(s) for s in commits]))
 
 
 class TestPathChecking(TestCase):

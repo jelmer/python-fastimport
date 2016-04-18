@@ -16,18 +16,6 @@
 """Miscellaneous useful stuff."""
 import sys
 
-# Python 2/3 helpers
-PY3 = sys.version_info[0] == 3
-PY2 = sys.version_info[0] == 2
-PY3_OR_LATER = sys.version_info[0] >= 3
-
-if PY2:
-    import itertools
-    newmap = itertools.imap
-else:
-    import builtins
-    newmap = builtins.map
-
 
 def _common_path_and_rest(l1, l2, common=[]):
     # From http://code.activestate.com/recipes/208993/
@@ -112,32 +100,18 @@ def is_inside_any(dir_list, fname):
 
 def utf8_bytes_string(s):
     """Convert a string to a bytes string encoded in utf8"""
-    utf8_bytes = b''
-
-    if PY2:
-        utf8_bytes = s.encode('utf8')
+    if sys.version_info[0] == 2:
+        return s.encode('utf8')
     else:
         if isinstance(s, str):
-            utf8_bytes = bytes(s, encoding='utf8')
+            return bytes(s, encoding='utf8')
         else:
-            utf8_bytes = s
-
-    return utf8_bytes
-
-
-def is_unicode(s):
-    try:
-        return (
-            (isinstance(s, str) and PY3_OR_LATER) or
-            (isinstance(s, unicode) and PY2)
-        )
-    except NameError:
-        return False  # unicode isn't defined in python 3
+            return s
 
 
 def repr_bytes(obj):
     """Return a bytes representation of the object"""
-    if PY2:
+    if sys.version_info[0] == 2:
         return repr(obj)
     else:
         return bytes(obj)
