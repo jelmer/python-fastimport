@@ -27,6 +27,7 @@ import sys
 from fastimport.helpers import (
     newobject as object,
     utf8_bytes_string,
+    repr_bytes,
     )
 
 
@@ -230,14 +231,22 @@ class CommitCommand(ImportCommand):
             filecommands = b''
         else:
             if include_file_contents:
-                format_str = b'\n%r'
+                filecommands = b''.join([b'\n' + repr_bytes(c)
+                    for c in self.iter_files()])
             else:
-                format_str = b'\n%s'
-            filecommands = b''.join([format_str % (c,)
-                for c in self.iter_files()])
-        return b'commit %s%s%s\n%s%s%s%s%s%s' % (self.ref, mark_line,
-            author_section, committer, msg_section, from_line, merge_lines,
-            properties_section, filecommands)
+                filecommands = b''.join([b'\n' + str(c)
+                    for c in self.iter_files()])
+        return b''.join([
+            b'commit ',
+            self.ref,
+            mark_line,
+            author_section + b'\n',
+            committer,
+            msg_section,
+            from_line,
+            merge_lines,
+            properties_section,
+            filecommands])
 
     def dump_str(self, names=None, child_lists=None, verbose=False):
         result = [ImportCommand.dump_str(self, names, verbose=verbose)]
@@ -301,8 +310,8 @@ class ResetCommand(ImportCommand):
             # was needed. Always emit it, since it doesn't hurt and maintains
             # compatibility with older versions.
             # http://git.kernel.org/?p=git/git.git;a=commit;h=655e8515f279c01f525745d443f509f97cd805ab
-            from_line = b'\nfrom %s\n' % self.from_
-        return b'reset %s%s' % (self.ref, from_line)
+            from_line = b'\nfrom ' + self.from_ + b'\n'
+        return b'reset ' + self.ref + from_line
 
 
 class TagCommand(ImportCommand):
@@ -318,17 +327,17 @@ class TagCommand(ImportCommand):
         if self.from_ is None:
             from_line = b''
         else:
-            from_line = b'\nfrom %s' % self.from_
+            from_line = b'\nfrom ' + self.from_
         if self.tagger is None:
             tagger_line = b''
         else:
-            tagger_line = b'\ntagger %s' % format_who_when(self.tagger)
+            tagger_line = b'\ntagger ' + format_who_when(self.tagger)
         if self.message is None:
             msg_section = b''
         else:
             msg = self.message
-            msg_section = b'\ndata %d\n%s' % (len(msg), msg)
-        return b'tag %s%s%s%s' % (self.id, from_line, tagger_line, msg_section)
+            msg_section = ('\ndata %d\n' % len(msg)).encode('ascii') + msg
+        return b'tag ' + self.id + from_line + tagger_line + msg_section
 
 
 class FileCommand(ImportCommand):
@@ -374,9 +383,9 @@ class FileModifyCommand(FileCommand):
         elif self.dataref is None:
             dataref = b'inline'
             if include_file_contents:
-                datastr = b'\ndata %d\n%s' % (len(self.data), self.data)
+                datastr = ('\ndata %d\n' % len(self.data)).encode('ascii') + self.data
         else:
-            dataref = b'%s' % (self.dataref,)
+            dataref = self.dataref
         path = format_path(self.path)
 
         return b' '.join(
@@ -470,7 +479,7 @@ def format_path(p, quote_spaces=False):
         quote = p[0] == b'"' or (quote_spaces and b' ' in p)
     if quote:
         extra = GIT_FAST_IMPORT_NEEDS_EXTRA_SPACE_AFTER_QUOTE and b' ' or b''
-        p = b'"%s"%s' % (p, extra)
+        p = b'"' + p + b'"' + extra
     return p
 
 
@@ -506,12 +515,9 @@ def format_property(name, value):
     result = b''
     utf8_name = utf8_bytes_string(name)
 
+    result = b'property ' + utf8_name
     if value is not None:
         utf8_value = utf8_bytes_string(value)
-        result = b'property %s %d %s' % (
-            utf8_name, len(utf8_value), utf8_value
-        )
-    else:
-        result = b'property ' + utf8_name
+        result += b' ' + ('%d' % len(utf8_value)).encode('ascii') + b' ' + utf8_value
 
     return result
