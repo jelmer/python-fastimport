@@ -1,7 +1,11 @@
 python-fastimport (0.9.5-1) UNRELEASED; urgency=medium
 
+  [ Ondřej Nový ]
   * New upstream release.
   * d/control: Added Vcs-Browser and fixed Vcs-Git (https)
+
+  [ Jelmer Vernooĳ ]
+  * Bump standards version (no changes).
 
  -- Ondřej Nový <novy@ondrej.org>  Tue, 29 Mar 2016 22:09:05 +0200
 
