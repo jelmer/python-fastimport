@@ -1,4 +1,4 @@
-python-fastimport (0.9.5-1) UNRELEASED; urgency=medium
+python-fastimport (0.9.5-1) unstable; urgency=low
 
   [ Ondřej Nový ]
   * New upstream release.
