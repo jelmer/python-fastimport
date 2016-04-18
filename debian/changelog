@@ -1,5 +1,6 @@
-python-fastimport (0.9.4-5) UNRELEASED; urgency=medium
+python-fastimport (0.9.5-1) UNRELEASED; urgency=medium
 
+  * New upstream release.
   * d/control: Added Vcs-Browser and fixed Vcs-Git (https)
 
  -- Ondřej Nový <novy@ondrej.org>  Tue, 29 Mar 2016 22:09:05 +0200
