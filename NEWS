@@ -1,5 +1,7 @@
 0.9.5	UNRELEASED
 
+ * Add python3.5 support. (Félix Mattrat)
+
 0.9.4	2014-07-04
 
  * Get handlers from class object using getattr() for possible inheritance
