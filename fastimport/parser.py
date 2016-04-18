@@ -157,16 +157,21 @@ The grammar is:
   comment ::= '#' not_lf* lf;
   not_lf  ::= # Any byte that is not ASCII newline (LF);
 """
-
+from __future__ import print_function
 
 import collections
 import re
 import sys
+import codecs
 
 from fastimport import (
     commands,
     dates,
     errors,
+    )
+from fastimport.helpers import (
+    newobject as object,
+    utf8_bytes_string,
     )
 
 
@@ -174,12 +179,12 @@ from fastimport import (
 
 class LineBasedParser(object):
 
-    def __init__(self, input):
+    def __init__(self, input_stream):
         """A Parser that keeps track of line numbers.
 
         :param input: the file-like object to read from
         """
-        self.input = input
+        self.input = input_stream
         self.lineno = 0
         # Lines pushed back onto the input stream
         self._buffer = []
@@ -210,7 +215,7 @@ class LineBasedParser(object):
         :param line: the line with no trailing newline
         """
         self.lineno -= 1
-        self._buffer.append(line + "\n")
+        self._buffer.append(line + b'\n')
 
     def read_bytes(self, count):
         """Read a given number of bytes from the input stream.
@@ -223,7 +228,7 @@ class LineBasedParser(object):
         """
         result = self.input.read(count)
         found = len(result)
-        self.lineno += result.count("\n")
+        self.lineno += result.count(b'\n')
         if found != count:
             self.abort(errors.MissingBytes, count, found)
         return result
@@ -239,38 +244,38 @@ class LineBasedParser(object):
         """
 
         lines = []
-        term = terminator + '\n'
+        term = terminator + b'\n'
         while True:
             line = self.input.readline()
             if line == term:
                 break
             else:
                 lines.append(line)
-        return ''.join(lines)
+        return b''.join(lines)
 
 
 # Regular expression used for parsing. (Note: The spec states that the name
 # part should be non-empty but git-fast-export doesn't always do that so
 # the first bit is \w*, not \w+.) Also git-fast-import code says the
 # space before the email is optional.
-_WHO_AND_WHEN_RE = re.compile(r'([^<]*)<(.*)> (.+)')
-_WHO_RE = re.compile(r'([^<]*)<(.*)>')
+_WHO_AND_WHEN_RE = re.compile(br'([^<]*)<(.*)> (.+)')
+_WHO_RE = re.compile(br'([^<]*)<(.*)>')
 
 
 class ImportParser(LineBasedParser):
 
-    def __init__(self, input, verbose=False, output=sys.stdout,
+    def __init__(self, input_stream, verbose=False, output=sys.stdout,
         user_mapper=None, strict=True):
         """A Parser of import commands.
 
-        :param input: the file-like object to read from
+        :param input_stream: the file-like object to read from
         :param verbose: display extra information of not
         :param output: the file-like object to write messages to (YAGNI?)
         :param user_mapper: if not None, the UserMapper used to adjust
           user-ids for authors, committers and taggers.
         :param strict: Raise errors on strictly invalid data
         """
-        LineBasedParser.__init__(self, input)
+        LineBasedParser.__init__(self, input_stream)
         self.verbose = verbose
         self.output = output
         self.user_mapper = user_mapper
@@ -287,28 +292,28 @@ class ImportParser(LineBasedParser):
         while True:
             line = self.next_line()
             if line is None:
-                if 'done' in self.features:
+                if b'done' in self.features:
                     raise errors.PrematureEndOfStream(self.lineno)
                 break
-            elif len(line) == 0 or line.startswith('#'):
+            elif len(line) == 0 or line.startswith(b'#'):
                 continue
             # Search for commands in order of likelihood
-            elif line.startswith('commit '):
-                yield self._parse_commit(line[len('commit '):])
-            elif line.startswith('blob'):
+            elif line.startswith(b'commit '):
+                yield self._parse_commit(line[len(b'commit '):])
+            elif line.startswith(b'blob'):
                 yield self._parse_blob()
-            elif line.startswith('done'):
+            elif line.startswith(b'done'):
                 break
-            elif line.startswith('progress '):
-                yield commands.ProgressCommand(line[len('progress '):])
-            elif line.startswith('reset '):
-                yield self._parse_reset(line[len('reset '):])
-            elif line.startswith('tag '):
-                yield self._parse_tag(line[len('tag '):])
-            elif line.startswith('checkpoint'):
+            elif line.startswith(b'progress '):
+                yield commands.ProgressCommand(line[len(b'progress '):])
+            elif line.startswith(b'reset '):
+                yield self._parse_reset(line[len(b'reset '):])
+            elif line.startswith(b'tag '):
+                yield self._parse_tag(line[len(b'tag '):])
+            elif line.startswith(b'checkpoint'):
                 yield commands.CheckpointCommand()
-            elif line.startswith('feature'):
-                yield self._parse_feature(line[len('feature '):])
+            elif line.startswith(b'feature'):
+                yield self._parse_feature(line[len(b'feature '):])
             else:
                 self.abort(errors.InvalidCommand, line)
 
@@ -322,21 +327,21 @@ class ImportParser(LineBasedParser):
             line = self.next_line()
             if line is None:
                 break
-            elif len(line) == 0 or line.startswith('#'):
+            elif len(line) == 0 or line.startswith(b'#'):
                 continue
             # Search for file commands in order of likelihood
-            elif line.startswith('M '):
+            elif line.startswith(b'M '):
                 yield self._parse_file_modify(line[2:])
-            elif line.startswith('D '):
+            elif line.startswith(b'D '):
                 path = self._path(line[2:])
                 yield commands.FileDeleteCommand(path)
-            elif line.startswith('R '):
+            elif line.startswith(b'R '):
                 old, new = self._path_pair(line[2:])
                 yield commands.FileRenameCommand(old, new)
-            elif line.startswith('C '):
+            elif line.startswith(b'C '):
                 src, dest = self._path_pair(line[2:])
                 yield commands.FileCopyCommand(src, dest)
-            elif line.startswith('deleteall'):
+            elif line.startswith(b'deleteall'):
                 yield commands.FileDeleteAllCommand()
             else:
                 self.push_line(line)
@@ -346,23 +351,23 @@ class ImportParser(LineBasedParser):
         """Parse a blob command."""
         lineno = self.lineno
         mark = self._get_mark_if_any()
-        data = self._get_data('blob')
+        data = self._get_data(b'blob')
         return commands.BlobCommand(mark, data, lineno)
 
     def _parse_commit(self, ref):
         """Parse a commit command."""
         lineno  = self.lineno
         mark = self._get_mark_if_any()
-        author = self._get_user_info('commit', 'author', False)
+        author = self._get_user_info(b'commit', b'author', False)
         more_authors = []
         while True:
-            another_author = self._get_user_info('commit', 'author', False)
+            another_author = self._get_user_info(b'commit', b'author', False)
             if another_author is not None:
                 more_authors.append(another_author)
             else:
                 break
-        committer = self._get_user_info('commit', 'committer')
-        message = self._get_data('commit', 'message')
+        committer = self._get_user_info(b'commit', b'committer')
+        message = self._get_data(b'commit', b'message')
         from_ = self._get_from()
         merges = []
         while True:
@@ -371,7 +376,7 @@ class ImportParser(LineBasedParser):
                 # while the spec suggests it's illegal, git-fast-export
                 # outputs multiple merges on the one line, e.g.
                 # merge :x :y :z
-                these_merges = merge.split(" ")
+                these_merges = merge.split(b' ')
                 merges.extend(these_merges)
             else:
                 break
@@ -389,7 +394,7 @@ class ImportParser(LineBasedParser):
 
     def _parse_feature(self, info):
         """Parse a feature command."""
-        parts = info.split("=", 1)
+        parts = info.split(b'=', 1)
         name = parts[0]
         if len(parts) > 1:
             value = self._path(parts[1])
@@ -404,12 +409,12 @@ class ImportParser(LineBasedParser):
         :param info: a string in the format "mode dataref path"
           (where dataref might be the hard-coded literal 'inline').
         """
-        params = info.split(' ', 2)
+        params = info.split(b' ', 2)
         path = self._path(params[2])
         mode = self._mode(params[0])
-        if params[1] == 'inline':
+        if params[1] == b'inline':
             dataref = None
-            data = self._get_data('filemodify')
+            data = self._get_data(b'filemodify')
         else:
             dataref = params[1]
             data = None
@@ -423,17 +428,17 @@ class ImportParser(LineBasedParser):
 
     def _parse_tag(self, name):
         """Parse a tag command."""
-        from_ = self._get_from('tag')
-        tagger = self._get_user_info('tag', 'tagger',
+        from_ = self._get_from(b'tag')
+        tagger = self._get_user_info(b'tag', b'tagger',
                 accept_just_who=True)
-        message = self._get_data('tag', 'message')
+        message = self._get_data(b'tag', b'message')
         return commands.TagCommand(name, from_, tagger, message)
 
     def _get_mark_if_any(self):
         """Parse a mark section."""
         line = self.next_line()
-        if line.startswith('mark :'):
-            return line[len('mark :'):]
+        if line.startswith(b'mark :'):
+            return line[len(b'mark :'):]
         else:
             self.push_line(line)
             return None
@@ -443,8 +448,8 @@ class ImportParser(LineBasedParser):
         line = self.next_line()
         if line is None:
             return None
-        elif line.startswith('from '):
-            return line[len('from '):]
+        elif line.startswith(b'from '):
+            return line[len(b'from '):]
         elif required_for:
             self.abort(errors.MissingSection, required_for, 'from')
         else:
@@ -456,8 +461,8 @@ class ImportParser(LineBasedParser):
         line = self.next_line()
         if line is None:
             return None
-        elif line.startswith('merge '):
-            return line[len('merge '):]
+        elif line.startswith(b'merge '):
+            return line[len(b'merge '):]
         else:
             self.push_line(line)
             return None
@@ -467,8 +472,8 @@ class ImportParser(LineBasedParser):
         line = self.next_line()
         if line is None:
             return None
-        elif line.startswith('property '):
-            return self._name_value(line[len('property '):])
+        elif line.startswith(b'property '):
+            return self._name_value(line[len(b'property '):])
         else:
             self.push_line(line)
             return None
@@ -477,8 +482,8 @@ class ImportParser(LineBasedParser):
         accept_just_who=False):
         """Parse a user section."""
         line = self.next_line()
-        if line.startswith(section + ' '):
-            return self._who_when(line[len(section + ' '):], cmd, section,
+        if line.startswith(section + b' '):
+            return self._who_when(line[len(section + b' '):], cmd, section,
                 accept_just_who=accept_just_who)
         elif required:
             self.abort(errors.MissingSection, cmd, section)
@@ -486,21 +491,21 @@ class ImportParser(LineBasedParser):
             self.push_line(line)
             return None
 
-    def _get_data(self, required_for, section='data'):
+    def _get_data(self, required_for, section=b'data'):
         """Parse a data section."""
         line = self.next_line()
-        if line.startswith('data '):
-            rest = line[len('data '):]
-            if rest.startswith('<<'):
+        if line.startswith(b'data '):
+            rest = line[len(b'data '):]
+            if rest.startswith(b'<<'):
                 return self.read_until(rest[2:])
             else:
                 size = int(rest)
                 read_bytes = self.read_bytes(size)
                 # optional LF after data.
-                next = self.input.readline()
+                next_line = self.input.readline()
                 self.lineno += 1
-                if len(next) > 1 or next != "\n":
-                    self.push_line(next[:-1])
+                if len(next_line) > 1 or next_line != b'\n':
+                    self.push_line(next_line[:-1])
                 return read_bytes
         else:
             self.abort(errors.MissingSection, required_for, section)
@@ -516,19 +521,19 @@ class ImportParser(LineBasedParser):
             datestr = match.group(3).lstrip()
             if self.date_parser is None:
                 # auto-detect the date format
-                if len(datestr.split(' ')) == 2:
-                    format = 'raw'
-                elif datestr == 'now':
-                    format = 'now'
+                if len(datestr.split(b' ')) == 2:
+                    date_format = 'raw'
+                elif datestr == b'now':
+                    date_format = 'now'
                 else:
-                    format = 'rfc2822'
-                self.date_parser = dates.DATE_PARSERS_BY_NAME[format]
+                    date_format = 'rfc2822'
+                self.date_parser = dates.DATE_PARSERS_BY_NAME[date_format]
             try:
                 when = self.date_parser(datestr, self.lineno)
             except ValueError:
-                print "failed to parse datestr '%s'" % (datestr,)
+                print("failed to parse datestr '%s'" % (datestr,))
                 raise
-            name = match.group(1)
+            name = match.group(1).rstrip()
             email = match.group(2)
         else:
             match = _WHO_RE.search(s)
@@ -545,18 +550,19 @@ class ImportParser(LineBasedParser):
                 email = None
                 when = dates.DATE_PARSERS_BY_NAME['now']('now')
         if len(name) > 0:
-            if name[-1] == " ":
+            if name.endswith(b' '):
                 name = name[:-1]
         # While it shouldn't happen, some datasets have email addresses
         # which contain unicode characters. See bug 338186. We sanitize
         # the data at this level just in case.
         if self.user_mapper:
             name, email = self.user_mapper.map_name_and_email(name, email)
+
         return Authorship(name, email, when[0], when[1])
 
     def _name_value(self, s):
         """Parse a (name,value) tuple from 'name value-length value'."""
-        parts = s.split(' ', 2)
+        parts = s.split(b' ', 2)
         name = parts[0]
         if len(parts) == 1:
             value = None
@@ -566,14 +572,13 @@ class ImportParser(LineBasedParser):
             still_to_read = size - len(value)
             if still_to_read > 0:
                 read_bytes = self.read_bytes(still_to_read)
-                value += "\n" + read_bytes[:still_to_read - 1]
-            value = value.decode('utf8')
+                value += b'\n' + read_bytes[:still_to_read - 1]
         return (name, value)
 
     def _path(self, s):
         """Parse a path."""
-        if s.startswith('"'):
-            if s[-1] != '"':
+        if s.startswith(b'"'):
+            if not s.endswith(b'"'):
                 self.abort(errors.BadFormat, '?', '?', s)
             else:
                 return _unquote_c_string(s[1:-1])
@@ -582,17 +587,17 @@ class ImportParser(LineBasedParser):
     def _path_pair(self, s):
         """Parse two paths separated by a space."""
         # TODO: handle a space in the first path
-        if s.startswith('"'):
-            parts = s[1:].split('" ', 1)
+        if s.startswith(b'"'):
+            parts = s[1:].split(b'" ', 1)
         else:
-            parts = s.split(' ', 1)
+            parts = s.split(b' ', 1)
         if len(parts) != 2:
             self.abort(errors.BadFormat, '?', '?', s)
-        elif parts[1].startswith('"') and parts[1].endswith('"'):
+        elif parts[1].startswith(b'"') and parts[1].endswith(b'"'):
             parts[1] = parts[1][1:-1]
-        elif parts[1].startswith('"') or parts[1].endswith('"'):
+        elif parts[1].startswith(b'"') or parts[1].endswith(b'"'):
             self.abort(errors.BadFormat, '?', '?', s)
-        return map(_unquote_c_string, parts)
+        return [_unquote_c_string(s) for s in parts]
 
     def _mode(self, s):
         """Check file mode format and parse into an int.
@@ -600,23 +605,55 @@ class ImportParser(LineBasedParser):
         :return: mode as integer
         """
         # Note: Output from git-fast-export slightly different to spec
-        if s in ['644', '100644', '0100644']:
-            return 0100644
-        elif s in ['755', '100755', '0100755']:
-            return 0100755
-        elif s in ['040000', '0040000']:
-            return 040000
-        elif s in ['120000', '0120000']:
-            return 0120000
-        elif s in ['160000', '0160000']:
-            return 0160000
+        if s in [b'644', b'100644', b'0100644']:
+            return 0o100644
+        elif s in [b'755', b'100755', b'0100755']:
+            return 0o100755
+        elif s in [b'040000', b'0040000']:
+            return 0o40000
+        elif s in [b'120000', b'0120000']:
+            return 0o120000
+        elif s in [b'160000', b'0160000']:
+            return 0o160000
         else:
             self.abort(errors.BadFormat, 'filemodify', 'mode', s)
 
 
+ESCAPE_SEQUENCE_BYTES_RE = re.compile(br'''
+    ( \\U........      # 8-digit hex escapes
+    | \\u....          # 4-digit hex escapes
+    | \\x..            # 2-digit hex escapes
+    | \\[0-7]{1,3}     # Octal escapes
+    | \\N\{[^}]+\}     # Unicode characters by name
+    | \\[\\'"abfnrtv]  # Single-character escapes
+    )''', re.VERBOSE
+)
+
+ESCAPE_SEQUENCE_RE = re.compile(r'''
+    ( \\U........
+    | \\u....
+    | \\x..
+    | \\[0-7]{1,3}
+    | \\N\{[^}]+\}
+    | \\[\\'"abfnrtv]
+    )''', re.UNICODE | re.VERBOSE
+)
+
 def _unquote_c_string(s):
-    """replace C-style escape sequences (\n, \", etc.) with real chars."""
-    # HACK: Python strings are close enough
-    return s.decode('string_escape', 'replace')
+     """replace C-style escape sequences (\n, \", etc.) with real chars."""
+
+     # doing a s.encode('utf-8').decode('unicode_escape') can return an
+     # incorrect output with unicode string (both in py2 and py3) the safest way
+     # is to match the escape sequences and decoding them alone.
+     def decode_match(match):
+          return utf8_bytes_string(
+               codecs.decode(match.group(0), 'unicode-escape')
+          )
+
+     if sys.version_info[0] >= 3 and isinstance(s, bytes):
+          return ESCAPE_SEQUENCE_BYTES_RE.sub(decode_match, s)
+     else:
+          return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
+
 
 Authorship = collections.namedtuple('Authorship', 'name email timestamp timezone')

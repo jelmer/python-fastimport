@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Import processor that filters the input (and doesn't import)."""
-
-
 from fastimport import (
     commands,
     helpers,
@@ -42,16 +40,16 @@ class FilterProcessor(processor.ImportProcessor):
     """
 
     known_params = [
-        'include_paths',
-        'exclude_paths',
-        'squash_empty_commits'
-        ]
+        b'include_paths',
+        b'exclude_paths',
+        b'squash_empty_commits'
+    ]
 
     def pre_process(self):
-        self.includes = self.params.get('include_paths')
-        self.excludes = self.params.get('exclude_paths')
+        self.includes = self.params.get(b'include_paths')
+        self.excludes = self.params.get(b'exclude_paths')
         self.squash_empty_commits = bool(
-            self.params.get('squash_empty_commits', True))
+            self.params.get(b'squash_empty_commits', True))
         # What's the new root, if any
         self.new_root = helpers.common_directory(self.includes)
         # Buffer of blobs until we know we need them: mark -> cmd
@@ -128,7 +126,7 @@ class FilterProcessor(processor.ImportProcessor):
         else:
             parents = None
         if cmd.mark is not None:
-            self.parents[":" + cmd.mark] = parents
+            self.parents[b':' + cmd.mark] = parents
 
     def reset_handler(self, cmd):
         """Process a ResetCommand."""
@@ -158,14 +156,14 @@ class FilterProcessor(processor.ImportProcessor):
 
     def _print_command(self, cmd):
         """Wrapper to avoid adding unnecessary blank lines."""
-        text = repr(cmd)
+        text = helpers.repr_bytes(cmd)
         self.outf.write(text)
-        if not text.endswith("\n"):
-            self.outf.write("\n")
+        if not text.endswith(b'\n'):
+            self.outf.write(b'\n')
 
     def _filter_filecommands(self, filecmd_iter):
         """Return the filecommands filtered by includes & excludes.
-        
+
         :return: a list of FileCommand objects
         """
         if self.includes is None and self.excludes is None:
@@ -242,7 +240,7 @@ class FilterProcessor(processor.ImportProcessor):
 
     def _convert_rename(self, fc):
         """Convert a FileRenameCommand into a new FileCommand.
-        
+
         :return: None if the rename is being ignored, otherwise a
           new FileCommand based on the whether the old and new paths
           are inside or outside of the interesting locations.
@@ -273,7 +271,7 @@ class FilterProcessor(processor.ImportProcessor):
 
     def _convert_copy(self, fc):
         """Convert a FileCopyCommand into a new FileCommand.
-        
+
         :return: None if the copy is being ignored, otherwise a
           new FileCommand based on the whether the source and destination
           paths are inside or outside of the interesting locations.
