@@ -400,15 +400,15 @@ class TestNotesDisplay(TestCase):
         self.assertEqual(
             b"""commit refs/heads/master
 mark :1
-author %(user)s
-committer %(user)s
+author Ed Mund <ed@example.org> 1234565432 +0000
+committer Ed Mund <ed@example.org> 1234565432 +0000
 data 5
 test
 
 M 644 inline bar
 data 0
 commit refs/notes/commits
-committer %(user)s
+committer Ed Mund <ed@example.org> 1234565432 +0000
 data 31
 Notes added by 'git notes add'
 
@@ -416,16 +416,14 @@ N inline :1
 data 10
 Test note
 commit refs/notes/test
-committer %(user)s
+committer Ed Mund <ed@example.org> 1234565432 +0000
 data 31
 Notes added by 'git notes add'
 
 N inline :1
 data 10
 Test test
-""" % {
-    b'user': b'%s <%s> %d %+05d' % committer,
-}, b''.join([repr_bytes(s) for s in commits]))
+""", b''.join([repr_bytes(s) for s in commits]))
 
 
 class TestPathChecking(TestCase):

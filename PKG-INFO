@@ -1,10 +1,10 @@
 Metadata-Version: 1.0
 Name: fastimport
-Version: 0.9.5
+Version: 0.9.6
 Summary: VCS fastimport/fastexport parser
-Home-page: https://launchpad.net/python-fastimport
-Author: Canonical Ltd
-Author-email: bazaar@lists.canonical.com
+Home-page: htps://github.com/jelmer/python-fastimport
+Author: Jelmer Vernooij
+Author-email: jelmer@jelmer.uk
 License: GNU GPL v2 or later
 Description: UNKNOWN
 Platform: UNKNOWN
