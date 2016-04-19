@@ -27,6 +27,7 @@ import sys
 from fastimport.helpers import (
     newobject as object,
     utf8_bytes_string,
+    repr_bytes,
     )
 
 
@@ -120,7 +121,7 @@ class BlobCommand(ImportCommand):
         self.lineno = lineno
         # Provide a unique id in case the mark is missing
         if mark is None:
-            self.id = b'@%d' % lineno
+            self.id = b'@' + ("%d" % lineno).encode('utf-8')
         else:
             self.id = b':' + mark
         self._binary = [b'data']
@@ -129,8 +130,9 @@ class BlobCommand(ImportCommand):
         if self.mark is None:
             mark_line = b''
         else:
-            mark_line = b"\nmark :%s" % self.mark
-        return b'blob%s\ndata %d\n%s' % (mark_line, len(self.data), self.data)
+            mark_line = b"\nmark :" + self.mark
+        return (b'blob' + mark_line + b'\n' +
+                ('data %d\n' % len(self.data)).encode('utf-8') + self.data)
 
 
 class CheckpointCommand(ImportCommand):
@@ -161,9 +163,9 @@ class CommitCommand(ImportCommand):
         self._binary = [b'file_iter']
         # Provide a unique id in case the mark is missing
         if mark is None:
-            self.id = b'@%d' % lineno
+            self.id = b'@' + ('%d' % lineno).encode('utf-8')
         else:
-            self.id = b':%s' % mark
+            self.id = b':' + mark
 
     def copy(self, **kwargs):
         if not isinstance(self.file_iter, list):
@@ -192,30 +194,30 @@ class CommitCommand(ImportCommand):
         if self.mark is None:
             mark_line = b''
         else:
-            mark_line = b'\nmark :%s' % self.mark
+            mark_line = b'\nmark :' + self.mark
         if self.author is None:
             author_section = b''
         else:
-            author_section = b'\nauthor %s' % format_who_when(self.author)
+            author_section = b'\nauthor ' + format_who_when(self.author)
             if use_features and self.more_authors:
                 for author in self.more_authors:
-                    author_section += b'\nauthor %s' % format_who_when(author)
+                    author_section += b'\nauthor ' + format_who_when(author)
 
-        committer = b'committer %s' % format_who_when(self.committer)
+        committer = b'committer ' + format_who_when(self.committer)
 
         if self.message is None:
             msg_section = b''
         else:
             msg = self.message
-            msg_section = b'\ndata %d\n%s' % (len(msg), msg)
+            msg_section = ('\ndata %d\n' % len(msg)).encode('ascii') + msg
         if self.from_ is None:
             from_line = b''
         else:
-            from_line = b'\nfrom %s' % self.from_
+            from_line = b'\nfrom ' + self.from_
         if self.merges is None:
             merge_lines = b''
         else:
-            merge_lines = b''.join([b'\nmerge %s' % (m,)
+            merge_lines = b''.join([b'\nmerge ' + m
                 for m in self.merges])
         if use_features and self.properties:
             property_lines = []
@@ -229,14 +231,22 @@ class CommitCommand(ImportCommand):
             filecommands = b''
         else:
             if include_file_contents:
-                format_str = b'\n%r'
+                filecommands = b''.join([b'\n' + repr_bytes(c)
+                    for c in self.iter_files()])
             else:
-                format_str = b'\n%s'
-            filecommands = b''.join([format_str % (c,)
-                for c in self.iter_files()])
-        return b'commit %s%s%s\n%s%s%s%s%s%s' % (self.ref, mark_line,
-            author_section, committer, msg_section, from_line, merge_lines,
-            properties_section, filecommands)
+                filecommands = b''.join([b'\n' + str(c)
+                    for c in self.iter_files()])
+        return b''.join([
+            b'commit ',
+            self.ref,
+            mark_line,
+            author_section + b'\n',
+            committer,
+            msg_section,
+            from_line,
+            merge_lines,
+            properties_section,
+            filecommands])
 
     def dump_str(self, names=None, child_lists=None, verbose=False):
         result = [ImportCommand.dump_str(self, names, verbose=verbose)]
@@ -270,8 +280,8 @@ class FeatureCommand(ImportCommand):
         if self.value is None:
             value_text = b''
         else:
-            value_text = b'=%s' % self.value
-        return b'feature %s%s' % (self.feature_name, value_text)
+            value_text = b'=' + self.value
+        return b'feature ' + self.feature_name + value_text
 
 
 class ProgressCommand(ImportCommand):
@@ -281,7 +291,7 @@ class ProgressCommand(ImportCommand):
         self.message = message
 
     def __bytes__(self):
-        return b'progress %s' % (self.message,)
+        return b'progress ' + self.message
 
 
 class ResetCommand(ImportCommand):
@@ -300,8 +310,8 @@ class ResetCommand(ImportCommand):
             # was needed. Always emit it, since it doesn't hurt and maintains
             # compatibility with older versions.
             # http://git.kernel.org/?p=git/git.git;a=commit;h=655e8515f279c01f525745d443f509f97cd805ab
-            from_line = b'\nfrom %s\n' % self.from_
-        return b'reset %s%s' % (self.ref, from_line)
+            from_line = b'\nfrom ' + self.from_ + b'\n'
+        return b'reset ' + self.ref + from_line
 
 
 class TagCommand(ImportCommand):
@@ -317,17 +327,17 @@ class TagCommand(ImportCommand):
         if self.from_ is None:
             from_line = b''
         else:
-            from_line = b'\nfrom %s' % self.from_
+            from_line = b'\nfrom ' + self.from_
         if self.tagger is None:
             tagger_line = b''
         else:
-            tagger_line = b'\ntagger %s' % format_who_when(self.tagger)
+            tagger_line = b'\ntagger ' + format_who_when(self.tagger)
         if self.message is None:
             msg_section = b''
         else:
             msg = self.message
-            msg_section = b'\ndata %d\n%s' % (len(msg), msg)
-        return b'tag %s%s%s%s' % (self.id, from_line, tagger_line, msg_section)
+            msg_section = ('\ndata %d\n' % len(msg)).encode('ascii') + msg
+        return b'tag ' + self.id + from_line + tagger_line + msg_section
 
 
 class FileCommand(ImportCommand):
@@ -373,12 +383,13 @@ class FileModifyCommand(FileCommand):
         elif self.dataref is None:
             dataref = b'inline'
             if include_file_contents:
-                datastr = b'\ndata %d\n%s' % (len(self.data), self.data)
+                datastr = ('\ndata %d\n' % len(self.data)).encode('ascii') + self.data
         else:
-            dataref = b'%s' % (self.dataref,)
+            dataref = self.dataref
         path = format_path(self.path)
 
-        return b'M %s %s %s%s' % (self._format_mode(self.mode), dataref, path, datastr)
+        return b' '.join(
+            [b'M', self._format_mode(self.mode), dataref, path + datastr])
 
 
 class FileDeleteCommand(FileCommand):
@@ -388,7 +399,7 @@ class FileDeleteCommand(FileCommand):
         self.path = check_path(path)
 
     def __bytes__(self):
-        return b'D %s' % (format_path(self.path),)
+        return b' '.join([b'D', format_path(self.path)])
 
 
 class FileCopyCommand(FileCommand):
@@ -399,9 +410,9 @@ class FileCopyCommand(FileCommand):
         self.dest_path = check_path(dest_path)
 
     def __bytes__(self):
-        return b'C %s %s' % (
+        return b' '.join([b'C',
             format_path(self.src_path, quote_spaces=True),
-            format_path(self.dest_path))
+            format_path(self.dest_path)])
 
 
 class FileRenameCommand(FileCommand):
@@ -412,9 +423,10 @@ class FileRenameCommand(FileCommand):
         self.new_path = check_path(new_path)
 
     def __bytes__(self):
-        return b'R %s %s' % (
+        return b' '.join([
+            b'R',
             format_path(self.old_path, quote_spaces=True),
-            format_path(self.new_path)
+            format_path(self.new_path)]
         )
 
 
@@ -436,9 +448,8 @@ class NoteModifyCommand(FileCommand):
         self._binary = ['data']
 
     def __bytes__(self):
-        return b'N inline :%s\ndata %d\n%s' % (
-            self.from_, len(self.data), self.data
-        )
+        return (b'N inline :' + self.from_ +
+                ('\ndata %d\n'% len(self.data)).encode('ascii') + self.data)
 
 
 def check_path(path):
@@ -468,7 +479,7 @@ def format_path(p, quote_spaces=False):
         quote = p[0] == b'"' or (quote_spaces and b' ' in p)
     if quote:
         extra = GIT_FAST_IMPORT_NEEDS_EXTRA_SPACE_AFTER_QUOTE and b' ' or b''
-        p = b'"%s"%s' % (p, extra)
+        p = b'"' + p + b'"' + extra
     return p
 
 
@@ -482,7 +493,7 @@ def format_who_when(fields):
         offset_sign = b'+'
     offset_hours = offset // 3600
     offset_minutes = offset // 60 - offset_hours * 60
-    offset_str = b'%s%02d%02d' % (offset_sign, offset_hours, offset_minutes)
+    offset_str = offset_sign + ('%02d%02d' % (offset_hours, offset_minutes)).encode('ascii')
     name = fields[0]
 
     if name == b'':
@@ -496,9 +507,7 @@ def format_who_when(fields):
 
     email = utf8_bytes_string(email)
 
-    result = b'%s%s<%s> %d %s' % (name, sep, email, fields[2], offset_str)
-
-    return result
+    return b''.join((name, sep, b'<', email, b'> ', ("%d" % fields[2]).encode('ascii'), b' ', offset_str))
 
 
 def format_property(name, value):
@@ -506,12 +515,9 @@ def format_property(name, value):
     result = b''
     utf8_name = utf8_bytes_string(name)
 
+    result = b'property ' + utf8_name
     if value is not None:
         utf8_value = utf8_bytes_string(value)
-        result = b'property %s %d %s' % (
-            utf8_name, len(utf8_value), utf8_value
-        )
-    else:
-        result = b'property %s' % (utf8_name,)
+        result += b' ' + ('%d' % len(utf8_value)).encode('ascii') + b' ' + utf8_value
 
     return result
