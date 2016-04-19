@@ -1,6 +1,7 @@
 python-fastimport (0.9.6-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+   + Adds support for python 3.4.
 
  -- Jelmer Vernooĳ <jelmer@debian.org>  Tue, 19 Apr 2016 23:44:19 +0000
 
