@@ -17,7 +17,7 @@ Architecture: all
 Provides: ${python:Provides}
 Depends: ${python:Depends}, ${misc:Depends}
 Suggests: git-core
-Breaks: ${python:Breaks}, bzr-fastimport
+Breaks: ${python:Breaks}, bzr-fastimport (<< 0.13.0+bzr361)
 Replaces: bzr-fastimport (<< 0.9.0+bzr279)
 Description: Fastimport file format parser and generator library
  Python library for parsing and generating the fastimport file format.
