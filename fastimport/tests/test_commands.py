@@ -205,6 +205,27 @@ class TestCommitDisplay(TestCase):
             b"property planet 5 world",
             repr_bytes(c))
 
+    def test_commit_with_int_mark(self):
+        # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
+        committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
+        properties = {
+            u'greeting':  u'hello',
+            u'planet':    u'world',
+            }
+        c = commands.CommitCommand(b'refs/heads/master', 123, None,
+            committer, b'release v1.0', b':aaa', None, None,
+            properties=properties)
+        self.assertEqual(
+            b"commit refs/heads/master\n"
+            b"mark :123\n"
+            b"committer Joe Wong <joe@example.com> 1234567890 -0600\n"
+            b"data 12\n"
+            b"release v1.0\n"
+            b"from :aaa\n"
+            b"property greeting 5 hello\n"
+            b"property planet 5 world",
+            repr_bytes(c))
+
 class TestCommitCopy(TestCase):
 
     def setUp(self):
@@ -227,7 +248,6 @@ class TestCommitCopy(TestCase):
 
     def test_replace_attr(self):
         c2 = self.c.copy(mark=b'ccc')
-
         self.assertEqual(
             repr_bytes(self.c).replace(b'mark :bbb', b'mark :ccc'),
             repr_bytes(c2)
