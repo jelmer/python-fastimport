@@ -162,10 +162,13 @@ class CommitCommand(ImportCommand):
         self.lineno = lineno
         self._binary = [b'file_iter']
         # Provide a unique id in case the mark is missing
-        if mark is None:
+        if self.mark is None:
             self.id = b'@' + ('%d' % lineno).encode('utf-8')
         else:
-            self.id = b':' + mark
+            if isinstance(self.mark, (int)):
+                self.id = b':' + str(self.mark).encode('utf-8')
+            else:
+                self.id = b':' + self.mark
 
     def copy(self, **kwargs):
         if not isinstance(self.file_iter, list):
@@ -194,7 +197,11 @@ class CommitCommand(ImportCommand):
         if self.mark is None:
             mark_line = b''
         else:
-            mark_line = b'\nmark :' + self.mark
+            if isinstance(self.mark, (int)):
+                mark_line = b'\nmark :' + str(self.mark).encode('utf-8')
+            else:
+                mark_line = b'\nmark :' + self.mark
+
         if self.author is None:
             author_section = b''
         else:
