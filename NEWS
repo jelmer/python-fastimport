@@ -1,5 +1,8 @@
 0.9.7	UNRELEASED
 
+ * Don't attempt to encode bytestrings in utf8_bytes_helper().
+   (Jelmer Vernooĳ, #1647101)
+
 0.9.6	2016-04-19
 
  * Add python3.4 support (Jelmer Vernooij)
