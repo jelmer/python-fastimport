@@ -1,0 +1,24 @@
+Description: Cope with bytestrings in utf8_bytes_string() helper.
+Author: Jelmer Vernooij <jelmer@jelmer.uk>
+Acked-By: Unit 193 <unit193@ubuntu.com>
+Acked-By: Mattia Rizzolo <mattia@debian.org>
+Bug-Ubuntu: https://bugs.launchpad.net/bugs/1647101
+Last-Update: 2017-04-23
+
+--- a/fastimport/helpers.py
++++ b/fastimport/helpers.py
+@@ -99,9 +99,12 @@
+ 
+ 
+ def utf8_bytes_string(s):
+-    """Convert a string to a bytes string encoded in utf8"""
++    """Convert a string to a bytes string (if necessary, encode in utf8)"""
+     if sys.version_info[0] == 2:
+-        return s.encode('utf8')
++        if isinstance(s, str):
++            return s
++        else:
++            return s.encode('utf8')
+     else:
+         if isinstance(s, str):
+             return bytes(s, encoding='utf8')

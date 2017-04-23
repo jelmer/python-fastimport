@@ -1,3 +1,11 @@
+python-fastimport (0.9.6-3) unstable; urgency=medium
+
+  * Team upload.
+  * Add patch from upstream to fix a crash with UTF-8 encoded author names.
+    LP: #1647101
+
+ -- Mattia Rizzolo <mattia@debian.org>  Sun, 23 Apr 2017 08:40:09 +0200
+
 python-fastimport (0.9.6-2) unstable; urgency=medium
 
   * Only mark as breaking older versions of bzr-fastimport <<
