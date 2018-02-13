@@ -8,8 +8,8 @@ Build-Depends: python-all (>= 2.6.6-3), python3-all (>= 3.4), debhelper (>= 7.0.
 Standards-Version: 3.9.7
 X-Python-Version: >= 2.4
 X-Python3-Version: >= 3.4
-Vcs-Git: https://anonscm.debian.org/git/python-modules/packages/python-fastimport.git
-Vcs-Browser: https://anonscm.debian.org/cgit/python-modules/packages/python-fastimport.git
+Vcs-Git: https://salsa.debian.org/python-team/modules/python-fastimport.git
+Vcs-Browser: https://salsa.debian.org/python-team/modules/python-fastimport
 XS-Testsuite: autopkgtest
 
 Package: python-fastimport
