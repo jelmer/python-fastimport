@@ -10,7 +10,6 @@ X-Python-Version: >= 2.4
 X-Python3-Version: >= 3.4
 Vcs-Git: https://salsa.debian.org/python-team/modules/python-fastimport.git
 Vcs-Browser: https://salsa.debian.org/python-team/modules/python-fastimport
-XS-Testsuite: autopkgtest
 
 Package: python-fastimport
 Architecture: all

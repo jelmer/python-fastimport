@@ -2,6 +2,7 @@ python-fastimport (0.9.6-4) UNRELEASED; urgency=medium
 
   * d/control: Set Vcs-* to salsa.debian.org
   * d/copyright: Use https protocol in Format field
+  * d/control: Remove XS-Testsuite field, not needed anymore
 
  -- Ondřej Nový <onovy@debian.org>  Tue, 13 Feb 2018 10:07:41 +0100
 
