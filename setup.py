@@ -13,6 +13,11 @@ setup(name="fastimport",
       license="GNU GPL v2 or later",
       url="htps://github.com/jelmer/python-fastimport",
       packages=['fastimport', 'fastimport.tests', 'fastimport.processors'],
+      scripts=[
+          'bin/fast-import-query',
+          'bin/fast-import-filter',
+          'bin/fast-import-info',
+      ],
       classifiers=[
           'Development Status :: 4 - Beta',
           'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',

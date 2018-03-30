@@ -1,0 +1,100 @@
+#!/usr/bin/python
+
+__doc__ = """Filter a fast-import stream to include/exclude files & directories.
+
+This command is useful for splitting a subdirectory or bunch of
+files out from a project to create a new project complete with history
+for just those files. It can also be used to create a new project
+repository that removes all references to files that should not have
+been committed, e.g. security-related information (like passwords),
+commercially sensitive material, files with an incompatible license or
+large binary files like CD images.
+
+To specify standard input as the input stream, use a source name
+of '-'. If the source name ends in '.gz', it is assumed to be
+compressed in gzip format.
+
+:File/directory filtering:
+
+ This is supported by the -i and -x options. Excludes take precedence
+ over includes.
+
+ When filtering out a subdirectory (or file), the new stream uses the
+ subdirectory (or subdirectory containing the file) as the root. As
+ fast-import doesn't know in advance whether a path is a file or
+ directory in the stream, you need to specify a trailing '/' on
+ directories passed to the `--includes option`. If multiple files or
+ directories are given, the new root is the deepest common directory.
+
+ Note: If a path has been renamed, take care to specify the *original*
+ path name, not the final name that it ends up with.
+
+:History rewriting:
+
+ By default fast-import-filter does quite aggressive history rewriting.
+ Empty commits (or commits which had all their content filtered out) will
+ be removed, and so are the references to commits not included in the stream.
+
+ Flag --dont-squash-empty-commits reverses this behavior and makes it possible to
+ use fast-import-filter on incremental streams.
+
+:Examples:
+
+ Create a new project from a library (note the trailing / on the
+ directory name of the library)::
+
+   front-end | fast-import-filter -i lib/xxx/ > xxx.fi
+   fast-import xxx.fi mylibrary.bzr
+   (lib/xxx/foo is now foo)
+
+ Create a new repository without a sensitive file::
+
+   front-end | fast-import-filter -x missile-codes.txt > clean.fi
+   fast-import clean.fi clean.bzr
+"""
+
+import optparse
+import sys
+
+parser = optparse.OptionParser('fast-import-filter [options] SOURCE?')
+
+parser.add_option('-v', '--verbose', dest="verbose", action="store_true",
+                  help="Be verbose.", default=False)
+parser.add_option('-i', '--include-paths', dest="include_paths",
+                  action="append", type=str,
+                  help="Only include commits affecting these paths."
+                       " Directories should have a trailing /.")
+parser.add_option('-x', '--exclude-paths', dest="exclude_paths",
+                  type=str, help="Exclude these paths from commits.")
+parser.add_option('--dont-squash-empty-commits',
+                  dest="dont_squash_empty_commits", action="store_true",
+                  help="Preserve all commits and links between them",
+                  default=False)
+
+(opts, args) = parser.parse_args()
+
+if len(args) == 0:
+    source_path = "-"
+elif len(args) == 1:
+    source_path = args[0]
+else:
+    parser.print_usage()
+
+from fastimport.processors import filter_processor
+params = {
+    'include_paths': opts.include_paths,
+    'exclude_paths': opts.exclude_paths,
+    }
+params['squash_empty_commits'] = (not opts.dont_squash_empty_commits)
+
+from fastimport.errors import ParsingError
+from fastimport import parser
+from fastimport.helpers import get_source_stream
+stream = get_source_stream(source_path)
+proc = filter_processor.FilterProcessor(params=params, verbose=opts.verbose)
+p = parser.ImportParser(stream, verbose=opts.verbose)
+try:
+    sys.exit(proc.process(p.iter_commands))
+except ParsingError as e:
+    sys.stderr.write("%d: Parse error: %s\n" % (e.lineno, e))
+    sys.exit(1)

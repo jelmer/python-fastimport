@@ -26,6 +26,7 @@ def test_suite():
         'test_dates',
         'test_errors',
         'test_filter_processor',
+        'test_info_processor',
         'test_helpers',
         'test_parser',
         ]
