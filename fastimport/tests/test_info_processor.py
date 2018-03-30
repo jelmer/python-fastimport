@@ -49,7 +49,7 @@ class TestFastImportInfo(TestCase):
         proc.process(p.iter_commands)
 
         self.maxDiff = None
-        self.assertMultiLineEqual(outf.getvalue(), """Command counts:
+        self.assertEqual(outf.getvalue(), """Command counts:
 \t0\tblob
 \t0\tcheckpoint
 \t1\tcommit
