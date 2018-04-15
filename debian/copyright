@@ -3,10 +3,6 @@ Upstream-Name: python-fastimport
 Upstream-Contact: Jelmer Vernooij <jelmer@canonical.com>
 Source: https://launchpad.net/python-fastimport
 
-License: GPL-2+
- On Debian systems the full text of the GNU General Public License version 2
- can be found in the `/usr/share/common-licenses/GPL-2' file.
-
 Files: *
 Copyright: Copyright (C) 2008-2012 Canonical Ltd
 Authors: Ian Clatworthy, Jelmer Vernooij and others
@@ -15,3 +11,7 @@ License: GPL-2+
 Files: debian/*
 Copyright: Copyright (C) 2008-2010 Jelmer Vernooij <jelmer@debian.org>
 License: GPL-2+
+
+License: GPL-2+
+ On Debian systems the full text of the GNU General Public License version 2
+ can be found in the `/usr/share/common-licenses/GPL-2' file.
