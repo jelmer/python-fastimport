@@ -1,4 +1,4 @@
-0.9.7	UNRELEASED
+0.9.7	2018-04-15
 
  * Don't attempt to encode bytestrings in utf8_bytes_helper().
    (Jelmer Vernooĳ, #1647101)
