@@ -1,4 +1,4 @@
-python-fastimport (0.9.8-1) UNRELEASED; urgency=medium
+python-fastimport (0.9.8-1) unstable; urgency=medium
 
   [ Ondřej Nový ]
   * d/control: Set Vcs-* to salsa.debian.org
