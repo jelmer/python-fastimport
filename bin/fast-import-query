@@ -1,0 +1,77 @@
+#!/usr/bin/python
+__doc__ = """Query a fast-import stream displaying selected commands.
+
+To specify standard input as the input stream, use a source name
+of '-'. If the source name ends in '.gz', it is assumed to be
+compressed in gzip format.
+
+To specify a commit to display, give its mark using the
+--commit-mark option. The commit will be displayed with
+file-commands included but with inline blobs hidden.
+
+To specify the commands to display, use the -C option one or
+more times. To specify just some fields for a command, use the
+syntax::
+
+  command=field1,...
+
+By default, the nominated fields for the nominated commands
+are displayed tab separated. To see the information in
+a name:value format, use verbose mode.
+
+Note: Binary fields (e.g. data for blobs) are masked out
+so it is generally safe to view the output in a terminal.
+
+:Examples:
+
+ Show the commit with mark 429::
+
+  fast-import-query xxx.fi -m429
+
+ Show all the fields of the reset and tag commands::
+
+  fast-import-query xxx.fi -Creset -Ctag
+
+ Show the mark and merge fields of the commit commands::
+
+  fast-import-query xxx.fi -Ccommit=mark,merge
+"""
+
+import optparse
+import sys
+
+parser = optparse.OptionParser('fast-import-query [options] SOURCE?')
+
+parser.add_option('-v', '--verbose', dest="verbose",
+                  action="store_true", help="Be verbose")
+parser.add_option('-m', '--commit-mark', dest="commit_mark",
+                  type=str, help="Mark of the commit to display.")
+parser.add_option('-C', '--commands', type=str,
+                  help="Display fields for these commands.")
+
+(opts, args) = parser.parse_args()
+
+if len(args) == 0:
+    source_path = "-"
+elif len(args) == 1:
+    source_path = args[0]
+else:
+    parser.print_usage()
+
+from fastimport.processors import query_processor
+from fastimport.helpers import defines_to_dict, get_source_stream
+from fastimport.errors import ParsingError
+from fastimport import parser
+
+params = defines_to_dict(opts.commands) or {}
+if opts.commit_mark:
+    params['commit-mark'] = opts.commit_mark
+
+stream = get_source_stream(source_path)
+proc = query_processor.QueryProcessor(verbose=opts.verbose, params=params)
+p = parser.ImportParser(stream, verbose=opts.verbose)
+try:
+    sys.exit(proc.process(p.iter_commands))
+except ParsingError as e:
+    sys.stderr.write("%d: Parse error: %s\n" % (e.lineno, e))
+    sys.exit(1)
