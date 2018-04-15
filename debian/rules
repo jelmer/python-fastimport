@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 %:
-	dh --with python2,python3,pypy --buildsystem=python_distutils $*
+	dh $* --with python2,python3,pypy --buildsystem=python_distutils
 
 override_dh_auto_build:
 	dh_auto_build --buildsystem=python_distutils -- --executable=/usr/bin/python

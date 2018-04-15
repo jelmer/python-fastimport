@@ -9,6 +9,7 @@ python-fastimport (0.9.8-1) UNRELEASED; urgency=medium
   * New upstream release.
    + Drop Cope_with_bytestirngs_in_utf8_bytes_string.patch, which is now
      included upstream.
+  * Bump debhelper version to 9.
 
  -- Jelmer Vernooĳ <jelmer@debian.org>  Sun, 15 Apr 2018 13:33:51 +0100
 
