@@ -1,4 +1,5 @@
 PYTHON = python
+FLAKE8 ?= flake8
 SETUP = $(PYTHON) setup.py
 ifeq ($(shell $(PYTHON) -c "import sys; print(sys.version_info >= (2, 7))"),True)
 TESTRUNNER ?= unittest
@@ -27,3 +28,6 @@ check-all: check check-pypy
 
 clean::
 	$(SETUP) clean --all
+
+style:
+	$(FLAKE8) --exclude=build,.git,.tox
