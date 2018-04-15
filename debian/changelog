@@ -1,10 +1,16 @@
-python-fastimport (0.9.6-4) UNRELEASED; urgency=medium
+python-fastimport (0.9.8-1) UNRELEASED; urgency=medium
 
+  [ Ondřej Nový ]
   * d/control: Set Vcs-* to salsa.debian.org
   * d/copyright: Use https protocol in Format field
   * d/control: Remove XS-Testsuite field, not needed anymore
 
- -- Ondřej Nový <onovy@debian.org>  Tue, 13 Feb 2018 10:07:41 +0100
+  [ Jelmer Vernooĳ ]
+  * New upstream release.
+   + Drop Cope_with_bytestirngs_in_utf8_bytes_string.patch, which is now
+     included upstream.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sun, 15 Apr 2018 13:33:51 +0100
 
 python-fastimport (0.9.6-3) unstable; urgency=medium
 
