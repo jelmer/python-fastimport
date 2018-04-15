@@ -1,0 +1,53 @@
+#!/usr/bin/python
+__doc__ = """Output information about a fast-import stream.
+
+This command reads a fast-import stream and outputs
+statistics and interesting properties about what it finds.
+When run in verbose mode, the information is output as a
+configuration file that can be passed to fast-import to
+assist it in intelligently caching objects.
+
+To specify standard input as the input stream, use a source name
+of '-'. If the source name ends in '.gz', it is assumed to be
+compressed in gzip format.
+
+:Examples:
+
+ Display statistics about the import stream produced by front-end::
+
+  front-end | fast-import-info -
+
+ Create a hints file for running fast-import on a large repository::
+
+   front-end | fast-import-info -v - > front-end.cfg
+"""
+
+import optparse
+import sys
+
+parser = optparse.OptionParser('fast-import-info [options] SOURCE')
+
+parser.add_option('-v', '--verbose', dest="verbose",
+                  help="Be verbose.")
+
+(options, args) = parser.parse_args()
+
+if len(args) == 0:
+    source_path = "-"
+elif len(args) == 1:
+    source_path = args[0]
+else:
+    parser.print_usage()
+
+from fastimport.processors import info_processor
+from fastimport.errors import ParsingError
+from fastimport.helpers import get_source_stream
+from fastimport import parser
+stream = get_source_stream(source_path)
+proc = info_processor.InfoProcessor(verbose=options.verbose)
+p = parser.ImportParser(stream, verbose=options.verbose)
+try:
+    sys.exit(proc.process(p.iter_commands))
+except ParsingError as e:
+    sys.stderr.write("%d: Parse error: %s\n" % (e.lineno, e))
+    sys.exit(1)

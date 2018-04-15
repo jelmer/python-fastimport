@@ -99,9 +99,12 @@ def is_inside_any(dir_list, fname):
 
 
 def utf8_bytes_string(s):
-    """Convert a string to a bytes string encoded in utf8"""
+    """Convert a string to a bytes string (if necessary, encode in utf8)"""
     if sys.version_info[0] == 2:
-        return s.encode('utf8')
+        if isinstance(s, str):
+            return s
+        else:
+            return s.encode('utf8')
     else:
         if isinstance(s, str):
             return bytes(s, encoding='utf8')
@@ -191,3 +194,72 @@ class newobject(object):
         Hook for the future.utils.native() function
         """
         return object(self)
+
+
+def binary_stream(stream):
+    """Ensure a stream is binary on Windows.
+
+    :return: the stream
+    """
+    try:
+        import os
+        if os.name == 'nt':
+            fileno = getattr(stream, 'fileno', None)
+            if fileno:
+                no = fileno()
+                if no >= 0:     # -1 means we're working as subprocess
+                    import msvcrt
+                    msvcrt.setmode(no, os.O_BINARY)
+    except ImportError:
+        pass
+    return stream
+
+
+def invert_dictset(d):
+    """Invert a dictionary with keys matching a set of values, turned into lists."""
+    # Based on recipe from ASPN
+    result = {}
+    for k, c in d.items():
+        for v in c:
+            keys = result.setdefault(v, [])
+            keys.append(k)
+    return result
+
+
+def invert_dict(d):
+    """Invert a dictionary with keys matching each value turned into a list."""
+    # Based on recipe from ASPN
+    result = {}
+    for k, v in d.items():
+        keys = result.setdefault(v, [])
+        keys.append(k)
+    return result
+
+
+def defines_to_dict(defines):
+    """Convert a list of definition strings to a dictionary."""
+    if defines is None:
+        return None
+    result = {}
+    for define in defines:
+        kv = define.split('=', 1)
+        if len(kv) == 1:
+            result[define.strip()] = 1
+        else:
+            result[kv[0].strip()] = kv[1].strip()
+    return result
+
+
+def get_source_stream(source):
+    if source == '-' or source is None:
+        import sys
+        stream = binary_stream(sys.stdin)
+    elif source.endswith('.gz'):
+        import gzip
+        stream = gzip.open(source, "rb")
+    else:
+        stream = open(source, "rb")
+    return stream
+
+
+
