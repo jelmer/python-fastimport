@@ -6,7 +6,6 @@ Uploaders: Jelmer Vernooĳ <jelmer@debian.org>
 Homepage: https://github.com/jelmer/python-fastimport
 Build-Depends: python-all (>= 2.6.6-3), python3-all (>= 3.4), debhelper (>= 9), python-testtools (>= 0.9.2), pypy, dh-python
 Standards-Version: 3.9.7
-X-Python3-Version: >= 3.4
 Vcs-Git: https://salsa.debian.org/python-team/modules/python-fastimport.git
 Vcs-Browser: https://salsa.debian.org/python-team/modules/python-fastimport
 

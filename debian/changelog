@@ -1,6 +1,7 @@
 python-fastimport (0.9.8-2) UNRELEASED; urgency=medium
 
   * d/control: Remove ancient X-Python-Version field
+  * d/control: Remove ancient X-Python3-Version field
 
  -- Ondřej Nový <onovy@debian.org>  Mon, 14 May 2018 07:56:39 +0200
 
