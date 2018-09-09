@@ -1,3 +1,9 @@
+python-fastimport (0.9.8-3) UNRELEASED; urgency=medium
+
+  * Add Homepage field in debian/upstream/metadata.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sun, 09 Sep 2018 15:08:55 +0100
+
 python-fastimport (0.9.8-2) unstable; urgency=medium
 
   [ Ondřej Nový ]
