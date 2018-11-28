@@ -1,3 +1,9 @@
+python-fastimport (0.9.8-2~bpo9+1) stretch-backports; urgency=medium
+
+  * Rebuild for stretch-backports.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Wed, 28 Nov 2018 04:13:47 +0000
+
 python-fastimport (0.9.8-2) unstable; urgency=medium
 
   [ Ondřej Nový ]
