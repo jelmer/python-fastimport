@@ -17,9 +17,6 @@
 
 from unittest import TestCase
 
-from fastimport.helpers import (
-    utf8_bytes_string,
-)
 
 from fastimport import (
     commands,
@@ -28,12 +25,25 @@ from fastimport import (
 
 class TestBlobDisplay(TestCase):
     def test_blob(self) -> None:
-        c = commands.BlobCommand(b"1", b"hello world")
+        c = commands.BlobCommand(b"1", None, b"hello world")
         self.assertEqual(b"blob\nmark :1\ndata 11\nhello world", bytes(c))
 
     def test_blob_no_mark(self) -> None:
-        c = commands.BlobCommand(None, b"hello world")
+        c = commands.BlobCommand(None, None, b"hello world")
         self.assertEqual(b"blob\ndata 11\nhello world", bytes(c))
+
+    def test_blob_with_original_oid(self) -> None:
+        c = commands.BlobCommand(
+            b"1", b"95d09f2b10159347eece71399a7e2e907ea3df4f", b"hello world"
+        )
+        self.assertEqual(
+            b"blob\n"
+            b"mark :1\n"
+            b"original-oid 95d09f2b10159347eece71399a7e2e907ea3df4f\n"
+            b"data 11\n"
+            b"hello world",
+            bytes(c),
+        )
 
 
 class TestCheckpointDisplay(TestCase):
@@ -49,6 +59,7 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             b"bbb",
+            None,
             None,
             committer,
             b"release v1.0",
@@ -66,38 +77,12 @@ class TestCommitDisplay(TestCase):
             bytes(c),
         )
 
-    def test_commit_unicode_committer(self) -> None:
-        # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
-        name = "\u013d\xf3r\xe9m \xcdp\u0161\xfam"
-
-        commit_utf8 = utf8_bytes_string(
-            "commit refs/heads/master\n"
-            "mark :bbb\n"
-            "committer %s <test@example.com> 1234567890 -0600\n"
-            "data 12\n"
-            "release v1.0\n"
-            "from :aaa" % (name,)
-        )
-
-        committer = (name, b"test@example.com", 1234567890, -6 * 3600)
-        c = commands.CommitCommand(
-            b"refs/heads/master",
-            b"bbb",
-            None,
-            committer,
-            b"release v1.0",
-            b":aaa",
-            None,
-            None,
-        )
-
-        self.assertEqual(commit_utf8, bytes(c))
-
     def test_commit_no_mark(self) -> None:
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
         c = commands.CommitCommand(
             b"refs/heads/master",
+            None,
             None,
             None,
             committer,
@@ -122,6 +107,7 @@ class TestCommitDisplay(TestCase):
             b"refs/heads/master",
             b"bbb",
             None,
+            None,
             committer,
             b"release v1.0",
             None,
@@ -137,6 +123,31 @@ class TestCommitDisplay(TestCase):
             bytes(c),
         )
 
+    def test_commit_with_original_oid(self):
+        # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
+        committer = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
+        c = commands.CommitCommand(
+            b"refs/heads/master",
+            b"bbb",
+            "6193131b432739c1c6c9ac85614f7ce1e2a59854",
+            None,
+            committer,
+            b"release v1.0",
+            b":aaa",
+            None,
+            None,
+        )
+        self.assertEqual(
+            b"commit refs/heads/master\n"
+            b"mark :bbb\n"
+            b"original-oid 6193131b432739c1c6c9ac85614f7ce1e2a59854\n"
+            b"committer Joe Wong <joe@example.com> 1234567890 -0600\n"
+            b"data 12\n"
+            b"release v1.0\n"
+            b"from :aaa",
+            bytes(c),
+        )
+
     def test_commit_with_author(self) -> None:
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         author = (b"Sue Wong", b"sue@example.com", 1234565432, -6 * 3600)
@@ -144,6 +155,7 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             b"bbb",
+            None,
             author,
             committer,
             b"release v1.0",
@@ -168,6 +180,7 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             b"ddd",
+            None,
             None,
             committer,
             b"release v1.0",
@@ -200,6 +213,7 @@ class TestCommitDisplay(TestCase):
             b"refs/heads/master",
             b"bbb",
             None,
+            None,
             committer,
             b"release v1.0",
             b":aaa",
@@ -231,6 +245,7 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             b"bbb",
+            None,
             author,
             committer,
             b"release v1.0",
@@ -263,6 +278,7 @@ class TestCommitDisplay(TestCase):
             b"refs/heads/master",
             b"bbb",
             None,
+            None,
             committer,
             b"release v1.0",
             b":aaa",
@@ -293,6 +309,7 @@ class TestCommitDisplay(TestCase):
             b"refs/heads/master",
             123,
             None,
+            None,
             committer,
             b"release v1.0",
             b":aaa",
@@ -314,8 +331,8 @@ class TestCommitDisplay(TestCase):
 
 
 class TestCommitCopy(TestCase):
-    def setUp(self) -> None:
-        super().setUp()
+    def setUp(self):
+        super(TestCommitCopy, self).setUp()
         file_cmds = iter(
             [
                 commands.FileDeleteCommand(b"readme.txt"),
@@ -328,6 +345,7 @@ class TestCommitCopy(TestCase):
             b"refs/heads/master",
             b"bbb",
             None,
+            None,
             committer,
             b"release v1.0",
             b":aaa",
@@ -335,18 +353,15 @@ class TestCommitCopy(TestCase):
             file_cmds,
         )
 
-    def test_simple_copy(self) -> None:
+    def test_simple_copy(self):
         c2 = self.c.copy()
 
-        self.assertIsNot(self.c, c2)
+        self.assertFalse(self.c is c2)
         self.assertEqual(bytes(self.c), bytes(c2))
 
-    def test_replace_attr(self) -> None:
+    def test_replace_attr(self):
         c2 = self.c.copy(mark=b"ccc")
         self.assertEqual(bytes(self.c).replace(b"mark :bbb", b"mark :ccc"), bytes(c2))
-
-    def test_invalid_attribute(self) -> None:
-        self.assertRaises(TypeError, self.c.copy, invalid=True)
 
 
 class TestFeatureDisplay(TestCase):
@@ -379,7 +394,9 @@ class TestTagDisplay(TestCase):
     def test_tag(self) -> None:
         # tagger tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         tagger = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
-        c = commands.TagCommand(b"refs/tags/v1.0", b":xxx", tagger, b"create v1.0")
+        c = commands.TagCommand(
+            b"refs/tags/v1.0", b":xxx", None, tagger, b"create v1.0"
+        )
         self.assertEqual(
             b"tag refs/tags/v1.0\n"
             b"from :xxx\n"
@@ -389,9 +406,29 @@ class TestTagDisplay(TestCase):
             bytes(c),
         )
 
-    def test_tag_no_from(self) -> None:
+    def test_tag_with_original_oid(self):
+        # tagger tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         tagger = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
-        c = commands.TagCommand(b"refs/tags/v1.0", None, tagger, b"create v1.0")
+        c = commands.TagCommand(
+            b"refs/tags/v1.0",
+            b":xxx",
+            "498a0acad8ad7e20e58933f954a3f1369d29b517",
+            tagger,
+            b"create v1.0",
+        )
+        self.assertEqual(
+            b"tag refs/tags/v1.0\n"
+            b"from :xxx\n"
+            b"original-oid 498a0acad8ad7e20e58933f954a3f1369d29b517\n"
+            b"tagger Joe Wong <joe@example.com> 1234567890 -0600\n"
+            b"data 11\n"
+            b"create v1.0",
+            bytes(c),
+        )
+
+    def test_tag_no_from(self):
+        tagger = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
+        c = commands.TagCommand(b"refs/tags/v1.0", None, None, tagger, b"create v1.0")
         self.assertEqual(
             b"tag refs/tags/v1.0\n"
             b"tagger Joe Wong <joe@example.com> 1234567890 -0600\n"
@@ -471,6 +508,7 @@ class TestNotesDisplay(TestCase):
             commands.CommitCommand(
                 ref=b"refs/heads/master",
                 mark=b"1",
+                original_oid=None,
                 author=committer,
                 committer=committer,
                 message=b"test\n",
@@ -481,6 +519,7 @@ class TestNotesDisplay(TestCase):
             commands.CommitCommand(
                 ref=b"refs/notes/commits",
                 mark=None,
+                original_oid="c0a594761e2226be654ccd0e0ff0b6af95aa1040",
                 author=None,
                 committer=committer,
                 message=b"Notes added by 'git notes add'\n",
@@ -491,6 +530,7 @@ class TestNotesDisplay(TestCase):
             commands.CommitCommand(
                 ref=b"refs/notes/test",
                 mark=None,
+                original_oid=None,
                 author=None,
                 committer=committer,
                 message=b"Notes added by 'git notes add'\n",
@@ -511,6 +551,7 @@ test
 M 644 inline bar
 data 0
 commit refs/notes/commits
+original-oid c0a594761e2226be654ccd0e0ff0b6af95aa1040
 committer Ed Mund <ed@example.org> 1234565432 +0000
 data 31
 Notes added by 'git notes add'
