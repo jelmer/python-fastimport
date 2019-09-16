@@ -4,6 +4,7 @@ python-fastimport (0.9.8-3) UNRELEASED; urgency=medium
   * Bump debhelper from old 9 to 12.
   * Re-export upstream signing key without extra signatures.
   * Remove obsolete fields Name, Contact from debian/upstream/metadata.
+  * Drop unused python-testtools build-dependency.
 
  -- Jelmer Vernooĳ <jelmer@debian.org>  Sun, 09 Sep 2018 15:08:55 +0100
 
