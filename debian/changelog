@@ -1,4 +1,4 @@
-python-fastimport (0.9.8-3) UNRELEASED; urgency=medium
+python-fastimport (0.9.8-3) unstable; urgency=medium
 
   * Add Homepage field in debian/upstream/metadata.
   * Bump debhelper from old 9 to 12.
@@ -6,7 +6,7 @@ python-fastimport (0.9.8-3) UNRELEASED; urgency=medium
   * Remove obsolete fields Name, Contact from debian/upstream/metadata.
   * Drop unused python-testtools build-dependency.
 
- -- Jelmer Vernooĳ <jelmer@debian.org>  Sun, 09 Sep 2018 15:08:55 +0100
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 16 Sep 2019 07:48:02 +0000
 
 python-fastimport (0.9.8-2) unstable; urgency=medium
 
