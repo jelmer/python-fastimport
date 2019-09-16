@@ -1,10 +1,10 @@
 #!/usr/bin/make -f
 
 %:
-	dh $* --with python2,python3,pypy --buildsystem=python_distutils
+	dh $* --with python2,python3,pypy --buildsystem=pybuild
 
 override_dh_auto_build:
-	dh_auto_build --buildsystem=python_distutils -- --executable=/usr/bin/python
+	dh_auto_build --buildsystem=pybuild -- --executable=/usr/bin/python
 	pypy setup.py build --debug
 
 override_dh_auto_install:
