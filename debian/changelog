@@ -2,6 +2,7 @@ python-fastimport (0.9.8-4) UNRELEASED; urgency=medium
 
   * Drop support for Python 2. Closes: #937748
   * Set Rules-Requires-Root.
+  * Bump standards version to 4.4.1.
 
  -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 30 Nov 2019 18:53:47 +0000
 
