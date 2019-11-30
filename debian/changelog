@@ -1,8 +1,8 @@
-python-fastimport (0.9.8-5) UNRELEASED; urgency=medium
+python-fastimport (0.9.8-5) unstable; urgency=medium
 
   * Run autopkgtest for pypy.
 
- -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 30 Nov 2019 19:36:19 +0000
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 30 Nov 2019 19:36:27 +0000
 
 python-fastimport (0.9.8-4) unstable; urgency=medium
 
