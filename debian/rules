@@ -14,8 +14,6 @@ override_dh_auto_install:
 	done;
 	pypy setup.py install --root debian/tmp --install-layout deb
 	rm -rf debian/tmp/usr/lib/pypy/bin
-	# Install the python2 files to python-fastimport
-	dh_install "debian/tmp/usr/lib/python2*/*-packages" -p python-fastimport
 	# Install the python23files to python3-fastimport
 	dh_install "debian/tmp/usr/lib/python3*/*-packages" -p python3-fastimport
 	# Install the pypy files to pypy-fastimport
@@ -23,7 +21,6 @@ override_dh_auto_install:
 
 ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 override_dh_auto_test:
-	PYTHONPATH=. python -m unittest fastimport.tests.test_suite
 	PYTHONPATH=. python3 -m unittest fastimport.tests.test_suite
 	PYTHONPATH=. pypy -m unittest fastimport.tests.test_suite
 endif

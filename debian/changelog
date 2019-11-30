@@ -1,3 +1,9 @@
+python-fastimport (0.9.8-4) UNRELEASED; urgency=medium
+
+  * Drop support for Python 2. Closes: #937748
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 30 Nov 2019 18:53:47 +0000
+
 python-fastimport (0.9.8-3) unstable; urgency=medium
 
   * Add Homepage field in debian/upstream/metadata.
