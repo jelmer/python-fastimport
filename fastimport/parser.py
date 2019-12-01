@@ -597,7 +597,7 @@ class ImportParser(LineBasedParser):
             parts[1] = parts[1][1:-1]
         elif parts[1].startswith(b'"') or parts[1].endswith(b'"'):
             self.abort(errors.BadFormat, '?', '?', s)
-        return [_unquote_c_string(s) for s in parts]
+        return [_unquote_c_string(part) for part in parts]
 
     def _mode(self, s):
         """Check file mode format and parse into an int.
