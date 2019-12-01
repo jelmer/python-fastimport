@@ -143,10 +143,14 @@ multi-author test
 """
 
 _timefunc = time.time
+
+
 class TestImportParser(unittest.TestCase):
+
     def setUp(self):
         self.fake_time = 42.0123
         time.time = lambda: self.fake_time
+
     def tearDown(self):
         time.time = _timefunc
         del self.fake_time
@@ -181,9 +185,12 @@ class TestImportParser(unittest.TestCase):
         self.assertEqual(b'commit', cmd4.name)
         self.assertEqual(b'2', cmd4.mark)
         self.assertEqual(b':2', cmd4.id)
-        self.assertEqual(b'initial import', cmd4.message)
+        self.assertEqual(
+            b'initial import', cmd4.message)
 
-        self.assertEqual((b'bugs bunny', b'bugs@bunny.org', self.fake_time, 0), cmd4.committer)
+        self.assertEqual(
+            (b'bugs bunny', b'bugs@bunny.org', self.fake_time, 0),
+            cmd4.committer)
         # namedtuple attributes
         self.assertEqual(b'bugs bunny', cmd4.committer.name)
         self.assertEqual(b'bugs@bunny.org', cmd4.committer.email)
@@ -205,7 +212,8 @@ class TestImportParser(unittest.TestCase):
         self.assertEqual(None, cmd5.mark)
         self.assertEqual(b'@19', cmd5.id)
         self.assertEqual(b'second commit', cmd5.message)
-        self.assertEqual((b'', b'bugs@bunny.org', self.fake_time, 0), cmd5.committer)
+        self.assertEqual(
+            (b'', b'bugs@bunny.org', self.fake_time, 0), cmd5.committer)
         self.assertEqual(None, cmd5.author)
         self.assertEqual(19, cmd5.lineno)
         self.assertEqual(b'refs/heads/master', cmd5.ref)
@@ -300,7 +308,8 @@ class TestStringParsing(unittest.TestCase):
 
     def test_unquote(self):
         s = br'hello \"sweet\" wo\\r\tld'
-        self.assertEqual(br'hello "sweet" wo\r' + b'\tld',
+        self.assertEqual(
+            br'hello "sweet" wo\r' + b'\tld',
             parser._unquote_c_string(s))
 
 
@@ -312,7 +321,8 @@ class TestPathPairParsing(unittest.TestCase):
 
     def test_path_pair_spaces_in_first(self):
         p = parser.ImportParser("")
-        self.assertEqual([b'foo bar', b'baz'],
+        self.assertEqual(
+            [b'foo bar', b'baz'],
             p._path_pair(b'"foo bar" baz'))
 
 
@@ -328,7 +338,8 @@ class TestTagParsing(unittest.TestCase):
         cmds = list(p.iter_commands())
         self.assertEqual(1, len(cmds))
         self.assertTrue(isinstance(cmds[0], commands.TagCommand))
-        self.assertEqual(cmds[0].tagger,
+        self.assertEqual(
+            cmds[0].tagger,
             (b'Joe Wong', b'joe@example.com', 1234567890.0, -21600))
 
     def test_tagger_no_email_strict(self):

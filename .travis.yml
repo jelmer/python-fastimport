@@ -8,5 +8,6 @@ python:
   - "3.8"
   - "pypy"
 install:
-  - pip install unittest2 future
+  - pip install unittest2 future flake8
+  - flake8
 script: python -m unittest2.__main__ fastimport.tests.test_suite

@@ -43,8 +43,8 @@ class InfoProcessor(processor.ImportProcessor):
     """
 
     def __init__(self, params=None, verbose=0, outf=None):
-        processor.ImportProcessor.__init__(self, params, verbose,
-            outf=outf)
+        processor.ImportProcessor.__init__(
+            self, params, verbose, outf=outf)
 
     def pre_process(self):
         # Init statistics
@@ -79,10 +79,13 @@ class InfoProcessor(processor.ImportProcessor):
         # Dump statistics
         cmd_names = commands.COMMAND_NAMES
         fc_names = commands.FILE_COMMAND_NAMES
-        self._dump_stats_group("Command counts",
+        self._dump_stats_group(
+            "Command counts",
             [(c.decode('utf-8'), self.cmd_counts[c]) for c in cmd_names], str)
-        self._dump_stats_group("File command counts", 
-            [(c.decode('utf-8'), self.file_cmd_counts[c]) for c in fc_names], str)
+        self._dump_stats_group(
+            "File command counts",
+            [(c.decode('utf-8'), self.file_cmd_counts[c]) for c in fc_names],
+            str)
 
         # Commit stats
         if self.cmd_counts[b'commit']:
@@ -100,7 +103,8 @@ class InfoProcessor(processor.ImportProcessor):
                 'blobs referenced by SHA': self.sha_blob_references,
                 }
             self._dump_stats_group("Parent counts", p_items, str)
-            self._dump_stats_group("Commit analysis", sorted(flags.items()), _found)
+            self._dump_stats_group(
+                "Commit analysis", sorted(flags.items()), _found)
             heads = invert_dictset(self.reftracker.heads)
             self._dump_stats_group(
                     "Head analysis",
@@ -114,10 +118,12 @@ class InfoProcessor(processor.ImportProcessor):
             # (verbose=2) is specified. The output here for mysql's data can't
             # be parsed currently so this bit of code needs more work anyhow ..
             if self.verbose >= 2:
-                self._dump_stats_group("Rename old paths",
+                self._dump_stats_group(
+                    "Rename old paths",
                     self.rename_old_paths.items(), len,
                     _iterable_as_config_list)
-                self._dump_stats_group("Copy source paths",
+                self._dump_stats_group(
+                    "Copy source paths",
                     self.copy_source_paths.items(), len,
                     _iterable_as_config_list)
 
@@ -126,12 +132,14 @@ class InfoProcessor(processor.ImportProcessor):
             # In verbose mode, don't list every blob used
             if self.verbose:
                 del self.blobs['used']
-            self._dump_stats_group("Blob usage tracking",
+            self._dump_stats_group(
+                "Blob usage tracking",
                 self.blobs.items(), len, _iterable_as_config_list)
         if self.blob_ref_counts:
             blobs_by_count = invert_dict(self.blob_ref_counts)
             blob_items = sorted(blobs_by_count.items())
-            self._dump_stats_group("Blob reference counts",
+            self._dump_stats_group(
+                "Blob reference counts",
                 blob_items, len, _iterable_as_config_list)
 
         # Other stats
@@ -142,9 +150,9 @@ class InfoProcessor(processor.ImportProcessor):
             self._dump_stats_group("Reset analysis", reset_stats.items())
 
     def _dump_stats_group(self, title, items, normal_formatter=None,
-        verbose_formatter=None):
+                          verbose_formatter=None):
         """Dump a statistics group.
-        
+
         In verbose mode, do so as a config file so
         that other processors can load the information if they want to.
         :param normal_formatter: the callable to apply to the value
@@ -210,9 +218,11 @@ class InfoProcessor(processor.ImportProcessor):
                     else:
                         self.sha_blob_references = True
             elif isinstance(fc, commands.FileRenameCommand):
-                self.rename_old_paths.setdefault(cmd.id, set()).add(fc.old_path)
+                self.rename_old_paths.setdefault(cmd.id, set()).add(
+                    fc.old_path)
             elif isinstance(fc, commands.FileCopyCommand):
-                self.copy_source_paths.setdefault(cmd.id, set()).add(fc.src_path)
+                self.copy_source_paths.setdefault(cmd.id, set()).add(
+                    fc.src_path)
 
         # Track the heads
         parents = self.reftracker.track_heads(cmd)
@@ -228,7 +238,6 @@ class InfoProcessor(processor.ImportProcessor):
 
         # Remember the merges
         if cmd.merges:
-            #self.merges.setdefault(cmd.ref, set()).update(cmd.merges)
             for merge in cmd.merges:
                 if merge in self.merges:
                     self.merges[merge] += 1
@@ -254,7 +263,8 @@ class InfoProcessor(processor.ImportProcessor):
         self.cmd_counts[cmd.name] += 1
         feature = cmd.feature_name
         if feature not in commands.FEATURE_NAMES:
-            self.warning("feature %s is not supported - parsing may fail"
+            self.warning(
+                "feature %s is not supported - parsing may fail"
                 % (feature,))
 
     def _track_blob(self, mark):
@@ -270,13 +280,15 @@ class InfoProcessor(processor.ImportProcessor):
         else:
             self.blobs['unknown'].add(mark)
 
+
 def _found(b):
     """Format a found boolean as a string."""
     return ['no', 'found'][b]
 
+
 def _iterable_as_config_list(s):
     """Format an iterable as a sequence of comma-separated strings.
-    
+
     To match what ConfigObj expects, a single item list has a trailing comma.
     """
     items = sorted(s)

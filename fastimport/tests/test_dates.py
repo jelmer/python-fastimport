@@ -21,6 +21,7 @@ from fastimport import (
     dates,
     )
 
+
 class ParseTzTests(TestCase):
 
     def test_parse_tz_utc(self):
