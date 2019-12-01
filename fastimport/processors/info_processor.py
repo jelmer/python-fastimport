@@ -247,7 +247,7 @@ class InfoProcessor(processor.ImportProcessor):
     def reset_handler(self, cmd):
         """Process a ResetCommand."""
         self.cmd_counts[cmd.name] += 1
-        if cmd.ref.startswith('refs/tags/'):
+        if cmd.ref.startswith(b'refs/tags/'):
             self.lightweight_tags += 1
         else:
             if cmd.from_ is not None:
