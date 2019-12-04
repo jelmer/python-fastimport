@@ -134,7 +134,9 @@ class InfoProcessor(processor.ImportProcessor):
                 del self.blobs['used']
             self._dump_stats_group(
                 "Blob usage tracking",
-                self.blobs.items(), len, _iterable_as_config_list)
+                [(k, set([v1.decode() for v1 in v]))
+                 for (k, v) in self.blobs.items()],
+                len, _iterable_as_config_list)
         if self.blob_ref_counts:
             blobs_by_count = invert_dict(self.blob_ref_counts)
             blob_items = sorted(blobs_by_count.items())
