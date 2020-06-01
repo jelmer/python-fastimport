@@ -1,3 +1,9 @@
+python-fastimport (0.9.8-6) UNRELEASED; urgency=medium
+
+  * Drop pypy support, add pypy3 package.
+
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 01 Jun 2020 23:02:03 +0000
+
 python-fastimport (0.9.8-5) unstable; urgency=medium
 
   * Run autopkgtest for pypy.

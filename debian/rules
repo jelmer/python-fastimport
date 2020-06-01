@@ -1,26 +1,26 @@
 #!/usr/bin/make -f
 
 %:
-	dh $* --with python3,pypy --buildsystem=pybuild
+	dh $* --with python3,pypy3 --buildsystem=pybuild
 
 override_dh_auto_build:
 	dh_auto_build --buildsystem=pybuild
-	pypy setup.py build --debug
+	pypy3 setup.py build --debug
 
 override_dh_auto_install:
 	dh_auto_install
 	set -ex; for python in $(shell py3versions -r); do \
 		$$python setup.py install --root=$(CURDIR)/debian/tmp --install-layout=deb; \
 	done;
-	pypy setup.py install --root debian/tmp --install-layout deb
-	rm -rf debian/tmp/usr/lib/pypy/bin
+	pypy3 setup.py install --root debian/tmp --install-layout deb
+	rm -rf debian/tmp/usr/lib/pypy3/bin
 	# Install the python23files to python3-fastimport
 	dh_install "debian/tmp/usr/lib/python3*/*-packages" -p python3-fastimport
-	# Install the pypy files to pypy-fastimport
-	dh_install "debian/tmp/usr/lib/pypy/" -p pypy-fastimport
+	# Install the pypy3 files to pypy3-fastimport
+	dh_install "debian/tmp/usr/lib/pypy3/" -p pypy3-fastimport
 
 ifeq (,$(findstring nocheck,$(DEB_BUILD_OPTIONS)))
 override_dh_auto_test:
 	PYTHONPATH=. python3 -m unittest fastimport.tests.test_suite
-	PYTHONPATH=. pypy -m unittest fastimport.tests.test_suite
+	PYTHONPATH=. pypy3 -m unittest fastimport.tests.test_suite
 endif
