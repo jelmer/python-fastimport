@@ -32,8 +32,8 @@ processors package for examples.
 import sys
 import time
 
-from fastimport import errors
-from fastimport.helpers import newobject as object
+from . import errors
+from .helpers import newobject as object
 
 
 class ImportProcessor(object):

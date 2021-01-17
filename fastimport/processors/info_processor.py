@@ -18,15 +18,13 @@
 from __future__ import absolute_import
 
 from .. import (
+    commands,
+    processor,
     reftracker,
     )
 from ..helpers import (
     invert_dict,
     invert_dictset,
-    )
-from fastimport import (
-    commands,
-    processor,
     )
 import stat
 

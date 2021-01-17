@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Import processor that filters the input (and doesn't import)."""
-from fastimport import (
+from .. import (
     commands,
     helpers,
     processor,

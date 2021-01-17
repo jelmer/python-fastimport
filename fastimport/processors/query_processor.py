@@ -17,7 +17,7 @@
 from __future__ import print_function
 
 
-from fastimport import (
+from .. import (
     commands,
     processor,
     )

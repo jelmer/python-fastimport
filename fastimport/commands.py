@@ -24,7 +24,7 @@ import re
 import stat
 import sys
 
-from fastimport.helpers import (
+from .helpers import (
     newobject as object,
     utf8_bytes_string,
     repr_bytes,

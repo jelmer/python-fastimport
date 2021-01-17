@@ -164,12 +164,12 @@ import re
 import sys
 import codecs
 
-from fastimport import (
+from . import (
     commands,
     dates,
     errors,
     )
-from fastimport.helpers import (
+from .helpers import (
     newobject as object,
     utf8_bytes_string,
     )
