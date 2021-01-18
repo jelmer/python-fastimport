@@ -39,6 +39,7 @@ initial
 
 """
 
+
 class TestFastImportInfo(TestCase):
 
     def test_simple(self):

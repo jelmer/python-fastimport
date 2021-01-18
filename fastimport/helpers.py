@@ -19,15 +19,18 @@ import sys
 
 def _common_path_and_rest(l1, l2, common=[]):
     # From http://code.activestate.com/recipes/208993/
-    if len(l1) < 1: return (common, l1, l2)
-    if len(l2) < 1: return (common, l1, l2)
-    if l1[0] != l2[0]: return (common, l1, l2)
+    if len(l1) < 1:
+        return (common, l1, l2)
+    if len(l2) < 1:
+        return (common, l1, l2)
+    if l1[0] != l2[0]:
+        return (common, l1, l2)
     return _common_path_and_rest(
         l1[1:],
         l2[1:],
         common + [
-            l1[0:1] # return a byte string in python 3 unlike l1[0] that
-                    # would return an integer.
+            l1[0:1]  # return a byte string in python 3 unlike l1[0] that
+                     # would return an integer.
         ]
     )
 
@@ -45,6 +48,7 @@ def common_directory(paths):
       otherwise the common directory with a trailing / is returned.
     """
     import posixpath
+
     def get_dir_with_slash(path):
         if path == b'' or path.endswith(b'/'):
             return path
@@ -145,7 +149,7 @@ class newobject(object):
             s = type(self).__str__(self)
         else:
             s = str(self)
-        if isinstance(s, unicode):
+        if isinstance(s, unicode):  # noqa: F821
             return s
         else:
             return s.decode('utf-8')
@@ -177,8 +181,9 @@ class newobject(object):
     #         d = {}
     #         for k, v in iterable:
     #             d[k] = v
-    #     dict(**kwargs) -> new dictionary initialized with the name=value pairs
-    #         in the keyword argument list.  For example:  dict(one=1, two=2)
+    #     dict(**kwargs) -> new dictionary initialized with the name=value
+    #         pairs in the keyword argument list.
+    #         For example:  dict(one=1, two=2)
     #     """
 
     #     if len(args) == 0:
@@ -216,7 +221,7 @@ def binary_stream(stream):
 
 
 def invert_dictset(d):
-    """Invert a dictionary with keys matching a set of values, turned into lists."""
+    """Invert a dict with keys matching a set of values, turned into lists."""
     # Based on recipe from ASPN
     result = {}
     for k, c in d.items():
@@ -260,6 +265,3 @@ def get_source_stream(source):
     else:
         stream = open(source, "rb")
     return stream
-
-
-

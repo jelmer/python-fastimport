@@ -50,7 +50,8 @@ class TestCommitDisplay(TestCase):
     def test_commit(self):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
-        c = commands.CommitCommand(b"refs/heads/master", b"bbb", None, committer,
+        c = commands.CommitCommand(
+            b"refs/heads/master", b"bbb", None, committer,
             b"release v1.0", b":aaa", None, None)
         self.assertEqual(
             b"commit refs/heads/master\n"
@@ -75,7 +76,8 @@ class TestCommitDisplay(TestCase):
         )
 
         committer = (name, b'test@example.com', 1234567890, -6 * 3600)
-        c = commands.CommitCommand(b'refs/heads/master', b'bbb', None, committer,
+        c = commands.CommitCommand(
+            b'refs/heads/master', b'bbb', None, committer,
             b'release v1.0', b':aaa', None, None)
 
         self.assertEqual(commit_utf8, repr_bytes(c))
@@ -83,8 +85,9 @@ class TestCommitDisplay(TestCase):
     def test_commit_no_mark(self):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
-        c = commands.CommitCommand(b'refs/heads/master', None, None, committer,
-           b'release v1.0', b':aaa', None, None)
+        c = commands.CommitCommand(
+            b'refs/heads/master', None, None, committer,
+            b'release v1.0', b':aaa', None, None)
         self.assertEqual(
             b"commit refs/heads/master\n"
             b"committer Joe Wong <joe@example.com> 1234567890 -0600\n"
@@ -96,7 +99,8 @@ class TestCommitDisplay(TestCase):
     def test_commit_no_from(self):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
-        c = commands.CommitCommand(b"refs/heads/master", b"bbb", None, committer,
+        c = commands.CommitCommand(
+            b"refs/heads/master", b"bbb", None, committer,
             b"release v1.0", None, None, None)
         self.assertEqual(
             b"commit refs/heads/master\n"
@@ -110,7 +114,8 @@ class TestCommitDisplay(TestCase):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         author = (b'Sue Wong', b'sue@example.com', 1234565432, -6 * 3600)
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
-        c = commands.CommitCommand(b'refs/heads/master', b'bbb', author,
+        c = commands.CommitCommand(
+            b'refs/heads/master', b'bbb', author,
             committer, b'release v1.0', b':aaa', None, None)
         self.assertEqual(
             b"commit refs/heads/master\n"
@@ -125,7 +130,8 @@ class TestCommitDisplay(TestCase):
     def test_commit_with_merges(self):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
-        c = commands.CommitCommand(b"refs/heads/master", b"ddd", None, committer,
+        c = commands.CommitCommand(
+                b"refs/heads/master", b"ddd", None, committer,
                 b'release v1.0', b":aaa", [b':bbb', b':ccc'], None)
         self.assertEqual(
             b"commit refs/heads/master\n"
@@ -141,12 +147,13 @@ class TestCommitDisplay(TestCase):
     def test_commit_with_filecommands(self):
         file_cmds = iter([
             commands.FileDeleteCommand(b'readme.txt'),
-            commands.FileModifyCommand(b'NEWS', 0o100644, None,
-                b'blah blah blah'),
+            commands.FileModifyCommand(
+                b'NEWS', 0o100644, None, b'blah blah blah'),
             ])
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
-        c = commands.CommitCommand(b'refs/heads/master', b'bbb', None, committer,
+        c = commands.CommitCommand(
+            b'refs/heads/master', b'bbb', None, committer,
             b'release v1.0', b':aaa', None, file_cmds)
         self.assertEqual(
             b"commit refs/heads/master\n"
@@ -169,7 +176,8 @@ class TestCommitDisplay(TestCase):
             (b'Al Smith', b'al@example.com', 1234565432, -6 * 3600),
             (b'Bill Jones', b'bill@example.com', 1234565432, -6 * 3600),
         ]
-        c = commands.CommitCommand(b'refs/heads/master', b'bbb', author,
+        c = commands.CommitCommand(
+            b'refs/heads/master', b'bbb', author,
             committer, b'release v1.0', b':aaa', None, None,
             more_authors=more_authors)
         self.assertEqual(
@@ -191,7 +199,8 @@ class TestCommitDisplay(TestCase):
             u'greeting':  u'hello',
             u'planet':    u'world',
             }
-        c = commands.CommitCommand(b'refs/heads/master', b'bbb', None,
+        c = commands.CommitCommand(
+            b'refs/heads/master', b'bbb', None,
             committer, b'release v1.0', b':aaa', None, None,
             properties=properties)
         self.assertEqual(
@@ -212,7 +221,8 @@ class TestCommitDisplay(TestCase):
             u'greeting':  u'hello',
             u'planet':    u'world',
             }
-        c = commands.CommitCommand(b'refs/heads/master', 123, None,
+        c = commands.CommitCommand(
+            b'refs/heads/master', 123, None,
             committer, b'release v1.0', b':aaa', None, None,
             properties=properties)
         self.assertEqual(
@@ -226,13 +236,15 @@ class TestCommitDisplay(TestCase):
             b"property planet 5 world",
             repr_bytes(c))
 
+
 class TestCommitCopy(TestCase):
 
     def setUp(self):
         super(TestCommitCopy, self).setUp()
         file_cmds = iter([
             commands.FileDeleteCommand(b'readme.txt'),
-            commands.FileModifyCommand(b'NEWS', 0o100644, None, b'blah blah blah'),
+            commands.FileModifyCommand(
+                b'NEWS', 0o100644, None, b'blah blah blah'),
         ])
 
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
@@ -255,6 +267,7 @@ class TestCommitCopy(TestCase):
 
     def test_invalid_attribute(self):
         self.assertRaises(TypeError, self.c.copy, invalid=True)
+
 
 class TestFeatureDisplay(TestCase):
 
@@ -290,7 +303,8 @@ class TestTagDisplay(TestCase):
     def test_tag(self):
         # tagger tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         tagger = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
-        c = commands.TagCommand(b'refs/tags/v1.0', b':xxx', tagger, b'create v1.0')
+        c = commands.TagCommand(
+            b'refs/tags/v1.0', b':xxx', tagger, b'create v1.0')
         self.assertEqual(
             b"tag refs/tags/v1.0\n"
             b"from :xxx\n"
@@ -301,7 +315,8 @@ class TestTagDisplay(TestCase):
 
     def test_tag_no_from(self):
         tagger = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
-        c = commands.TagCommand(b'refs/tags/v1.0', None, tagger, b'create v1.0')
+        c = commands.TagCommand(
+            b'refs/tags/v1.0', None, tagger, b'create v1.0')
         self.assertEqual(
             b"tag refs/tags/v1.0\n"
             b"tagger Joe Wong <joe@example.com> 1234567890 -0600\n"
@@ -321,18 +336,21 @@ class TestFileModifyDisplay(TestCase):
         self.assertEqual(b'M 755 :23 foo/bar', repr_bytes(c))
 
     def test_filemodify_file_internal(self):
-        c = commands.FileModifyCommand(b'foo/bar', 0o100644, None,
-            b'hello world')
-        self.assertEqual(b'M 644 inline foo/bar\ndata 11\nhello world', repr_bytes(c))
+        c = commands.FileModifyCommand(
+            b'foo/bar', 0o100644, None, b'hello world')
+        self.assertEqual(
+            b'M 644 inline foo/bar\ndata 11\nhello world', repr_bytes(c))
 
     def test_filemodify_symlink(self):
         c = commands.FileModifyCommand(b'foo/bar', 0o120000, None, b'baz')
-        self.assertEqual(b'M 120000 inline foo/bar\ndata 3\nbaz', repr_bytes(c))
+        self.assertEqual(
+            b'M 120000 inline foo/bar\ndata 3\nbaz', repr_bytes(c))
 
     def test_filemodify_treeref(self):
-        c = commands.FileModifyCommand(b'tree-info', 0o160000,
-            b'revision-id-info', None)
-        self.assertEqual(b'M 160000 revision-id-info tree-info', repr_bytes(c))
+        c = commands.FileModifyCommand(
+            b'tree-info', 0o160000, b'revision-id-info', None)
+        self.assertEqual(
+            b'M 160000 revision-id-info tree-info', repr_bytes(c))
 
 
 class TestFileDeleteDisplay(TestCase):
@@ -372,11 +390,13 @@ class TestFileDeleteAllDisplay(TestCase):
         c = commands.FileDeleteAllCommand()
         self.assertEqual(b'deleteall', repr_bytes(c))
 
+
 class TestNotesDisplay(TestCase):
 
     def test_noteonly(self):
         c = commands.NoteModifyCommand(b'foo', b'A basic note')
-        self.assertEqual(b'N inline :foo\ndata 12\nA basic note', repr_bytes(c))
+        self.assertEqual(
+            b'N inline :foo\ndata 12\nA basic note', repr_bytes(c))
 
     def test_notecommit(self):
         committer = (b'Ed Mund', b'ed@example.org', 1234565432, 0)
@@ -449,9 +469,11 @@ Test test
 class TestPathChecking(TestCase):
 
     def test_filemodify_path_checking(self):
-        self.assertRaises(ValueError, commands.FileModifyCommand, b'',
+        self.assertRaises(
+            ValueError, commands.FileModifyCommand, b'',
             0o100644, None, b'text')
-        self.assertRaises(ValueError, commands.FileModifyCommand, None,
+        self.assertRaises(
+            ValueError, commands.FileModifyCommand, None,
             0o100644, None, b'text')
 
     def test_filedelete_path_checking(self):

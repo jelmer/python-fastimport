@@ -24,7 +24,7 @@ import re
 import stat
 import sys
 
-from fastimport.helpers import (
+from .helpers import (
     newobject as object,
     utf8_bytes_string,
     repr_bytes,
@@ -43,9 +43,9 @@ GIT_FAST_IMPORT_NEEDS_EXTRA_SPACE_AFTER_QUOTE = False
 
 # Lists of command names
 COMMAND_NAMES = [b'blob', b'checkpoint', b'commit', b'feature', b'progress',
-    b'reset', b'tag']
+                 b'reset', b'tag']
 FILE_COMMAND_NAMES = [b'filemodify', b'filedelete', b'filecopy', b'filerename',
-    b'filedeleteall']
+                      b'filedeleteall']
 
 # Feature names
 MULTIPLE_AUTHORS_FEATURE = b'multiple-authors'
@@ -147,7 +147,8 @@ class CheckpointCommand(ImportCommand):
 class CommitCommand(ImportCommand):
 
     def __init__(self, ref, mark, author, committer, message, from_,
-        merges, file_iter, lineno=0, more_authors=None, properties=None):
+                 merges, file_iter, lineno=0, more_authors=None,
+                 properties=None):
         ImportCommand.__init__(self, b'commit')
         self.ref = ref
         self.mark = mark
@@ -188,7 +189,6 @@ class CommitCommand(ImportCommand):
     def __bytes__(self):
         return self.to_string(include_file_contents=True)
 
-
     def to_string(self, use_features=True, include_file_contents=False):
         """
             @todo the name to_string is ambiguous since the method actually
@@ -224,8 +224,8 @@ class CommitCommand(ImportCommand):
         if self.merges is None:
             merge_lines = b''
         else:
-            merge_lines = b''.join([b'\nmerge ' + m
-                for m in self.merges])
+            merge_lines = b''.join(
+                [b'\nmerge ' + m for m in self.merges])
         if use_features and self.properties:
             property_lines = []
             for name in sorted(self.properties):
@@ -238,11 +238,11 @@ class CommitCommand(ImportCommand):
             filecommands = b''
         else:
             if include_file_contents:
-                filecommands = b''.join([b'\n' + repr_bytes(c)
-                    for c in self.iter_files()])
+                filecommands = b''.join(
+                    [b'\n' + repr_bytes(c) for c in self.iter_files()])
             else:
-                filecommands = b''.join([b'\n' + str(c)
-                    for c in self.iter_files()])
+                filecommands = b''.join(
+                    [b'\n' + str(c) for c in self.iter_files()])
         return b''.join([
             b'commit ',
             self.ref,
@@ -390,7 +390,9 @@ class FileModifyCommand(FileCommand):
         elif self.dataref is None:
             dataref = b'inline'
             if include_file_contents:
-                datastr = ('\ndata %d\n' % len(self.data)).encode('ascii') + self.data
+                datastr = (
+                    ('\ndata %d\n' % len(self.data)).encode('ascii') +
+                    self.data)
         else:
             dataref = self.dataref
         path = format_path(self.path)
@@ -417,9 +419,9 @@ class FileCopyCommand(FileCommand):
         self.dest_path = check_path(dest_path)
 
     def __bytes__(self):
-        return b' '.join([b'C',
-            format_path(self.src_path, quote_spaces=True),
-            format_path(self.dest_path)])
+        return b' '.join(
+            [b'C', format_path(self.src_path, quote_spaces=True),
+             format_path(self.dest_path)])
 
 
 class FileRenameCommand(FileCommand):
@@ -456,7 +458,7 @@ class NoteModifyCommand(FileCommand):
 
     def __bytes__(self):
         return (b'N inline :' + self.from_ +
-                ('\ndata %d\n'% len(self.data)).encode('ascii') + self.data)
+                ('\ndata %d\n' % len(self.data)).encode('ascii') + self.data)
 
 
 def check_path(path):
@@ -491,7 +493,7 @@ def format_path(p, quote_spaces=False):
 
 
 def format_who_when(fields):
-    """Format a tuple of name,email,secs-since-epoch,utc-offset-secs as a string."""
+    """Format tuple of name,email,secs-since-epoch,utc-offset-secs as bytes."""
     offset = fields[3]
     if offset < 0:
         offset_sign = b'-'
@@ -500,7 +502,9 @@ def format_who_when(fields):
         offset_sign = b'+'
     offset_hours = offset // 3600
     offset_minutes = offset // 60 - offset_hours * 60
-    offset_str = offset_sign + ('%02d%02d' % (offset_hours, offset_minutes)).encode('ascii')
+    offset_str = (
+        offset_sign +
+        ('%02d%02d' % (offset_hours, offset_minutes)).encode('ascii'))
     name = fields[0]
 
     if name == b'':
@@ -514,7 +518,9 @@ def format_who_when(fields):
 
     email = utf8_bytes_string(email)
 
-    return b''.join((name, sep, b'<', email, b'> ', ("%d" % fields[2]).encode('ascii'), b' ', offset_str))
+    return b''.join(
+        (name, sep, b'<', email, b'> ',
+         ("%d" % fields[2]).encode('ascii'), b' ', offset_str))
 
 
 def format_property(name, value):
@@ -525,6 +531,7 @@ def format_property(name, value):
     result = b'property ' + utf8_name
     if value is not None:
         utf8_value = utf8_bytes_string(value)
-        result += b' ' + ('%d' % len(utf8_value)).encode('ascii') + b' ' + utf8_value
+        result += (b' ' + ('%d' % len(utf8_value)).encode('ascii') +
+                   b' ' + utf8_value)
 
     return result

@@ -99,11 +99,11 @@ The grammar is:
   exact_data ::= 'data' sp declen lf
     binary_data;
 
-     # note: quoted strings are C-style quoting supporting \c for
-     # common escapes of 'c' (e..g \n, \t, \\, \") or \nnn where nnn
+     # note: quoted strings are C-style quoting supporting \\c for
+     # common escapes of 'c' (e..g \\n, \\t, \\\\, \\") or \\nnn where nnn
      # is the signed byte value in octal.  Note that the only
      # characters which must actually be escaped to protect the
-     # stream formatting is: \, " and LF.  Otherwise these values
+     # stream formatting is: \\, " and LF.  Otherwise these values
      # are UTF8.
      #
   ref_str     ::= ref;
@@ -164,18 +164,16 @@ import re
 import sys
 import codecs
 
-from fastimport import (
+from . import (
     commands,
     dates,
     errors,
     )
-from fastimport.helpers import (
+from .helpers import (
     newobject as object,
     utf8_bytes_string,
     )
 
-
-## Stream parsing ##
 
 class LineBasedParser(object):
 
@@ -265,7 +263,7 @@ _WHO_RE = re.compile(br'([^<]*)<(.*)>')
 class ImportParser(LineBasedParser):
 
     def __init__(self, input_stream, verbose=False, output=sys.stdout,
-        user_mapper=None, strict=True):
+                 user_mapper=None, strict=True):
         """A Parser of import commands.
 
         :param input_stream: the file-like object to read from
@@ -356,7 +354,7 @@ class ImportParser(LineBasedParser):
 
     def _parse_commit(self, ref):
         """Parse a commit command."""
-        lineno  = self.lineno
+        lineno = self.lineno
         mark = self._get_mark_if_any()
         author = self._get_user_info(b'commit', b'author', False)
         more_authors = []
@@ -388,7 +386,8 @@ class ImportParser(LineBasedParser):
                 properties[name] = value
             else:
                 break
-        return commands.CommitCommand(ref, mark, author, committer, message,
+        return commands.CommitCommand(
+            ref, mark, author, committer, message,
             from_, merges, list(self.iter_file_commands()), lineno=lineno,
             more_authors=more_authors, properties=properties)
 
@@ -418,8 +417,8 @@ class ImportParser(LineBasedParser):
         else:
             dataref = params[1]
             data = None
-        return commands.FileModifyCommand(path, mode, dataref,
-            data)
+        return commands.FileModifyCommand(
+            path, mode, dataref, data)
 
     def _parse_reset(self, ref):
         """Parse a reset command."""
@@ -429,8 +428,8 @@ class ImportParser(LineBasedParser):
     def _parse_tag(self, name):
         """Parse a tag command."""
         from_ = self._get_from(b'tag')
-        tagger = self._get_user_info(b'tag', b'tagger',
-                accept_just_who=True)
+        tagger = self._get_user_info(
+            b'tag', b'tagger', accept_just_who=True)
         message = self._get_data(b'tag', b'message')
         return commands.TagCommand(name, from_, tagger, message)
 
@@ -479,11 +478,12 @@ class ImportParser(LineBasedParser):
             return None
 
     def _get_user_info(self, cmd, section, required=True,
-        accept_just_who=False):
+                       accept_just_who=False):
         """Parse a user section."""
         line = self.next_line()
         if line.startswith(section + b' '):
-            return self._who_when(line[len(section + b' '):], cmd, section,
+            return self._who_when(
+                line[len(section + b' '):], cmd, section,
                 accept_just_who=accept_just_who)
         elif required:
             self.abort(errors.MissingSection, cmd, section)
@@ -597,7 +597,7 @@ class ImportParser(LineBasedParser):
             parts[1] = parts[1][1:-1]
         elif parts[1].startswith(b'"') or parts[1].endswith(b'"'):
             self.abort(errors.BadFormat, '?', '?', s)
-        return [_unquote_c_string(s) for s in parts]
+        return [_unquote_c_string(part) for part in parts]
 
     def _mode(self, s):
         """Check file mode format and parse into an int.
@@ -626,8 +626,8 @@ ESCAPE_SEQUENCE_BYTES_RE = re.compile(br'''
     | \\[0-7]{1,3}     # Octal escapes
     | \\N\{[^}]+\}     # Unicode characters by name
     | \\[\\'"abfnrtv]  # Single-character escapes
-    )''', re.VERBOSE
-)
+    )''', re.VERBOSE)
+
 
 ESCAPE_SEQUENCE_RE = re.compile(r'''
     ( \\U........
@@ -636,24 +636,24 @@ ESCAPE_SEQUENCE_RE = re.compile(r'''
     | \\[0-7]{1,3}
     | \\N\{[^}]+\}
     | \\[\\'"abfnrtv]
-    )''', re.UNICODE | re.VERBOSE
-)
+    )''', re.UNICODE | re.VERBOSE)
+
 
 def _unquote_c_string(s):
-     """replace C-style escape sequences (\n, \", etc.) with real chars."""
+    """replace C-style escape sequences (\n, \", etc.) with real chars."""
+    # doing a s.encode('utf-8').decode('unicode_escape') can return an
+    # incorrect output with unicode string (both in py2 and py3) the safest way
+    # is to match the escape sequences and decoding them alone.
+    def decode_match(match):
+        return utf8_bytes_string(
+            codecs.decode(match.group(0), 'unicode-escape')
+        )
 
-     # doing a s.encode('utf-8').decode('unicode_escape') can return an
-     # incorrect output with unicode string (both in py2 and py3) the safest way
-     # is to match the escape sequences and decoding them alone.
-     def decode_match(match):
-          return utf8_bytes_string(
-               codecs.decode(match.group(0), 'unicode-escape')
-          )
-
-     if sys.version_info[0] >= 3 and isinstance(s, bytes):
-          return ESCAPE_SEQUENCE_BYTES_RE.sub(decode_match, s)
-     else:
-          return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
+    if sys.version_info[0] >= 3 and isinstance(s, bytes):
+        return ESCAPE_SEQUENCE_BYTES_RE.sub(decode_match, s)
+    else:
+        return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
 
 
-Authorship = collections.namedtuple('Authorship', 'name email timestamp timezone')
+Authorship = collections.namedtuple(
+    'Authorship', 'name email timestamp timezone')
