@@ -263,7 +263,7 @@ _WHO_RE = re.compile(br'([^<]*)<(.*)>')
 class ImportParser(LineBasedParser):
 
     def __init__(self, input_stream, verbose=False, output=sys.stdout,
-                 user_mapper=None, strict=True):
+                 user_mapper=None, strict=True, encodingfallback=None):
         """A Parser of import commands.
 
         :param input_stream: the file-like object to read from
@@ -272,12 +272,14 @@ class ImportParser(LineBasedParser):
         :param user_mapper: if not None, the UserMapper used to adjust
           user-ids for authors, committers and taggers.
         :param strict: Raise errors on strictly invalid data
+        :param encodingfallback: encoding to use if conversion to UTF-8 fails
         """
         LineBasedParser.__init__(self, input_stream)
         self.verbose = verbose
         self.output = output
         self.user_mapper = user_mapper
         self.strict = strict
+        self.encodingfallback = encodingfallback
         # We auto-detect the date format when a date is first encountered
         self.date_parser = None
         self.features = {}
@@ -366,6 +368,11 @@ class ImportParser(LineBasedParser):
                 break
         committer = self._get_user_info(b'commit', b'committer')
         message = self._get_data(b'commit', b'message')
+        if self.encodingfallback:
+            try:
+                message.decode('UTF-8')
+            except UnicodeError:
+                message = message.decode(self.encodingfallback).encode('UTF-8')
         from_ = self._get_from()
         merges = []
         while True:
@@ -431,6 +438,11 @@ class ImportParser(LineBasedParser):
         tagger = self._get_user_info(
             b'tag', b'tagger', accept_just_who=True)
         message = self._get_data(b'tag', b'message')
+        if self.encodingfallback:
+            try:
+                message.decode('UTF-8')
+            except UnicodeError:
+                message = message.decode(self.encodingfallback).encode('UTF-8')
         return commands.TagCommand(name, from_, tagger, message)
 
     def _get_mark_if_any(self):
