@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from distutils.core import setup
+from setuptools import setup
 
 version = "0.9.8"
 
@@ -13,6 +13,7 @@ setup(name="fastimport",
       license="GNU GPL v2 or later",
       url="https://github.com/jelmer/python-fastimport",
       packages=['fastimport', 'fastimport.tests', 'fastimport.processors'],
+      test_suite="fastimport.tests.test_suite",
       scripts=[
           'bin/fast-import-query',
           'bin/fast-import-filter',

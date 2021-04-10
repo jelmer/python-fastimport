@@ -70,10 +70,7 @@ class ImportCommand(object):
         return repr(self)
 
     def __repr__(self):
-        if sys.version_info[0] == 2:
-            return self.__bytes__()
-        else:
-            return bytes(self).decode('utf8')
+        return bytes(self).decode('utf8')
 
     def __bytes__(self):
         raise NotImplementedError(
@@ -470,11 +467,8 @@ def check_path(path):
     if path is None or path == b'' or path.startswith(b'/'):
         raise ValueError("illegal path '%s'" % path)
 
-    if (
-        (sys.version_info[0] >= 3 and not isinstance(path, bytes)) and
-        (sys.version_info[0] == 2 and not isinstance(path, str))
-    ):
-        raise TypeError("illegale type for path '%r'" % path)
+    if not isinstance(path, bytes):
+        raise TypeError("illegal type for path '%r'" % path)
 
     return path
 
