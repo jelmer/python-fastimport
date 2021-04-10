@@ -6,6 +6,7 @@ python-fastimport (0.9.8-6) UNRELEASED; urgency=medium
   * Update maintainer email for merge of DPMT and PAPT.
   * Set upstream metadata fields: Bug-Database, Bug-Submit.
   * Update standards version to 4.5.0, no changes needed.
+  * Update watch file format version to 4.
 
  -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 01 Jun 2020 23:02:03 +0000
 
