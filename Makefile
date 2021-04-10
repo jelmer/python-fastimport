@@ -1,4 +1,4 @@
-PYTHON = python
+PYTHON = python3
 FLAKE8 ?= flake8
 SETUP = $(PYTHON) setup.py
 TESTRUNNER ?= unittest
