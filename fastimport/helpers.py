@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Miscellaneous useful stuff."""
-import sys
 
 
 def _common_path_and_rest(l1, l2, common=[]):
@@ -108,11 +107,6 @@ def utf8_bytes_string(s):
         return bytes(s, encoding='utf8')
     else:
         return s
-
-
-def repr_bytes(obj):
-    """Return a bytes representation of the object"""
-    return bytes(obj)
 
 
 class newobject(object):

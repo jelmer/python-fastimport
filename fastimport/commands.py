@@ -22,12 +22,10 @@ from __future__ import division
 
 import re
 import stat
-import sys
 
 from .helpers import (
     newobject as object,
     utf8_bytes_string,
-    repr_bytes,
     )
 
 
@@ -236,7 +234,7 @@ class CommitCommand(ImportCommand):
         else:
             if include_file_contents:
                 filecommands = b''.join(
-                    [b'\n' + repr_bytes(c) for c in self.iter_files()])
+                    [b'\n' + bytes(c) for c in self.iter_files()])
             else:
                 filecommands = b''.join(
                     [b'\n' + str(c) for c in self.iter_files()])
