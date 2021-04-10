@@ -4,6 +4,7 @@ python-fastimport (0.9.8-6) UNRELEASED; urgency=medium
   * Update fields Vcs-Browser, Vcs-Git for maintainer Debian Python Modules
     Team.
   * Update maintainer email for merge of DPMT and PAPT.
+  * Set upstream metadata fields: Bug-Database, Bug-Submit.
 
  -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 01 Jun 2020 23:02:03 +0000
 
