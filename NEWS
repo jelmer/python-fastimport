@@ -1,3 +1,8 @@
+0.9.9	UNRELEASED
+
+ * Drop various other python2 helpers, test on newer versions of Python.
+   (Jelmer Vernooĳ)
+
 0.9.8	2018-04-15
 
  * Fix version number. (Jelmer Vernooĳ)
