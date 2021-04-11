@@ -30,4 +30,4 @@ it can be used by other projects.  Use it like so:
    processor.process(parser.parse())
 """
 
-__version__ = (0, 9, 9)
+__version__ = (0, 9, 10)

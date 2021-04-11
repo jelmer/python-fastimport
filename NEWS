@@ -1,4 +1,4 @@
-0.9.10	UNRELEASED
+0.9.10	2021-04-11
 
  * Declare python 3.5 requirement in setup.py. (Jelmer Vernooĳ)
 
