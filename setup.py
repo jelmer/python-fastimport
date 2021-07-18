@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-version = "0.9.12"
+version = "0.9.13"
 
 setup(name="fastimport",
       description="VCS fastimport/fastexport parser",
