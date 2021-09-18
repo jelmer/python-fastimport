@@ -1,4 +1,4 @@
-python-fastimport (0.9.8-6) UNRELEASED; urgency=medium
+python-fastimport (0.9.14-1) UNRELEASED; urgency=medium
 
   * Drop pypy support, add pypy3 package.
   * Update fields Vcs-Browser, Vcs-Git for maintainer Debian Python Modules
@@ -8,8 +8,9 @@ python-fastimport (0.9.8-6) UNRELEASED; urgency=medium
   * Update standards version to 4.5.0, no changes needed.
   * Update watch file format version to 4.
   * Re-export upstream signing key without extra signatures.
+  * New upstream release.
 
- -- Jelmer Vernooĳ <jelmer@debian.org>  Mon, 01 Jun 2020 23:02:03 +0000
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 18 Sep 2021 16:55:08 -0000
 
 python-fastimport (0.9.8-5) unstable; urgency=medium
 

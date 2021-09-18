@@ -22,12 +22,10 @@ from __future__ import division
 
 import re
 import stat
-import sys
 
 from .helpers import (
     newobject as object,
     utf8_bytes_string,
-    repr_bytes,
     )
 
 
@@ -70,10 +68,7 @@ class ImportCommand(object):
         return repr(self)
 
     def __repr__(self):
-        if sys.version_info[0] == 2:
-            return self.__bytes__()
-        else:
-            return bytes(self).decode('utf8')
+        return bytes(self).decode('utf8')
 
     def __bytes__(self):
         raise NotImplementedError(
@@ -239,7 +234,7 @@ class CommitCommand(ImportCommand):
         else:
             if include_file_contents:
                 filecommands = b''.join(
-                    [b'\n' + repr_bytes(c) for c in self.iter_files()])
+                    [b'\n' + bytes(c) for c in self.iter_files()])
             else:
                 filecommands = b''.join(
                     [b'\n' + str(c) for c in self.iter_files()])
@@ -470,11 +465,8 @@ def check_path(path):
     if path is None or path == b'' or path.startswith(b'/'):
         raise ValueError("illegal path '%s'" % path)
 
-    if (
-        (sys.version_info[0] >= 3 and not isinstance(path, bytes)) and
-        (sys.version_info[0] == 2 and not isinstance(path, str))
-    ):
-        raise TypeError("illegale type for path '%r'" % path)
+    if not isinstance(path, bytes):
+        raise TypeError("illegal type for path '%r'" % path)
 
     return path
 

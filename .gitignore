@@ -1,0 +1,7 @@
+build
+*.pyc
+*~
+MANIFEST
+dist
+.tox
+*.swp

@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Miscellaneous useful stuff."""
-import sys
 
 
 def _common_path_and_rest(l1, l2, common=[]):
@@ -104,24 +103,10 @@ def is_inside_any(dir_list, fname):
 
 def utf8_bytes_string(s):
     """Convert a string to a bytes string (if necessary, encode in utf8)"""
-    if sys.version_info[0] == 2:
-        if isinstance(s, str):
-            return s
-        else:
-            return s.encode('utf8')
+    if isinstance(s, str):
+        return bytes(s, encoding='utf8')
     else:
-        if isinstance(s, str):
-            return bytes(s, encoding='utf8')
-        else:
-            return s
-
-
-def repr_bytes(obj):
-    """Return a bytes representation of the object"""
-    if sys.version_info[0] == 2:
-        return repr(obj)
-    else:
-        return bytes(obj)
+        return s
 
 
 class newobject(object):

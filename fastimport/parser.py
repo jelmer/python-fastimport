@@ -649,7 +649,7 @@ def _unquote_c_string(s):
             codecs.decode(match.group(0), 'unicode-escape')
         )
 
-    if sys.version_info[0] >= 3 and isinstance(s, bytes):
+    if isinstance(s, bytes):
         return ESCAPE_SEQUENCE_BYTES_RE.sub(decode_match, s)
     else:
         return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
