@@ -1,6 +1,6 @@
 python-fastimport (0.9.14-1) UNRELEASED; urgency=medium
 
-  * Drop pypy support, add pypy3 package.
+  * Drop pypy support.
   * Update fields Vcs-Browser, Vcs-Git for maintainer Debian Python Modules
     Team.
   * Update maintainer email for merge of DPMT and PAPT.

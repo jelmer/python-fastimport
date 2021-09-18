@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Python Team <team+python@tracker.debian.org>
 Uploaders: Jelmer Vernooĳ <jelmer@debian.org>
 Homepage: https://github.com/jelmer/python-fastimport
-Build-Depends: python3-all, pypy3, dh-python, debhelper-compat (= 12)
+Build-Depends: python3-all, dh-python, debhelper-compat (= 12)
 Standards-Version: 4.5.0
 Rules-Requires-Root: no
 Vcs-Git: https://salsa.debian.org/python-team/packages/python-fastimport.git
@@ -20,14 +20,3 @@ Description: Fastimport file format parser and generator library
  The fastimport format is used for serializing version control histories.
  .
  This package contains the module built for Python version 3.x.
-
-Package: pypy3-fastimport
-Architecture: all
-Provides: ${pypy3:Provides}
-Depends: ${pypy3:Depends}, ${misc:Depends}
-Suggests: git-core
-Description: Fastimport file format parser and generator library
- Python library for parsing and generating the fastimport file format.
- The fastimport format is used for serializing version control histories.
- .
- This package contains the module built for pypy3.
