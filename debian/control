@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Python Team <team+python@tracker.debian.org>
 Uploaders: Jelmer Vernooĳ <jelmer@debian.org>
 Homepage: https://github.com/jelmer/python-fastimport
-Build-Depends: python3-all, dh-python, debhelper-compat (= 12)
+Build-Depends: python3-all, dh-python, debhelper-compat (= 13)
 Standards-Version: 4.5.0
 Rules-Requires-Root: no
 Vcs-Git: https://salsa.debian.org/python-team/packages/python-fastimport.git

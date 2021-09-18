@@ -9,6 +9,7 @@ python-fastimport (0.9.14-1) UNRELEASED; urgency=medium
   * Update watch file format version to 4.
   * Re-export upstream signing key without extra signatures.
   * New upstream release.
+  * Bump debhelper from old 12 to 13.
 
  -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 18 Sep 2021 16:55:08 -0000
 
