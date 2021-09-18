@@ -1,4 +1,4 @@
-python-fastimport (0.9.14-1) UNRELEASED; urgency=medium
+python-fastimport (0.9.14-1) unstable; urgency=medium
 
   * Drop pypy support.
   * Update fields Vcs-Browser, Vcs-Git for maintainer Debian Python Modules
@@ -12,7 +12,7 @@ python-fastimport (0.9.14-1) UNRELEASED; urgency=medium
   * Bump debhelper from old 12 to 13.
   * Update standards version to 4.5.1, no changes needed.
 
- -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 18 Sep 2021 16:55:08 -0000
+ -- Jelmer Vernooĳ <jelmer@debian.org>  Sat, 18 Sep 2021 17:05:33 +0100
 
 python-fastimport (0.9.8-5) unstable; urgency=medium
 
