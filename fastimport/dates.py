@@ -24,7 +24,7 @@ timestamp,timezone where
 """
 import time
 
-from fastimport import errors
+from . import errors
 
 
 def parse_raw(s, lineno=0):

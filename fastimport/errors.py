@@ -18,7 +18,6 @@
 # Prefix to messages to show location information
 _LOCATION_FMT = "line %(lineno)d: "
 
-# ImportError is heavily based on BzrError
 
 class ImportError(Exception):
     """The base exception class for all import processing exceptions."""
@@ -41,7 +40,7 @@ class MissingBytes(ParsingError):
     """Raised when EOF encountered while expecting to find more bytes."""
 
     _fmt = (_LOCATION_FMT + "Unexpected EOF - expected %(expected)d bytes,"
-        " found %(found)d")
+            " found %(found)d")
 
     def __init__(self, lineno, expected, found):
         self.expected = expected
@@ -53,7 +52,7 @@ class MissingTerminator(ParsingError):
     """Raised when EOF encountered while expecting to find a terminator."""
 
     _fmt = (_LOCATION_FMT +
-        "Unexpected EOF - expected '%(terminator)s' terminator")
+            "Unexpected EOF - expected '%(terminator)s' terminator")
 
     def __init__(self, lineno, terminator):
         self.terminator = terminator
@@ -85,7 +84,7 @@ class BadFormat(ParsingError):
     """Raised when a section is formatted incorrectly."""
 
     _fmt = (_LOCATION_FMT + "Bad format for section %(section)s in "
-        "command %(cmd)s: found '%(text)s'")
+            "command %(cmd)s: found '%(text)s'")
 
     def __init__(self, lineno, cmd, section, text):
         self.cmd = cmd
@@ -98,7 +97,7 @@ class InvalidTimezone(ParsingError):
     """Raised when converting a string timezone to a seconds offset."""
 
     _fmt = (_LOCATION_FMT +
-        "Timezone %(timezone)r could not be converted.%(reason)s")
+            "Timezone %(timezone)r could not be converted.%(reason)s")
 
     def __init__(self, lineno, timezone, reason=None):
         self.timezone = timezone
@@ -153,7 +152,7 @@ class BadRepositorySize(ImportError):
     """Raised when the repository has an incorrect number of revisions."""
 
     _fmt = ("Bad repository size - %(found)d revisions found, "
-        "%(expected)d expected")
+            "%(expected)d expected")
 
     def __init__(self, expected, found):
         self.expected = expected
@@ -165,7 +164,7 @@ class BadRestart(ImportError):
     """Raised when the import stream and id-map do not match up."""
 
     _fmt = ("Bad restart - attempted to skip commit %(commit_id)s "
-        "but matching revision-id is unknown")
+            "but matching revision-id is unknown")
 
     def __init__(self, commit_id):
         self.commit_id = commit_id
@@ -176,7 +175,7 @@ class UnknownFeature(ImportError):
     """Raised when an unknown feature is given in the input stream."""
 
     _fmt = ("Unknown feature '%(feature)s' - try a later importer or "
-        "an earlier data format")
+            "an earlier data format")
 
     def __init__(self, feature):
         self.feature = feature

@@ -22,7 +22,8 @@ from __future__ import absolute_import
 class RefTracker(object):
 
     def __init__(self):
-        # Head tracking: last ref, last id per ref & map of commit ids to ref*s*
+        # Head tracking: last ref, last id per ref & map of commit ids to
+        # ref*s*
         self.last_ref = None
         self.last_ids = {}
         self.heads = {}
@@ -64,5 +65,3 @@ class RefTracker(object):
         self.heads.setdefault(cmd_id, set()).add(cmd_ref)
         self.last_ids[cmd_ref] = cmd_id
         self.last_ref = cmd_ref
-
-
