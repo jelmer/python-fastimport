@@ -1,7 +1,3 @@
 Tests: testsuite-3
 Depends: python3, python3-fastimport
 Restrictions: allow-stderr
-
-Tests: testsuite-pypy
-Depends: pypy, pypy-fastimport
-Restrictions: allow-stderr
