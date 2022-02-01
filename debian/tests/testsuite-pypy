@@ -1,3 +1,0 @@
-#!/bin/sh
-set -e
-pypy -m unittest fastimport.tests.test_suite
