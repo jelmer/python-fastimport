@@ -337,7 +337,7 @@ class TestTagParsing(unittest.TestCase):
             b"create v1.0"))
         cmds = list(p.iter_commands())
         self.assertEqual(1, len(cmds))
-        self.assertTrue(isinstance(cmds[0], commands.TagCommand))
+        self.assertIsInstance(cmds[0], commands.TagCommand)
         self.assertEqual(
             cmds[0].tagger,
             (b'Joe Wong', b'joe@example.com', 1234567890.0, -21600))
@@ -360,5 +360,5 @@ class TestTagParsing(unittest.TestCase):
             b"create v1.0"), strict=False)
         cmds = list(p.iter_commands())
         self.assertEqual(1, len(cmds))
-        self.assertTrue(isinstance(cmds[0], commands.TagCommand))
+        self.assertIsInstance(cmds[0], commands.TagCommand)
         self.assertEqual(cmds[0].tagger[:2], (b'Joe Wong', None))

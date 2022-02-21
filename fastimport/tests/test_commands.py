@@ -254,7 +254,7 @@ class TestCommitCopy(TestCase):
     def test_simple_copy(self):
         c2 = self.c.copy()
 
-        self.assertFalse(self.c is c2)
+        self.assertIsNot(self.c, c2)
         self.assertEqual(bytes(self.c), bytes(c2))
 
     def test_replace_attr(self):
