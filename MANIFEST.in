@@ -2,3 +2,4 @@ include AUTHORS
 include NEWS
 include COPYING
 include README.md
+global-include fastimport/tests *

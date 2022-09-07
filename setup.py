@@ -12,7 +12,7 @@ setup(name="fastimport",
       maintainer_email="jelmer@jelmer.uk",
       license="GNU GPL v2 or later",
       url="https://github.com/jelmer/python-fastimport",
-      packages=['fastimport', 'fastimport.tests', 'fastimport.processors'],
+      packages=['fastimport', 'fastimport.processors'],
       test_suite="fastimport.tests.test_suite",
       python_requires=">=3.6",
       scripts=[
