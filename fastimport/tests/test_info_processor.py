@@ -14,12 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test InfoProcessor"""
-from io import BytesIO
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import BytesIO, StringIO
 
 from unittest import TestCase
 
