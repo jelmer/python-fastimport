@@ -31,6 +31,7 @@ processors package for examples.
 """
 import sys
 import time
+from typing import List
 
 from . import errors
 from .helpers import newobject as object
@@ -43,7 +44,7 @@ class ImportProcessor(object):
     methods as appropriate.
     """
 
-    known_params = []
+    known_params: List[bytes] = []
 
     def __init__(self, params=None, verbose=False, outf=None):
         if outf is None:
