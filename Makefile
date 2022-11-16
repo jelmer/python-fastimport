@@ -1,5 +1,6 @@
 PYTHON = python3
 FLAKE8 ?= flake8
+MYPY ?= mypy
 SETUP = $(PYTHON) setup.py
 TESTRUNNER ?= unittest
 RUNTEST = PYTHONPATH=.:$(PYTHONPATH) $(PYTHON) -m $(TESTRUNNER)
@@ -27,3 +28,6 @@ clean::
 
 style:
 	$(FLAKE8) --exclude=build,.git,.tox
+
+typing:
+	$(MYPY) fastimport
