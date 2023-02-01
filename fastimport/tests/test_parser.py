@@ -100,7 +100,7 @@ author <bugs@bunny.org> now
 committer <bugs@bunny.org> now
 data 20
 first commit, empty
-# Test a commit with a heredoc-style (delimited_data) messsage (bug #400960)
+# Test a commit with a heredoc-style (delimited_data) message (bug #400960)
 commit refs/heads/master
 mark :4
 author <bugs@bunny.org> now

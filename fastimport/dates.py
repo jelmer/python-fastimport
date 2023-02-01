@@ -78,7 +78,7 @@ def parse_now(s, lineno=0):
     return time.time(), 0
 
 
-# Lookup tabel of date parsing routines
+# Lookup table of date parsing routines
 DATE_PARSERS_BY_NAME = {
     u'raw':      parse_raw,
     u'rfc2822':  parse_rfc2822,
