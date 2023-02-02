@@ -63,15 +63,15 @@ class TestCommitDisplay(TestCase):
 
     def test_commit_unicode_committer(self):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
-        name = u'\u013d\xf3r\xe9m \xcdp\u0161\xfam'
+        name = '\u013d\xf3r\xe9m \xcdp\u0161\xfam'
 
         commit_utf8 = utf8_bytes_string(
-            u"commit refs/heads/master\n"
-            u"mark :bbb\n"
-            u"committer %s <test@example.com> 1234567890 -0600\n"
-            u"data 12\n"
-            u"release v1.0\n"
-            u"from :aaa" % (name,)
+            "commit refs/heads/master\n"
+            "mark :bbb\n"
+            "committer %s <test@example.com> 1234567890 -0600\n"
+            "data 12\n"
+            "release v1.0\n"
+            "from :aaa" % (name,)
         )
 
         committer = (name, b'test@example.com', 1234567890, -6 * 3600)
@@ -195,8 +195,8 @@ class TestCommitDisplay(TestCase):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
         properties = {
-            u'greeting':  u'hello',
-            u'planet':    u'world',
+            'greeting':  'hello',
+            'planet':    'world',
             }
         c = commands.CommitCommand(
             b'refs/heads/master', b'bbb', None,
@@ -217,8 +217,8 @@ class TestCommitDisplay(TestCase):
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b'Joe Wong', b'joe@example.com', 1234567890, -6 * 3600)
         properties = {
-            u'greeting':  u'hello',
-            u'planet':    u'world',
+            'greeting':  'hello',
+            'planet':    'world',
             }
         c = commands.CommitCommand(
             b'refs/heads/master', 123, None,
@@ -239,7 +239,7 @@ class TestCommitDisplay(TestCase):
 class TestCommitCopy(TestCase):
 
     def setUp(self):
-        super(TestCommitCopy, self).setUp()
+        super().setUp()
         file_cmds = iter([
             commands.FileDeleteCommand(b'readme.txt'),
             commands.FileModifyCommand(
