@@ -1,3 +1,51 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "fastimport"
+description = "VCS fastimport/fastexport parser"
+authors = [{name = "Canonical Ltd", email = "bazaar@lists.canonical.com"}]
+maintainers = [{name = "Jelmer Vernooij", email = "jelmer@jelmer.uk"}]
+license = {text = "GNU GPL v2 or later"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Operating System :: POSIX",
+    "Topic :: Software Development :: Version Control",
+]
+description-file = "README.md"
+requires-python = ">=3.7"
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/jelmer/python-fastimport"
+Repository = "https://github.com/jelmer/python-fastimport"
+
+[tool.setuptools]
+packages = [
+    "fastimport",
+    "fastimport.processors",
+]
+script-files = [
+    "bin/fast-import-query",
+    "bin/fast-import-filter",
+    "bin/fast-import-info",
+]
+include-package-data = false
+
+[tool.setuptools.package-data]
+fastimport = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "fastimport.__version__"}
+
+[tool.distutils.bdist_wheel]
+universal = 1
