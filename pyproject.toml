@@ -24,6 +24,7 @@ classifiers = [
 description-file = "README.md"
 requires-python = ">=3.7"
 dynamic = ["version"]
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/jelmer/python-fastimport"
