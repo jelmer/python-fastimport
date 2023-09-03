@@ -165,7 +165,7 @@ class InfoProcessor(processor.ImportProcessor):
             for name, value in items:
                 if verbose_formatter is not None:
                     value = verbose_formatter(value)
-                if type(name) == str:
+                if isinstance(name, str):
                     name = name.replace(' ', '-')
                 self.outf.write("%s = %s\n" % (name, value))
             self.outf.write("\n")
