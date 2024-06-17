@@ -21,11 +21,11 @@ from .. import (
     commands,
     processor,
     reftracker,
-    )
+)
 from ..helpers import (
     invert_dict,
     invert_dictset,
-    )
+)
 import stat
 
 
@@ -41,8 +41,7 @@ class InfoProcessor(processor.ImportProcessor):
     """
 
     def __init__(self, params=None, verbose=0, outf=None):
-        processor.ImportProcessor.__init__(
-            self, params, verbose, outf=outf)
+        processor.ImportProcessor.__init__(self, params, verbose, outf=outf)
 
     def pre_process(self):
         # Init statistics
@@ -62,7 +61,7 @@ class InfoProcessor(processor.ImportProcessor):
         self.lightweight_tags = 0
         # Blob usage tracking
         self.blobs = {}
-        for usage in ['new', 'used', 'unknown', 'unmarked']:
+        for usage in ["new", "used", "unknown", "unmarked"]:
             self.blobs[usage] = set()
         self.blob_ref_counts = {}
         # Head tracking
@@ -79,37 +78,42 @@ class InfoProcessor(processor.ImportProcessor):
         fc_names = commands.FILE_COMMAND_NAMES
         self._dump_stats_group(
             "Command counts",
-            [(c.decode('utf-8'), self.cmd_counts[c]) for c in cmd_names], str)
+            [(c.decode("utf-8"), self.cmd_counts[c]) for c in cmd_names],
+            str,
+        )
         self._dump_stats_group(
             "File command counts",
-            [(c.decode('utf-8'), self.file_cmd_counts[c]) for c in fc_names],
-            str)
+            [(c.decode("utf-8"), self.file_cmd_counts[c]) for c in fc_names],
+            str,
+        )
 
         # Commit stats
-        if self.cmd_counts[b'commit']:
+        if self.cmd_counts[b"commit"]:
             p_items = []
             for i in range(self.max_parent_count + 1):
                 if i in self.parent_counts:
                     count = self.parent_counts[i]
                     p_items.append(("parents-%d" % i, count))
             merges_count = len(self.merges)
-            p_items.append(('total revisions merged', merges_count))
+            p_items.append(("total revisions merged", merges_count))
             flags = {
-                'separate authors found': self.separate_authors_found,
-                'executables': self.executables_found,
-                'symlinks': self.symlinks_found,
-                'blobs referenced by SHA': self.sha_blob_references,
-                }
+                "separate authors found": self.separate_authors_found,
+                "executables": self.executables_found,
+                "symlinks": self.symlinks_found,
+                "blobs referenced by SHA": self.sha_blob_references,
+            }
             self._dump_stats_group("Parent counts", p_items, str)
-            self._dump_stats_group(
-                "Commit analysis", sorted(flags.items()), _found)
+            self._dump_stats_group("Commit analysis", sorted(flags.items()), _found)
             heads = invert_dictset(self.reftracker.heads)
             self._dump_stats_group(
-                    "Head analysis",
-                    [(k.decode('utf-8'),
-                        ', '.join([m.decode('utf-8') for m in v]))
-                        for (k, v) in heads.items()], None,
-                    _iterable_as_config_list)
+                "Head analysis",
+                [
+                    (k.decode("utf-8"), ", ".join([m.decode("utf-8") for m in v]))
+                    for (k, v) in heads.items()
+                ],
+                None,
+                _iterable_as_config_list,
+            )
             # note("\t%d\t%s" % (len(self.committers), 'unique committers'))
             self._dump_stats_group("Merges", self.merges.items(), None)
             # We only show the rename old path and copy source paths when -vv
@@ -118,39 +122,45 @@ class InfoProcessor(processor.ImportProcessor):
             if self.verbose >= 2:
                 self._dump_stats_group(
                     "Rename old paths",
-                    self.rename_old_paths.items(), len,
-                    _iterable_as_config_list)
+                    self.rename_old_paths.items(),
+                    len,
+                    _iterable_as_config_list,
+                )
                 self._dump_stats_group(
                     "Copy source paths",
-                    self.copy_source_paths.items(), len,
-                    _iterable_as_config_list)
+                    self.copy_source_paths.items(),
+                    len,
+                    _iterable_as_config_list,
+                )
 
         # Blob stats
-        if self.cmd_counts[b'blob']:
+        if self.cmd_counts[b"blob"]:
             # In verbose mode, don't list every blob used
             if self.verbose:
-                del self.blobs['used']
+                del self.blobs["used"]
             self._dump_stats_group(
                 "Blob usage tracking",
-                [(k, set([v1.decode() for v1 in v]))
-                 for (k, v) in self.blobs.items()],
-                len, _iterable_as_config_list)
+                [(k, set([v1.decode() for v1 in v])) for (k, v) in self.blobs.items()],
+                len,
+                _iterable_as_config_list,
+            )
         if self.blob_ref_counts:
             blobs_by_count = invert_dict(self.blob_ref_counts)
             blob_items = sorted(blobs_by_count.items())
             self._dump_stats_group(
-                "Blob reference counts",
-                blob_items, len, _iterable_as_config_list)
+                "Blob reference counts", blob_items, len, _iterable_as_config_list
+            )
 
         # Other stats
-        if self.cmd_counts[b'reset']:
+        if self.cmd_counts[b"reset"]:
             reset_stats = {
-                'lightweight tags': self.lightweight_tags,
-                }
+                "lightweight tags": self.lightweight_tags,
+            }
             self._dump_stats_group("Reset analysis", reset_stats.items())
 
-    def _dump_stats_group(self, title, items, normal_formatter=None,
-                          verbose_formatter=None):
+    def _dump_stats_group(
+        self, title, items, normal_formatter=None, verbose_formatter=None
+    ):
         """Dump a statistics group.
 
         In verbose mode, do so as a config file so
@@ -166,7 +176,7 @@ class InfoProcessor(processor.ImportProcessor):
                 if verbose_formatter is not None:
                     value = verbose_formatter(value)
                 if isinstance(name, str):
-                    name = name.replace(' ', '-')
+                    name = name.replace(" ", "-")
                 self.outf.write("%s = %s\n" % (name, value))
             self.outf.write("\n")
         else:
@@ -184,14 +194,14 @@ class InfoProcessor(processor.ImportProcessor):
         """Process a BlobCommand."""
         self.cmd_counts[cmd.name] += 1
         if cmd.mark is None:
-            self.blobs['unmarked'].add(cmd.id)
+            self.blobs["unmarked"].add(cmd.id)
         else:
-            self.blobs['new'].add(cmd.id)
+            self.blobs["new"].add(cmd.id)
             # Marks can be re-used so remove it from used if already there.
             # Note: we definitely do NOT want to remove it from multi if
             # it's already in that set.
             try:
-                self.blobs['used'].remove(cmd.id)
+                self.blobs["used"].remove(cmd.id)
             except KeyError:
                 pass
 
@@ -213,16 +223,14 @@ class InfoProcessor(processor.ImportProcessor):
                 if stat.S_ISLNK(fc.mode):
                     self.symlinks_found = True
                 if fc.dataref is not None:
-                    if fc.dataref[0] == ':':
+                    if fc.dataref[0] == ":":
                         self._track_blob(fc.dataref)
                     else:
                         self.sha_blob_references = True
             elif isinstance(fc, commands.FileRenameCommand):
-                self.rename_old_paths.setdefault(cmd.id, set()).add(
-                    fc.old_path)
+                self.rename_old_paths.setdefault(cmd.id, set()).add(fc.old_path)
             elif isinstance(fc, commands.FileCopyCommand):
-                self.copy_source_paths.setdefault(cmd.id, set()).add(
-                    fc.src_path)
+                self.copy_source_paths.setdefault(cmd.id, set()).add(fc.src_path)
 
         # Track the heads
         parents = self.reftracker.track_heads(cmd)
@@ -247,12 +255,11 @@ class InfoProcessor(processor.ImportProcessor):
     def reset_handler(self, cmd):
         """Process a ResetCommand."""
         self.cmd_counts[cmd.name] += 1
-        if cmd.ref.startswith(b'refs/tags/'):
+        if cmd.ref.startswith(b"refs/tags/"):
             self.lightweight_tags += 1
         else:
             if cmd.from_ is not None:
-                self.reftracker.track_heads_for_ref(
-                    cmd.ref, cmd.from_)
+                self.reftracker.track_heads_for_ref(cmd.ref, cmd.from_)
 
     def tag_handler(self, cmd):
         """Process a TagCommand."""
@@ -263,27 +270,25 @@ class InfoProcessor(processor.ImportProcessor):
         self.cmd_counts[cmd.name] += 1
         feature = cmd.feature_name
         if feature not in commands.FEATURE_NAMES:
-            self.warning(
-                "feature %s is not supported - parsing may fail"
-                % (feature,))
+            self.warning("feature %s is not supported - parsing may fail" % (feature,))
 
     def _track_blob(self, mark):
         if mark in self.blob_ref_counts:
             self.blob_ref_counts[mark] += 1
             pass
-        elif mark in self.blobs['used']:
+        elif mark in self.blobs["used"]:
             self.blob_ref_counts[mark] = 2
-            self.blobs['used'].remove(mark)
-        elif mark in self.blobs['new']:
-            self.blobs['used'].add(mark)
-            self.blobs['new'].remove(mark)
+            self.blobs["used"].remove(mark)
+        elif mark in self.blobs["new"]:
+            self.blobs["used"].add(mark)
+            self.blobs["new"].remove(mark)
         else:
-            self.blobs['unknown'].add(mark)
+            self.blobs["unknown"].add(mark)
 
 
 def _found(b):
     """Format a found boolean as a string."""
-    return ['no', 'found'][b]
+    return ["no", "found"][b]
 
 
 def _iterable_as_config_list(s):

@@ -14,17 +14,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Test InfoProcessor"""
+
 from io import BytesIO, StringIO
 
 from unittest import TestCase
 
 from fastimport import (
     parser,
-    )
+)
 
 from fastimport.processors import (
     info_processor,
-    )
+)
 
 simple_fast_import_stream = b"""commit refs/heads/master
 mark :1
@@ -36,7 +37,6 @@ initial
 
 
 class TestFastImportInfo(TestCase):
-
     def test_simple(self):
         stream = BytesIO(simple_fast_import_stream)
         outf = StringIO()
@@ -45,7 +45,9 @@ class TestFastImportInfo(TestCase):
         proc.process(p.iter_commands)
 
         self.maxDiff = None
-        self.assertEqual(outf.getvalue(), """Command counts:
+        self.assertEqual(
+            outf.getvalue(),
+            """Command counts:
 \t0\tblob
 \t0\tcheckpoint
 \t1\tcommit
@@ -70,4 +72,5 @@ Commit analysis:
 Head analysis:
 \t:1\trefs/heads/master
 Merges:
-""")
+""",
+        )

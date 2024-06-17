@@ -27,16 +27,17 @@ def _common_path_and_rest(l1, l2, common=[]):
     return _common_path_and_rest(
         l1[1:],
         l2[1:],
-        common + [
+        common
+        + [
             l1[0:1]  # return a byte string in python 3 unlike l1[0] that
-                     # would return an integer.
-        ]
+            # would return an integer.
+        ],
     )
 
 
 def common_path(path1, path2):
     """Find the common bit of 2 paths."""
-    return b''.join(_common_path_and_rest(path1, path2)[0])
+    return b"".join(_common_path_and_rest(path1, path2)[0])
 
 
 def common_directory(paths):
@@ -49,14 +50,14 @@ def common_directory(paths):
     import posixpath
 
     def get_dir_with_slash(path):
-        if path == b'' or path.endswith(b'/'):
+        if path == b"" or path.endswith(b"/"):
             return path
         else:
             dirname, basename = posixpath.split(path)
-            if dirname == b'':
+            if dirname == b"":
                 return dirname
             else:
-                return dirname + b'/'
+                return dirname + b"/"
 
     if not paths:
         return None
@@ -84,11 +85,11 @@ def is_inside(directory, fname):
     if directory == fname:
         return True
 
-    if directory == b'':
+    if directory == b"":
         return True
 
-    if not directory.endswith(b'/'):
-        directory += b'/'
+    if not directory.endswith(b"/"):
+        directory += b"/"
 
     return fname.startswith(directory)
 
@@ -104,7 +105,7 @@ def is_inside_any(dir_list, fname):
 def utf8_bytes_string(s):
     """Convert a string to a bytes string (if necessary, encode in utf8)"""
     if isinstance(s, str):
-        return bytes(s, encoding='utf8')
+        return bytes(s, encoding="utf8")
     else:
         return s
 
@@ -122,25 +123,26 @@ class newobject(object):
     This is a copy/paste of the future.types.newobject class of the future
     package.
     """
+
     def next(self):
-        if hasattr(self, '__next__'):
+        if hasattr(self, "__next__"):
             return type(self).__next__(self)
-        raise TypeError('newobject is not an iterator')
+        raise TypeError("newobject is not an iterator")
 
     def __unicode__(self):
         # All subclasses of the builtin object should have __str__ defined.
         # Note that old-style classes do not have __str__ defined.
-        if hasattr(self, '__str__'):
+        if hasattr(self, "__str__"):
             s = type(self).__str__(self)
         else:
             s = str(self)
         if isinstance(s, unicode):  # noqa: F821
             return s
         else:
-            return s.decode('utf-8')
+            return s.decode("utf-8")
 
     def __nonzero__(self):
-        if hasattr(self, '__bool__'):
+        if hasattr(self, "__bool__"):
             return type(self).__bool__(self)
         # object has no __nonzero__ method
         return True
@@ -153,7 +155,7 @@ class newobject(object):
     #     return self.__itruediv__(other)
 
     def __long__(self):
-        if not hasattr(self, '__int__'):
+        if not hasattr(self, "__int__"):
             return NotImplemented
         return self.__int__()  # not type(self).__int__(self)
 
@@ -193,12 +195,14 @@ def binary_stream(stream):
     """
     try:
         import os
-        if os.name == 'nt':
-            fileno = getattr(stream, 'fileno', None)
+
+        if os.name == "nt":
+            fileno = getattr(stream, "fileno", None)
             if fileno:
                 no = fileno()
-                if no >= 0:     # -1 means we're working as subprocess
+                if no >= 0:  # -1 means we're working as subprocess
                     import msvcrt
+
                     msvcrt.setmode(no, os.O_BINARY)
     except ImportError:
         pass
@@ -232,7 +236,7 @@ def defines_to_dict(defines):
         return None
     result = {}
     for define in defines:
-        kv = define.split('=', 1)
+        kv = define.split("=", 1)
         if len(kv) == 1:
             result[define.strip()] = 1
         else:
@@ -241,11 +245,13 @@ def defines_to_dict(defines):
 
 
 def get_source_stream(source):
-    if source == '-' or source is None:
+    if source == "-" or source is None:
         import sys
+
         stream = binary_stream(sys.stdin)
-    elif source.endswith('.gz'):
+    elif source.endswith(".gz"):
         import gzip
+
         stream = gzip.open(source, "rb")
     else:
         stream = open(source, "rb")

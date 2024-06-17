@@ -39,8 +39,10 @@ class ParsingError(ImportError):
 class MissingBytes(ParsingError):
     """Raised when EOF encountered while expecting to find more bytes."""
 
-    _fmt = (_LOCATION_FMT + "Unexpected EOF - expected %(expected)d bytes,"
-            " found %(found)d")
+    _fmt = (
+        _LOCATION_FMT + "Unexpected EOF - expected %(expected)d bytes,"
+        " found %(found)d"
+    )
 
     def __init__(self, lineno, expected, found):
         self.expected = expected
@@ -51,8 +53,7 @@ class MissingBytes(ParsingError):
 class MissingTerminator(ParsingError):
     """Raised when EOF encountered while expecting to find a terminator."""
 
-    _fmt = (_LOCATION_FMT +
-            "Unexpected EOF - expected '%(terminator)s' terminator")
+    _fmt = _LOCATION_FMT + "Unexpected EOF - expected '%(terminator)s' terminator"
 
     def __init__(self, lineno, terminator):
         self.terminator = terminator
@@ -62,7 +63,7 @@ class MissingTerminator(ParsingError):
 class InvalidCommand(ParsingError):
     """Raised when an unknown command found."""
 
-    _fmt = (_LOCATION_FMT + "Invalid command '%(cmd)s'")
+    _fmt = _LOCATION_FMT + "Invalid command '%(cmd)s'"
 
     def __init__(self, lineno, cmd):
         self.cmd = cmd
@@ -72,7 +73,7 @@ class InvalidCommand(ParsingError):
 class MissingSection(ParsingError):
     """Raised when a section is required in a command but not present."""
 
-    _fmt = (_LOCATION_FMT + "Command %(cmd)s is missing section %(section)s")
+    _fmt = _LOCATION_FMT + "Command %(cmd)s is missing section %(section)s"
 
     def __init__(self, lineno, cmd, section):
         self.cmd = cmd
@@ -83,8 +84,10 @@ class MissingSection(ParsingError):
 class BadFormat(ParsingError):
     """Raised when a section is formatted incorrectly."""
 
-    _fmt = (_LOCATION_FMT + "Bad format for section %(section)s in "
-            "command %(cmd)s: found '%(text)s'")
+    _fmt = (
+        _LOCATION_FMT + "Bad format for section %(section)s in "
+        "command %(cmd)s: found '%(text)s'"
+    )
 
     def __init__(self, lineno, cmd, section, text):
         self.cmd = cmd
@@ -96,22 +99,21 @@ class BadFormat(ParsingError):
 class InvalidTimezone(ParsingError):
     """Raised when converting a string timezone to a seconds offset."""
 
-    _fmt = (_LOCATION_FMT +
-            "Timezone %(timezone)r could not be converted.%(reason)s")
+    _fmt = _LOCATION_FMT + "Timezone %(timezone)r could not be converted.%(reason)s"
 
     def __init__(self, lineno, timezone, reason=None):
         self.timezone = timezone
         if reason:
-            self.reason = ' ' + reason
+            self.reason = " " + reason
         else:
-            self.reason = ''
+            self.reason = ""
         ParsingError.__init__(self, lineno)
 
 
 class PrematureEndOfStream(ParsingError):
     """Raised when the 'done' feature was specified but missing."""
 
-    _fmt = (_LOCATION_FMT + "Stream end before 'done' command")
+    _fmt = _LOCATION_FMT + "Stream end before 'done' command"
 
     def __init__(self, lineno):
         ParsingError.__init__(self, lineno)
@@ -120,7 +122,7 @@ class PrematureEndOfStream(ParsingError):
 class UnknownDateFormat(ImportError):
     """Raised when an unknown date format is given."""
 
-    _fmt = ("Unknown date format '%(format)s'")
+    _fmt = "Unknown date format '%(format)s'"
 
     def __init__(self, format):
         self.format = format
@@ -130,7 +132,7 @@ class UnknownDateFormat(ImportError):
 class MissingHandler(ImportError):
     """Raised when a processor can't handle a command."""
 
-    _fmt = ("Missing handler for command %(cmd)s")
+    _fmt = "Missing handler for command %(cmd)s"
 
     def __init__(self, cmd):
         self.cmd = cmd
@@ -140,7 +142,7 @@ class MissingHandler(ImportError):
 class UnknownParameter(ImportError):
     """Raised when an unknown parameter is passed to a processor."""
 
-    _fmt = ("Unknown parameter - '%(param)s' not in %(knowns)s")
+    _fmt = "Unknown parameter - '%(param)s' not in %(knowns)s"
 
     def __init__(self, param, knowns):
         self.param = param
@@ -151,8 +153,7 @@ class UnknownParameter(ImportError):
 class BadRepositorySize(ImportError):
     """Raised when the repository has an incorrect number of revisions."""
 
-    _fmt = ("Bad repository size - %(found)d revisions found, "
-            "%(expected)d expected")
+    _fmt = "Bad repository size - %(found)d revisions found, " "%(expected)d expected"
 
     def __init__(self, expected, found):
         self.expected = expected
@@ -163,8 +164,10 @@ class BadRepositorySize(ImportError):
 class BadRestart(ImportError):
     """Raised when the import stream and id-map do not match up."""
 
-    _fmt = ("Bad restart - attempted to skip commit %(commit_id)s "
-            "but matching revision-id is unknown")
+    _fmt = (
+        "Bad restart - attempted to skip commit %(commit_id)s "
+        "but matching revision-id is unknown"
+    )
 
     def __init__(self, commit_id):
         self.commit_id = commit_id
@@ -174,8 +177,10 @@ class BadRestart(ImportError):
 class UnknownFeature(ImportError):
     """Raised when an unknown feature is given in the input stream."""
 
-    _fmt = ("Unknown feature '%(feature)s' - try a later importer or "
-            "an earlier data format")
+    _fmt = (
+        "Unknown feature '%(feature)s' - try a later importer or "
+        "an earlier data format"
+    )
 
     def __init__(self, feature):
         self.feature = feature

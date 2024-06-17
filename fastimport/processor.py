@@ -29,6 +29,7 @@ To import from a fast-import stream to your version-control system:
 See git-fast-import.1 for the meaning of each command and the
 processors package for examples.
 """
+
 import sys
 import time
 from typing import List
@@ -79,7 +80,7 @@ class ImportProcessor(object):
         self.pre_process()
         for cmd in command_iter():
             try:
-                name = (cmd.name + b'_handler').decode('utf8')
+                name = (cmd.name + b"_handler").decode("utf8")
                 handler = getattr(self.__class__, name)
             except KeyError:
                 raise errors.MissingHandler(cmd.name)
@@ -163,7 +164,7 @@ class CommitHandler(object):
         self.pre_process_files()
         for fc in self.command.iter_files():
             try:
-                name = (fc.name[4:] + b'_handler').decode('utf8')
+                name = (fc.name[4:] + b"_handler").decode("utf8")
                 handler = getattr(self.__class__, name)
             except KeyError:
                 raise errors.MissingHandler(fc.name)

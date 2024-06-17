@@ -20,7 +20,6 @@ from __future__ import absolute_import
 
 
 class RefTracker(object):
-
     def __init__(self):
         # Head tracking: last ref, last id per ref & map of commit ids to
         # ref*s*
