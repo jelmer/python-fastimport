@@ -1,5 +1,5 @@
 PYTHON = python3
-FLAKE8 ?= flake8
+RUFF ?= ruff
 MYPY ?= mypy
 SETUP = $(PYTHON) setup.py
 TESTRUNNER ?= unittest
@@ -27,7 +27,7 @@ clean::
 	$(SETUP) clean --all
 
 style:
-	$(FLAKE8) --exclude=build,.git,.tox
+	$(RUFF) check fastimport
 
 typing:
 	$(MYPY) fastimport
