@@ -14,13 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Import processor that queries the input (and doesn't import)."""
+
 from __future__ import print_function
 
 
 from .. import (
     commands,
     processor,
-    )
+)
 
 
 class QueryProcessor(processor.ImportProcessor):
@@ -30,9 +31,7 @@ class QueryProcessor(processor.ImportProcessor):
     """
 
     known_params = (
-        commands.COMMAND_NAMES +
-        commands.FILE_COMMAND_NAMES +
-        [b'commit-mark']
+        commands.COMMAND_NAMES + commands.FILE_COMMAND_NAMES + [b"commit-mark"]
     )
 
     def __init__(self, params=None, verbose=False):
@@ -41,22 +40,22 @@ class QueryProcessor(processor.ImportProcessor):
         self.interesting_commit = None
         self._finished = False
         if params:
-            if 'commit-mark' in params:
-                self.interesting_commit = params['commit-mark']
-                del params['commit-mark']
+            if "commit-mark" in params:
+                self.interesting_commit = params["commit-mark"]
+                del params["commit-mark"]
             for name, value in params.items():
                 if value == 1:
                     # All fields
                     fields = None
                 else:
-                    fields = value.split(',')
+                    fields = value.split(",")
                 self.parsed_params[name] = fields
 
     def pre_handler(self, cmd):
         """Hook for logic before each handler starts."""
         if self._finished:
             return
-        if self.interesting_commit and cmd.name == 'commit':
+        if self.interesting_commit and cmd.name == "commit":
             if cmd.mark == self.interesting_commit:
                 print(cmd.to_string())
                 self._finished = True
@@ -94,6 +93,4 @@ class QueryProcessor(processor.ImportProcessor):
         """Process a FeatureCommand."""
         feature = cmd.feature_name
         if feature not in commands.FEATURE_NAMES:
-            self.warning(
-                "feature %s is not supported - parsing may fail"
-                % (feature,))
+            self.warning("feature %s is not supported - parsing may fail" % (feature,))

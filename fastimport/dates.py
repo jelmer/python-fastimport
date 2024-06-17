@@ -22,6 +22,7 @@ timestamp,timezone where
 * timestamp is seconds since epoch
 * timezone is the offset from UTC in seconds.
 """
+
 import time
 
 from . import errors
@@ -33,7 +34,7 @@ def parse_raw(s, lineno=0):
     The format must be exactly "seconds-since-epoch offset-utc".
     See the spec for details.
     """
-    timestamp_str, timezone_str = s.split(b' ', 1)
+    timestamp_str, timezone_str = s.split(b" ", 1)
     timestamp = float(timestamp_str)
     try:
         timezone = parse_tz(timezone_str)
@@ -51,10 +52,10 @@ def parse_tz(tz):
     sign_byte = tz[0:1]
     # in python 3 b'+006'[0] would return an integer,
     # but b'+006'[0:1] return a new bytes string.
-    if sign_byte not in (b'+', b'-'):
+    if sign_byte not in (b"+", b"-"):
         raise ValueError(tz)
 
-    sign = {b'+': +1, b'-': -1}[sign_byte]
+    sign = {b"+": +1, b"-": -1}[sign_byte]
     hours = int(tz[1:-2])
     minutes = int(tz[-2:])
 
@@ -80,7 +81,7 @@ def parse_now(s, lineno=0):
 
 # Lookup table of date parsing routines
 DATE_PARSERS_BY_NAME = {
-    u'raw':      parse_raw,
-    u'rfc2822':  parse_rfc2822,
-    u'now':      parse_now,
-    }
+    "raw": parse_raw,
+    "rfc2822": parse_rfc2822,
+    "now": parse_now,
+}

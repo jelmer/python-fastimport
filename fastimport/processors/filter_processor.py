@@ -14,11 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Import processor that filters the input (and doesn't import)."""
+
 from .. import (
     commands,
     helpers,
     processor,
-    )
+)
 import stat
 
 
@@ -39,17 +40,12 @@ class FilterProcessor(processor.ImportProcessor):
       any changes after the filter has been applied
     """
 
-    known_params = [
-        b'include_paths',
-        b'exclude_paths',
-        b'squash_empty_commits'
-    ]
+    known_params = [b"include_paths", b"exclude_paths", b"squash_empty_commits"]
 
     def pre_process(self):
-        self.includes = self.params.get(b'include_paths')
-        self.excludes = self.params.get(b'exclude_paths')
-        self.squash_empty_commits = bool(
-            self.params.get(b'squash_empty_commits', True))
+        self.includes = self.params.get(b"include_paths")
+        self.excludes = self.params.get(b"exclude_paths")
+        self.squash_empty_commits = bool(self.params.get(b"squash_empty_commits", True))
         # What's the new root, if any
         self.new_root = helpers.common_directory(self.includes)
         # Buffer of blobs until we know we need them: mark -> cmd
@@ -98,7 +94,8 @@ class FilterProcessor(processor.ImportProcessor):
         if interesting_filecmds or not self.squash_empty_commits:
             # If all we have is a single deleteall, skip this commit
             if len(interesting_filecmds) == 1 and isinstance(
-                    interesting_filecmds[0], commands.FileDeleteAllCommand):
+                interesting_filecmds[0], commands.FileDeleteAllCommand
+            ):
                 pass
             else:
                 # Remember just the interesting file commands
@@ -108,8 +105,7 @@ class FilterProcessor(processor.ImportProcessor):
                 # Record the referenced blobs
                 for fc in interesting_filecmds:
                     if isinstance(fc, commands.FileModifyCommand):
-                        if (fc.dataref is not None and
-                                not stat.S_ISDIR(fc.mode)):
+                        if fc.dataref is not None and not stat.S_ISDIR(fc.mode):
                             self.referenced_blobs.append(fc.dataref)
 
                 # Update from and merges to refer to commits in the output
@@ -126,7 +122,7 @@ class FilterProcessor(processor.ImportProcessor):
         else:
             parents = None
         if cmd.mark is not None:
-            self.parents[b':' + cmd.mark] = parents
+            self.parents[b":" + cmd.mark] = parents
 
     def reset_handler(self, cmd):
         """Process a ResetCommand."""
@@ -149,9 +145,7 @@ class FilterProcessor(processor.ImportProcessor):
         """Process a FeatureCommand."""
         feature = cmd.feature_name
         if feature not in commands.FEATURE_NAMES:
-            self.warning(
-                "feature %s is not supported - parsing may fail"
-                % (feature,))
+            self.warning("feature %s is not supported - parsing may fail" % (feature,))
         # These always pass through
         self.keep = True
 
@@ -159,8 +153,8 @@ class FilterProcessor(processor.ImportProcessor):
         """Wrapper to avoid adding unnecessary blank lines."""
         text = bytes(cmd)
         self.outf.write(text)
-        if not text.endswith(b'\n'):
-            self.outf.write(b'\n')
+        if not text.endswith(b"\n"):
+            self.outf.write(b"\n")
 
     def _filter_filecommands(self, filecmd_iter):
         """Return the filecommands filtered by includes & excludes.
@@ -173,8 +167,9 @@ class FilterProcessor(processor.ImportProcessor):
         # Do the filtering, adjusting for the new_root
         result = []
         for fc in filecmd_iter():
-            if (isinstance(fc, commands.FileModifyCommand) or
-                    isinstance(fc, commands.FileDeleteCommand)):
+            if isinstance(fc, commands.FileModifyCommand) or isinstance(
+                fc, commands.FileDeleteCommand
+            ):
                 if self._path_to_be_kept(fc.path):
                     fc.path = self._adjust_for_new_root(fc.path)
                 else:
@@ -187,8 +182,8 @@ class FilterProcessor(processor.ImportProcessor):
                 fc = self._convert_copy(fc)
             else:
                 self.warning(
-                    "cannot handle FileCommands of class %s - ignoring",
-                    fc.__class__)
+                    "cannot handle FileCommands of class %s - ignoring", fc.__class__
+                )
                 continue
             if fc is not None:
                 result.append(fc)
@@ -197,13 +192,11 @@ class FilterProcessor(processor.ImportProcessor):
     def _path_to_be_kept(self, path):
         """Does the given path pass the filtering criteria?"""
         if self.excludes and (
-                path in self.excludes
-                or helpers.is_inside_any(self.excludes, path)):
+            path in self.excludes or helpers.is_inside_any(self.excludes, path)
+        ):
             return False
         if self.includes:
-            return (
-                path in self.includes
-                or helpers.is_inside_any(self.includes, path))
+            return path in self.includes or helpers.is_inside_any(self.includes, path)
         return True
 
     def _adjust_for_new_root(self, path):
@@ -211,7 +204,7 @@ class FilterProcessor(processor.ImportProcessor):
         if self.new_root is None:
             return path
         elif path.startswith(self.new_root):
-            return path[len(self.new_root):]
+            return path[len(self.new_root) :]
         else:
             return path
 
@@ -248,7 +241,7 @@ class FilterProcessor(processor.ImportProcessor):
         :return: None if the rename is being ignored, otherwise a
           new FileCommand based on the whether the old and new paths
           are inside or outside of the interesting locations.
-          """
+        """
         old = fc.old_path
         new = fc.new_path
         keep_old = self._path_to_be_kept(old)
@@ -269,9 +262,7 @@ class FilterProcessor(processor.ImportProcessor):
             # to. Maybe fast-import-info needs to be extended to
             # remember all renames and a config file can be passed
             # into here ala fast-import?
-            self.warning(
-                "cannot turn rename of %s into an add of %s yet" %
-                (old, new))
+            self.warning("cannot turn rename of %s into an add of %s yet" % (old, new))
         return None
 
     def _convert_copy(self, fc):
@@ -280,7 +271,7 @@ class FilterProcessor(processor.ImportProcessor):
         :return: None if the copy is being ignored, otherwise a
           new FileCommand based on the whether the source and destination
           paths are inside or outside of the interesting locations.
-          """
+        """
         src = fc.src_path
         dest = fc.dest_path
         keep_src = self._path_to_be_kept(src)
@@ -300,7 +291,5 @@ class FilterProcessor(processor.ImportProcessor):
             # to. Maybe fast-import-info needs to be extended to
             # remember all copies and a config file can be passed
             # into here ala fast-import?
-            self.warning(
-                "cannot turn copy of %s into an add of %s yet" %
-                (src, dest))
+            self.warning("cannot turn copy of %s into an add of %s yet" % (src, dest))
         return None
