@@ -1,0 +1,10 @@
+name = "python-fastimport"
+tag-name = "fastimport-$VERSION"
+verify-command = "make check"
+tarball-location = []
+release-timeout = 5
+
+[[update_version]]
+path = "fastimport/__init__.py"
+match = "^__version__ = ((.*))$"
+new-line = "__version__ = $TUPLED_VERSION"
