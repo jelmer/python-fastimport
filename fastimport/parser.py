@@ -31,11 +31,13 @@ The grammar is:
 
   new_blob ::= 'blob' lf
     mark?
+    original-oid?
     file_content;
   file_content ::= data;
 
   new_commit ::= 'commit' sp ref_str lf
     mark?
+    original-oid?
     ('author' sp name '<' email '>' when lf)?
     'committer' sp name '<' email '>' when lf
     commit_msg
@@ -61,6 +63,7 @@ The grammar is:
 
   new_tag ::= 'tag' sp tag_str lf
     'from' sp (ref_str | hexsha1 | sha1exp_str | idnum) lf
+    original-oid?
     'tagger' sp name '<' email '>' when lf
     tag_msg;
   tag_msg ::= data;
@@ -355,13 +358,15 @@ class ImportParser(LineBasedParser):
         """Parse a blob command."""
         lineno = self.lineno
         mark = self._get_mark_if_any()
+        original_oid = self._get_original_oid_if_any()
         data = self._get_data(b"blob")
-        return commands.BlobCommand(mark, data, lineno)
+        return commands.BlobCommand(mark, original_oid, data, lineno)
 
     def _parse_commit(self, ref: bytes) -> "commands.CommitCommand":
         """Parse a commit command."""
         lineno = self.lineno
         mark = self._get_mark_if_any()
+        original_oid = self._get_original_oid_if_any()
         author = self._get_user_info(b"commit", b"author", False)
         more_authors = []
         while True:
@@ -402,6 +407,7 @@ class ImportParser(LineBasedParser):
         return commands.CommitCommand(
             ref,
             mark,
+            original_oid,
             author,
             committer,
             message,
@@ -460,16 +466,27 @@ class ImportParser(LineBasedParser):
     def _parse_tag(self, name: bytes) -> "commands.TagCommand":
         """Parse a tag command."""
         from_ = self._get_from(b"tag")
+        original_oid = self._get_original_oid_if_any()
         tagger = self._get_user_info(b"tag", b"tagger", accept_just_who=True)
         message = self._get_data(b"tag", b"message")
         # Keep Authorship object as namedtuple
-        return commands.TagCommand(name, from_, tagger, message)
+        return commands.TagCommand(name, from_, original_oid, tagger, message)
 
     def _get_mark_if_any(self) -> Optional[bytes]:
         """Parse a mark section."""
         line = self.next_line()
         if line is not None and line.startswith(b"mark :"):
             return line[len(b"mark :") :]
+        else:
+            if line is not None:
+                self.push_line(line)
+            return None
+
+    def _get_original_oid_if_any(self) -> Optional[bytes]:
+        """Parse a original-oid section."""
+        line = self.next_line()
+        if line is not None and line.startswith(b"original-oid "):
+            return line[len(b"original-oid ") :]
         else:
             if line is not None:
                 self.push_line(line)

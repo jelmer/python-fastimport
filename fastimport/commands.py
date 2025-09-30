@@ -135,9 +135,16 @@ class ImportCommand(object):
 
 
 class BlobCommand(ImportCommand):
-    def __init__(self, mark: Optional[bytes], data: bytes, lineno: int = 0) -> None:
+    def __init__(
+        self,
+        mark: Optional[bytes],
+        original_oid: Optional[bytes],
+        data: bytes,
+        lineno: int = 0,
+    ) -> None:
         ImportCommand.__init__(self, b"blob")
         self.mark = mark
+        self.original_oid = original_oid
         self.data = data
         self.lineno = lineno
         # Provide a unique id in case the mark is missing
@@ -152,9 +159,19 @@ class BlobCommand(ImportCommand):
             mark_line = b""
         else:
             mark_line = b"\nmark :" + self.mark
+        if self.original_oid is None:
+            original_oid_line = b""
+        else:
+            if isinstance(self.original_oid, str):
+                original_oid_line = b"\noriginal-oid " + self.original_oid.encode(
+                    "utf-8"
+                )
+            else:
+                original_oid_line = b"\noriginal-oid " + self.original_oid
         return (
             b"blob"
             + mark_line
+            + original_oid_line
             + b"\n"
             + ("data %d\n" % len(self.data)).encode("utf-8")
             + self.data
@@ -174,6 +191,7 @@ class CommitCommand(ImportCommand):
         self,
         ref: bytes,
         mark: Optional[Union[bytes, int]],
+        original_oid: Optional[Union[bytes, str]],
         author: Optional[Union[Tuple[bytes, bytes, float, int], "parser.Authorship"]],
         committer: Union[
             Tuple[bytes, bytes, float, int],
@@ -201,6 +219,7 @@ class CommitCommand(ImportCommand):
         ImportCommand.__init__(self, b"commit")
         self.ref = ref
         self.mark = mark
+        self.original_oid = original_oid
         self.author = author
         self.committer = committer
         self.message = message
@@ -252,6 +271,16 @@ class CommitCommand(ImportCommand):
                 mark_line = b"\nmark :" + str(self.mark).encode("utf-8")
             else:
                 mark_line = b"\nmark :" + self.mark
+
+        if self.original_oid is None:
+            original_oid_line = b""
+        else:
+            if isinstance(self.original_oid, str):
+                original_oid_line = b"\noriginal-oid " + self.original_oid.encode(
+                    "utf-8"
+                )
+            else:
+                original_oid_line = b"\noriginal-oid " + self.original_oid
 
         if self.author is None:
             author_section = b""
@@ -322,6 +351,7 @@ class CommitCommand(ImportCommand):
                 b"commit ",
                 self.ref,
                 mark_line,
+                original_oid_line,
                 author_section + b"\n",
                 committer,
                 msg_section,
@@ -411,6 +441,7 @@ class TagCommand(ImportCommand):
         self,
         id: bytes,
         from_: Optional[bytes],
+        original_oid: Optional[Union[bytes, str]],
         tagger: Optional[
             Union[
                 Tuple[bytes, bytes, float, int],
@@ -423,6 +454,7 @@ class TagCommand(ImportCommand):
         ImportCommand.__init__(self, b"tag")
         self.id = id
         self.from_ = from_
+        self.original_oid = original_oid
         self.tagger = tagger
         self.message = message
 
@@ -431,6 +463,15 @@ class TagCommand(ImportCommand):
             from_line = b""
         else:
             from_line = b"\nfrom " + self.from_
+        if self.original_oid is None:
+            original_oid_line = b""
+        else:
+            if isinstance(self.original_oid, str):
+                original_oid_line = b"\noriginal-oid " + self.original_oid.encode(
+                    "utf-8"
+                )
+            else:
+                original_oid_line = b"\noriginal-oid " + self.original_oid
         if self.tagger is None:
             tagger_line = b""
         else:
@@ -440,7 +481,14 @@ class TagCommand(ImportCommand):
         else:
             msg = self.message
             msg_section = ("\ndata %d\n" % len(msg)).encode("ascii") + msg
-        return b"tag " + self.id + from_line + tagger_line + msg_section
+        return (
+            b"tag "
+            + self.id
+            + from_line
+            + original_oid_line
+            + tagger_line
+            + msg_section
+        )
 
 
 class FileCommand(ImportCommand):
