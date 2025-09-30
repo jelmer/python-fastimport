@@ -323,6 +323,156 @@ more data
         cmds = p.iter_commands()
         self.assertEqual([], list(cmds))
 
+    def test_blob_with_original_oid(self) -> None:
+        s = io.BytesIO(
+            b"""blob
+mark :1
+original-oid abc123def456
+data 11
+hello world
+"""
+        )
+        p = parser.ImportParser(s)
+        cmd = next(p.iter_commands())
+        self.assertEqual(b"blob", cmd.name)
+        blob_cmd = cast(commands.BlobCommand, cmd)
+        self.assertEqual(b"1", blob_cmd.mark)
+        self.assertEqual(b"abc123def456", blob_cmd.original_oid)
+        self.assertEqual(b"hello world", blob_cmd.data)
+
+    def test_commit_with_original_oid(self) -> None:
+        s = io.BytesIO(
+            b"""commit refs/heads/master
+mark :2
+original-oid 6193131b432739c1c6c9ac85614f7ce1e2a59854
+committer Joe Doe <joe@example.com> 1234567890 +0000
+data 7
+Testing
+"""
+        )
+        p = parser.ImportParser(s)
+        cmd = next(p.iter_commands())
+        self.assertEqual(b"commit", cmd.name)
+        commit_cmd = cast(commands.CommitCommand, cmd)
+        self.assertEqual(b"2", commit_cmd.mark)
+        self.assertEqual(
+            b"6193131b432739c1c6c9ac85614f7ce1e2a59854", commit_cmd.original_oid
+        )
+        self.assertEqual(b"refs/heads/master", commit_cmd.ref)
+        self.assertEqual(b"Testing", commit_cmd.message)
+
+    def test_tag_with_original_oid(self) -> None:
+        s = io.BytesIO(
+            b"""tag refs/tags/v1.0
+from :2
+original-oid 498a0acad8ad7e20e58933f954a3f1369d29b517
+tagger Jane Doe <jane@example.com> 1234567890 +0000
+data 11
+Version 1.0
+"""
+        )
+        p = parser.ImportParser(s)
+        cmd = next(p.iter_commands())
+        self.assertEqual(b"tag", cmd.name)
+        tag_cmd = cast(commands.TagCommand, cmd)
+        self.assertEqual(b":2", tag_cmd.from_)
+        self.assertEqual(
+            b"498a0acad8ad7e20e58933f954a3f1369d29b517", tag_cmd.original_oid
+        )
+        self.assertEqual(b"refs/tags/v1.0", tag_cmd.id)
+        self.assertEqual(b"Version 1.0", tag_cmd.message)
+
+    def test_mixed_with_and_without_original_oid(self) -> None:
+        """Test that original-oid is optional and parsing works with mixed commands"""
+        s = io.BytesIO(
+            b"""blob
+mark :1
+data 4
+test
+blob
+mark :2
+original-oid xyz789
+data 5
+test2
+commit refs/heads/master
+mark :3
+committer A <a@b.com> 1234567890 +0000
+data 1
+A
+commit refs/heads/master
+mark :4
+original-oid def456
+committer B <b@c.com> 1234567890 +0000
+data 1
+B
+"""
+        )
+        p = parser.ImportParser(s)
+        cmds = list(p.iter_commands())
+        self.assertEqual(4, len(cmds))
+
+        # First blob without original-oid
+        self.assertEqual(b"blob", cmds[0].name)
+        blob1 = cast(commands.BlobCommand, cmds[0])
+        self.assertIsNone(blob1.original_oid)
+
+        # Second blob with original-oid
+        self.assertEqual(b"blob", cmds[1].name)
+        blob2 = cast(commands.BlobCommand, cmds[1])
+        self.assertEqual(b"xyz789", blob2.original_oid)
+
+        # First commit without original-oid
+        self.assertEqual(b"commit", cmds[2].name)
+        commit1 = cast(commands.CommitCommand, cmds[2])
+        self.assertIsNone(commit1.original_oid)
+
+        # Second commit with original-oid
+        self.assertEqual(b"commit", cmds[3].name)
+        commit2 = cast(commands.CommitCommand, cmds[3])
+        self.assertEqual(b"def456", commit2.original_oid)
+
+    def test_original_oid_roundtrip(self) -> None:
+        """Test that commands with original-oid can be serialized and parsed back correctly"""
+        # Test blob roundtrip
+        blob = commands.BlobCommand(b"1", b"abc123", b"test data")
+        blob_bytes = bytes(blob)
+        p = parser.ImportParser(io.BytesIO(blob_bytes))
+        parsed_blob = cast(commands.BlobCommand, next(p.iter_commands()))
+        self.assertEqual(b"abc123", parsed_blob.original_oid)
+        self.assertEqual(b"test data", parsed_blob.data)
+
+        # Test commit roundtrip
+        commit = commands.CommitCommand(
+            b"refs/heads/master",
+            b"2",
+            b"def456",
+            None,
+            (b"Joe", b"joe@example.com", 1234567890, 0),
+            b"test",
+            None,
+            None,
+            None,
+        )
+        commit_bytes = bytes(commit)
+        p = parser.ImportParser(io.BytesIO(commit_bytes))
+        parsed_commit = cast(commands.CommitCommand, next(p.iter_commands()))
+        self.assertEqual(b"def456", parsed_commit.original_oid)
+        self.assertEqual(b"test", parsed_commit.message)
+
+        # Test tag roundtrip
+        tag = commands.TagCommand(
+            b"refs/tags/v1.0",
+            b":2",
+            b"789xyz",
+            (b"Jane", b"jane@example.com", 1234567890, 0),
+            b"Version 1.0",
+        )
+        tag_bytes = bytes(tag)
+        p = parser.ImportParser(io.BytesIO(tag_bytes))
+        parsed_tag = cast(commands.TagCommand, next(p.iter_commands()))
+        self.assertEqual(b"789xyz", parsed_tag.original_oid)
+        self.assertEqual(b"Version 1.0", parsed_tag.message)
+
 
 class TestStringParsing(unittest.TestCase):
     def test_unquote(self) -> None:

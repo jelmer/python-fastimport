@@ -123,7 +123,7 @@ class TestCommitDisplay(TestCase):
             bytes(c),
         )
 
-    def test_commit_with_original_oid(self):
+    def test_commit_with_original_oid(self) -> None:
         # user tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         committer = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
         c = commands.CommitCommand(
@@ -331,7 +331,7 @@ class TestCommitDisplay(TestCase):
 
 
 class TestCommitCopy(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super(TestCommitCopy, self).setUp()
         file_cmds = iter(
             [
@@ -353,13 +353,13 @@ class TestCommitCopy(TestCase):
             file_cmds,
         )
 
-    def test_simple_copy(self):
+    def test_simple_copy(self) -> None:
         c2 = self.c.copy()
 
         self.assertFalse(self.c is c2)
         self.assertEqual(bytes(self.c), bytes(c2))
 
-    def test_replace_attr(self):
+    def test_replace_attr(self) -> None:
         c2 = self.c.copy(mark=b"ccc")
         self.assertEqual(bytes(self.c).replace(b"mark :bbb", b"mark :ccc"), bytes(c2))
 
@@ -406,7 +406,7 @@ class TestTagDisplay(TestCase):
             bytes(c),
         )
 
-    def test_tag_with_original_oid(self):
+    def test_tag_with_original_oid(self) -> None:
         # tagger tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         tagger = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
         c = commands.TagCommand(
@@ -426,7 +426,7 @@ class TestTagDisplay(TestCase):
             bytes(c),
         )
 
-    def test_tag_no_from(self):
+    def test_tag_no_from(self) -> None:
         tagger = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
         c = commands.TagCommand(b"refs/tags/v1.0", None, None, tagger, b"create v1.0")
         self.assertEqual(
