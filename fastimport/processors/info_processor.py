@@ -16,6 +16,7 @@
 """Import processor that dump stats about the input (and doesn't import)."""
 
 from __future__ import absolute_import
+from typing import Dict, Set, Any, Optional, Callable
 
 from .. import (
     commands,
@@ -40,39 +41,44 @@ class InfoProcessor(processor.ImportProcessor):
     the source.
     """
 
-    def __init__(self, params=None, verbose=0, outf=None):
-        processor.ImportProcessor.__init__(self, params, verbose, outf=outf)
+    def __init__(
+        self,
+        params: Optional[Dict[bytes, Any]] = None,
+        verbose: int = 0,
+        outf: Optional[Any] = None,
+    ) -> None:
+        processor.ImportProcessor.__init__(self, params, bool(verbose), outf=outf)
 
-    def pre_process(self):
+    def pre_process(self) -> None:
         # Init statistics
-        self.cmd_counts = {}
+        self.cmd_counts: Dict[bytes, int] = {}
         for cmd in commands.COMMAND_NAMES:
             self.cmd_counts[cmd] = 0
-        self.file_cmd_counts = {}
+        self.file_cmd_counts: Dict[bytes, int] = {}
         for fc in commands.FILE_COMMAND_NAMES:
             self.file_cmd_counts[fc] = 0
-        self.parent_counts = {}
-        self.max_parent_count = 0
-        self.committers = set()
-        self.separate_authors_found = False
-        self.symlinks_found = False
-        self.executables_found = False
-        self.sha_blob_references = False
-        self.lightweight_tags = 0
+        self.parent_counts: Dict[int, int] = {}
+        self.max_parent_count: int = 0
+        self.committers: Set[Any] = set()
+        self.separate_authors_found: bool = False
+        self.symlinks_found: bool = False
+        self.executables_found: bool = False
+        self.sha_blob_references: bool = False
+        self.lightweight_tags: int = 0
         # Blob usage tracking
-        self.blobs = {}
+        self.blobs: Dict[str, Set[bytes]] = {}
         for usage in ["new", "used", "unknown", "unmarked"]:
             self.blobs[usage] = set()
-        self.blob_ref_counts = {}
+        self.blob_ref_counts: Dict[bytes, int] = {}
         # Head tracking
-        self.reftracker = reftracker.RefTracker()
+        self.reftracker: "reftracker.RefTracker" = reftracker.RefTracker()
         # Stuff to cache: a map from mark to # of times that mark is merged
-        self.merges = {}
+        self.merges: Dict[bytes, int] = {}
         # Stuff to cache: these are maps from mark to sets
-        self.rename_old_paths = {}
-        self.copy_source_paths = {}
+        self.rename_old_paths: Dict[bytes, Set[bytes]] = {}
+        self.copy_source_paths: Dict[bytes, Set[bytes]] = {}
 
-    def post_process(self):
+    def post_process(self) -> None:
         # Dump statistics
         cmd_names = commands.COMMAND_NAMES
         fc_names = commands.FILE_COMMAND_NAMES
@@ -140,7 +146,18 @@ class InfoProcessor(processor.ImportProcessor):
                 del self.blobs["used"]
             self._dump_stats_group(
                 "Blob usage tracking",
-                [(k, set([v1.decode() for v1 in v])) for (k, v) in self.blobs.items()],
+                [
+                    (
+                        k,
+                        set(
+                            [
+                                v1.decode("utf-8") if isinstance(v1, bytes) else v1
+                                for v1 in v
+                            ]
+                        ),
+                    )
+                    for (k, v) in self.blobs.items()
+                ],
                 len,
                 _iterable_as_config_list,
             )
@@ -159,8 +176,12 @@ class InfoProcessor(processor.ImportProcessor):
             self._dump_stats_group("Reset analysis", reset_stats.items())
 
     def _dump_stats_group(
-        self, title, items, normal_formatter=None, verbose_formatter=None
-    ):
+        self,
+        title: str,
+        items: Any,
+        normal_formatter: Optional[Callable[[Any], Any]] = None,
+        verbose_formatter: Optional[Callable[[Any], Any]] = None,
+    ) -> None:
         """Dump a statistics group.
 
         In verbose mode, do so as a config file so
@@ -186,11 +207,11 @@ class InfoProcessor(processor.ImportProcessor):
                     value = normal_formatter(value)
                 self.outf.write("\t%s\t%s\n" % (value, name))
 
-    def progress_handler(self, cmd):
+    def progress_handler(self, cmd: "commands.ProgressCommand") -> None:
         """Process a ProgressCommand."""
         self.cmd_counts[cmd.name] += 1
 
-    def blob_handler(self, cmd):
+    def blob_handler(self, cmd: "commands.BlobCommand") -> None:
         """Process a BlobCommand."""
         self.cmd_counts[cmd.name] += 1
         if cmd.mark is None:
@@ -205,11 +226,11 @@ class InfoProcessor(processor.ImportProcessor):
             except KeyError:
                 pass
 
-    def checkpoint_handler(self, cmd):
+    def checkpoint_handler(self, cmd: "commands.CheckpointCommand") -> None:
         """Process a CheckpointCommand."""
         self.cmd_counts[cmd.name] += 1
 
-    def commit_handler(self, cmd):
+    def commit_handler(self, cmd: "commands.CommitCommand") -> None:
         """Process a CommitCommand."""
         self.cmd_counts[cmd.name] += 1
         self.committers.add(cmd.committer)
@@ -223,7 +244,7 @@ class InfoProcessor(processor.ImportProcessor):
                 if stat.S_ISLNK(fc.mode):
                     self.symlinks_found = True
                 if fc.dataref is not None:
-                    if fc.dataref[0] == ":":
+                    if fc.dataref.startswith(b":"):
                         self._track_blob(fc.dataref)
                     else:
                         self.sha_blob_references = True
@@ -252,7 +273,7 @@ class InfoProcessor(processor.ImportProcessor):
                 else:
                     self.merges[merge] = 1
 
-    def reset_handler(self, cmd):
+    def reset_handler(self, cmd: "commands.ResetCommand") -> None:
         """Process a ResetCommand."""
         self.cmd_counts[cmd.name] += 1
         if cmd.ref.startswith(b"refs/tags/"):
@@ -261,18 +282,21 @@ class InfoProcessor(processor.ImportProcessor):
             if cmd.from_ is not None:
                 self.reftracker.track_heads_for_ref(cmd.ref, cmd.from_)
 
-    def tag_handler(self, cmd):
+    def tag_handler(self, cmd: "commands.TagCommand") -> None:
         """Process a TagCommand."""
         self.cmd_counts[cmd.name] += 1
 
-    def feature_handler(self, cmd):
+    def feature_handler(self, cmd: "commands.FeatureCommand") -> None:
         """Process a FeatureCommand."""
         self.cmd_counts[cmd.name] += 1
         feature = cmd.feature_name
         if feature not in commands.FEATURE_NAMES:
-            self.warning("feature %s is not supported - parsing may fail" % (feature,))
+            self.warning(
+                "feature %s is not supported - parsing may fail"
+                % (feature.decode("utf-8"),)
+            )
 
-    def _track_blob(self, mark):
+    def _track_blob(self, mark: bytes) -> None:
         if mark in self.blob_ref_counts:
             self.blob_ref_counts[mark] += 1
             pass
@@ -286,12 +310,12 @@ class InfoProcessor(processor.ImportProcessor):
             self.blobs["unknown"].add(mark)
 
 
-def _found(b):
+def _found(b: bool) -> str:
     """Format a found boolean as a string."""
     return ["no", "found"][b]
 
 
-def _iterable_as_config_list(s):
+def _iterable_as_config_list(s: Any) -> str:
     """Format an iterable as a sequence of comma-separated strings.
 
     To match what ConfigObj expects, a single item list has a trailing comma.

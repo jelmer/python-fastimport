@@ -50,3 +50,17 @@ version = {attr = "fastimport.__version__"}
 
 [tool.distutils.bdist_wheel]
 universal = 1
+
+[tool.mypy]
+packages = ["fastimport"]
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+follow_imports = "normal"

@@ -16,6 +16,7 @@
 """Test FilterProcessor"""
 
 from io import BytesIO
+from typing import Optional, Dict, Any
 
 from unittest import TestCase
 
@@ -104,7 +105,9 @@ M 644 :4 doc/index.txt
 
 
 class TestCaseWithFiltering(TestCase):
-    def assertFiltering(self, input_stream, params, expected):
+    def assertFiltering(
+        self, input_stream: bytes, params: Optional[Dict[bytes, Any]], expected: bytes
+    ) -> None:
         outf = BytesIO()
         proc = filter_processor.FilterProcessor(params=params)
         proc.outf = outf
@@ -116,16 +119,16 @@ class TestCaseWithFiltering(TestCase):
 
 
 class TestNoFiltering(TestCaseWithFiltering):
-    def test_params_not_given(self):
+    def test_params_not_given(self) -> None:
         self.assertFiltering(_SAMPLE_ALL, None, _SAMPLE_ALL)
 
-    def test_params_are_none(self):
+    def test_params_are_none(self) -> None:
         params = {b"include_paths": None, b"exclude_paths": None}
         self.assertFiltering(_SAMPLE_ALL, params, _SAMPLE_ALL)
 
 
 class TestIncludePaths(TestCaseWithFiltering):
-    def test_file_in_root(self):
+    def test_file_in_root(self) -> None:
         # Things to note:
         # * only referenced blobs are retained
         # * from clause is dropped from the first command
@@ -150,7 +153,7 @@ M 644 :2 NEWS
 """,
         )
 
-    def test_file_in_subdir(self):
+    def test_file_in_subdir(self) -> None:
         #  Additional things to note:
         # * new root: path is now index.txt, not doc/index.txt
         # * other files changed in matching commits are excluded
@@ -173,7 +176,7 @@ M 644 :4 index.txt
 """,
         )
 
-    def test_file_with_changes(self):
+    def test_file_with_changes(self) -> None:
         #  Additional things to note:
         # * from updated to reference parents in the output
         params = {b"include_paths": [b"doc/README.txt"]}
@@ -207,7 +210,7 @@ M 644 :3 README.txt
 """,
         )
 
-    def test_subdir(self):
+    def test_subdir(self) -> None:
         params = {b"include_paths": [b"doc/"]}
         self.assertFiltering(
             _SAMPLE_WITH_DIR,
@@ -244,7 +247,7 @@ M 644 :4 index.txt
 """,
         )
 
-    def test_multiple_files_in_subdir(self):
+    def test_multiple_files_in_subdir(self) -> None:
         # The new root should be the subdrectory
         params = {b"include_paths": [b"doc/README.txt", b"doc/index.txt"]}
         self.assertFiltering(
@@ -284,7 +287,7 @@ M 644 :4 index.txt
 
 
 class TestExcludePaths(TestCaseWithFiltering):
-    def test_file_in_root(self):
+    def test_file_in_root(self) -> None:
         params = {b"exclude_paths": [b"NEWS"]}
         self.assertFiltering(
             _SAMPLE_WITH_DIR,
@@ -321,7 +324,7 @@ M 644 :4 doc/index.txt
 """,
         )
 
-    def test_file_in_subdir(self):
+    def test_file_in_subdir(self) -> None:
         params = {b"exclude_paths": [b"doc/README.txt"]}
         self.assertFiltering(
             _SAMPLE_WITH_DIR,
@@ -355,7 +358,7 @@ M 644 :4 doc/index.txt
 """,
         )
 
-    def test_subdir(self):
+    def test_subdir(self) -> None:
         params = {b"exclude_paths": [b"doc/"]}
         self.assertFiltering(
             _SAMPLE_WITH_DIR,
@@ -377,7 +380,7 @@ M 644 :2 NEWS
 """,
         )
 
-    def test_multple_files(self):
+    def test_multple_files(self) -> None:
         params = {b"exclude_paths": [b"doc/index.txt", b"NEWS"]}
         self.assertFiltering(
             _SAMPLE_WITH_DIR,
@@ -411,7 +414,7 @@ M 644 :3 doc/README.txt
 
 
 class TestIncludeAndExcludePaths(TestCaseWithFiltering):
-    def test_included_dir_and_excluded_file(self):
+    def test_included_dir_and_excluded_file(self) -> None:
         params = {b"include_paths": [b"doc/"], b"exclude_paths": [b"doc/index.txt"]}
         self.assertFiltering(
             _SAMPLE_WITH_DIR,
@@ -506,7 +509,7 @@ R NEWS doc/NEWS
 
 
 class TestIncludePathsWithRenames(TestCaseWithFiltering):
-    def test_rename_all_inside(self):
+    def test_rename_all_inside(self) -> None:
         # These rename commands ought to be kept but adjusted for the new root
         params = {b"include_paths": [b"doc/"]}
         self.assertFiltering(
@@ -551,7 +554,7 @@ R README.txt README
 """,
         )
 
-    def test_rename_to_outside(self):
+    def test_rename_to_outside(self) -> None:
         # These rename commands become deletes
         params = {b"include_paths": [b"doc/"]}
         self.assertFiltering(
@@ -596,7 +599,7 @@ D README.txt
 """,
         )
 
-    def test_rename_to_inside(self):
+    def test_rename_to_inside(self) -> None:
         # This ought to create a new file but doesn't yet
         params = {b"include_paths": [b"doc/"]}
         self.assertFiltering(
@@ -697,7 +700,7 @@ C NEWS doc/NEWS
 
 
 class TestIncludePathsWithCopies(TestCaseWithFiltering):
-    def test_copy_all_inside(self):
+    def test_copy_all_inside(self) -> None:
         # These copy commands ought to be kept but adjusted for the new root
         params = {b"include_paths": [b"doc/"]}
         self.assertFiltering(
@@ -742,7 +745,7 @@ C README.txt README
 """,
         )
 
-    def test_copy_to_outside(self):
+    def test_copy_to_outside(self) -> None:
         # This can be ignored
         params = {b"include_paths": [b"doc/"]}
         self.assertFiltering(
@@ -780,7 +783,7 @@ M 644 :4 index.txt
 """,
         )
 
-    def test_copy_to_inside(self):
+    def test_copy_to_inside(self) -> None:
         # This ought to create a new file but doesn't yet
         params = {b"include_paths": [b"doc/"]}
         self.assertFiltering(
@@ -859,7 +862,7 @@ M 644 :4 doc/index.txt
 
 
 class TestIncludePathsWithDeleteAll(TestCaseWithFiltering):
-    def test_deleteall(self):
+    def test_deleteall(self) -> None:
         params = {b"include_paths": [b"doc/index.txt"]}
         self.assertFiltering(
             _SAMPLE_WITH_DELETEALL,
@@ -900,7 +903,7 @@ release v0.2
 
 
 class TestIncludePathsWithTags(TestCaseWithFiltering):
-    def test_tag_retention(self):
+    def test_tag_retention(self) -> None:
         # If a tag references a commit with a parent we kept,
         # keep the tag but adjust 'from' accordingly.
         # Otherwise, delete the tag command.
@@ -942,7 +945,7 @@ from :102
 
 
 class TestIncludePathsWithResets(TestCaseWithFiltering):
-    def test_reset_retention(self):
+    def test_reset_retention(self) -> None:
         # Resets init'ing a branch (without a from) are passed through.
         # If a reset references a commit with a parent we kept,
         # keep the reset but adjust 'from' accordingly.
@@ -1030,7 +1033,7 @@ M 644 :99 data/DATA2
 
 
 class TestSquashEmptyCommitsFlag(TestCaseWithFiltering):
-    def test_squash_empty_commit(self):
+    def test_squash_empty_commit(self) -> None:
         params = {b"include_paths": None, b"exclude_paths": None}
         self.assertFiltering(
             _SAMPLE_EMPTY_COMMIT,
@@ -1049,7 +1052,7 @@ M 644 :1 COPYING
 """,
         )
 
-    def test_keep_empty_commit(self):
+    def test_keep_empty_commit(self) -> None:
         params = {
             b"include_paths": None,
             b"exclude_paths": None,
@@ -1057,7 +1060,7 @@ M 644 :1 COPYING
         }
         self.assertFiltering(_SAMPLE_EMPTY_COMMIT, params, _SAMPLE_EMPTY_COMMIT)
 
-    def test_squash_unresolved_references(self):
+    def test_squash_unresolved_references(self) -> None:
         params = {b"include_paths": None, b"exclude_paths": None}
         self.assertFiltering(
             _SAMPLE_FROM_MERGE_COMMIT,
@@ -1100,7 +1103,7 @@ M 644 :99 data/DATA2
 """,
         )
 
-    def test_keep_unresolved_from_and_merge(self):
+    def test_keep_unresolved_from_and_merge(self) -> None:
         params = {
             b"include_paths": None,
             b"exclude_paths": None,
@@ -1110,7 +1113,7 @@ M 644 :99 data/DATA2
             _SAMPLE_FROM_MERGE_COMMIT, params, _SAMPLE_FROM_MERGE_COMMIT
         )
 
-    def test_with_excludes(self):
+    def test_with_excludes(self) -> None:
         params = {
             b"include_paths": None,
             b"exclude_paths": [b"data/DATA"],
@@ -1152,7 +1155,7 @@ M 644 :99 data/DATA2
 """,
         )
 
-    def test_with_file_includes(self):
+    def test_with_file_includes(self) -> None:
         params = {
             b"include_paths": [b"COPYING", b"data/DATA2"],
             b"exclude_paths": None,
@@ -1194,7 +1197,7 @@ M 644 :99 data/DATA2
 """,
         )
 
-    def test_with_directory_includes(self):
+    def test_with_directory_includes(self) -> None:
         params = {
             b"include_paths": [b"data/"],
             b"exclude_paths": None,

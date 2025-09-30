@@ -37,7 +37,7 @@ initial
 
 
 class TestFastImportInfo(TestCase):
-    def test_simple(self):
+    def test_simple(self) -> None:
         stream = BytesIO(simple_fast_import_stream)
         outf = StringIO()
         proc = info_processor.InfoProcessor(outf=outf)
