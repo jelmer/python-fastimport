@@ -42,7 +42,7 @@ class TestErrors(TestCase):
     def test_BadFormat(self):
         e = errors.BadFormat(99, "foo", "bar", "xyz")
         self.assertEqual(
-            "line 99: Bad format for section bar in " "command foo: found 'xyz'", str(e)
+            "line 99: Bad format for section bar in command foo: found 'xyz'", str(e)
         )
 
     def test_InvalidTimezone(self):
@@ -54,7 +54,7 @@ class TestErrors(TestCase):
         self.assertEqual("aa:bb", e.timezone)
         self.assertEqual(" Non-numeric hours", e.reason)
         self.assertEqual(
-            "line 99: Timezone 'aa:bb' could not be converted." " Non-numeric hours",
+            "line 99: Timezone 'aa:bb' could not be converted. Non-numeric hours",
             str(e),
         )
 
@@ -69,6 +69,6 @@ class TestErrors(TestCase):
     def test_UnknownFeature(self):
         e = errors.UnknownFeature("aaa")
         self.assertEqual(
-            "Unknown feature 'aaa' - try a later importer or " "an earlier data format",
+            "Unknown feature 'aaa' - try a later importer or an earlier data format",
             str(e),
         )

@@ -40,8 +40,7 @@ class MissingBytes(ParsingError):
     """Raised when EOF encountered while expecting to find more bytes."""
 
     _fmt = (
-        _LOCATION_FMT + "Unexpected EOF - expected %(expected)d bytes,"
-        " found %(found)d"
+        _LOCATION_FMT + "Unexpected EOF - expected %(expected)d bytes, found %(found)d"
     )
 
     def __init__(self, lineno, expected, found):
@@ -153,7 +152,7 @@ class UnknownParameter(ImportError):
 class BadRepositorySize(ImportError):
     """Raised when the repository has an incorrect number of revisions."""
 
-    _fmt = "Bad repository size - %(found)d revisions found, " "%(expected)d expected"
+    _fmt = "Bad repository size - %(found)d revisions found, %(expected)d expected"
 
     def __init__(self, expected, found):
         self.expected = expected
@@ -178,8 +177,7 @@ class UnknownFeature(ImportError):
     """Raised when an unknown feature is given in the input stream."""
 
     _fmt = (
-        "Unknown feature '%(feature)s' - try a later importer or "
-        "an earlier data format"
+        "Unknown feature '%(feature)s' - try a later importer or an earlier data format"
     )
 
     def __init__(self, feature):
