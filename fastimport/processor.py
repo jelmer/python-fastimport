@@ -32,7 +32,7 @@ processors package for examples.
 
 import sys
 import time
-from typing import List
+from typing import List, Optional, Dict, Any, TextIO
 
 from . import errors
 from .helpers import newobject as object
@@ -47,7 +47,12 @@ class ImportProcessor(object):
 
     known_params: List[bytes] = []
 
-    def __init__(self, params=None, verbose=False, outf=None):
+    def __init__(
+        self,
+        params: Optional[Dict[bytes, Any]] = None,
+        verbose: bool = False,
+        outf: Optional[TextIO] = None,
+    ) -> None:
         if outf is None:
             self.outf = sys.stdout
         else:
@@ -63,20 +68,20 @@ class ImportProcessor(object):
         # iterating through the remaining commands
         self.finished = False
 
-    def validate_parameters(self):
+    def validate_parameters(self) -> None:
         """Validate that the parameters are correctly specified."""
         for p in self.params:
             if p not in self.known_params:
-                raise errors.UnknownParameter(p, self.known_params)
+                raise errors.UnknownParameter(p.decode("utf-8"), str(self.known_params))
 
-    def process(self, command_iter):
+    def process(self, command_iter: Any) -> None:
         """Import data into Bazaar by processing a stream of commands.
 
         :param command_iter: an iterator providing commands
         """
         self._process(command_iter)
 
-    def _process(self, command_iter):
+    def _process(self, command_iter: Any) -> None:
         self.pre_process()
         for cmd in command_iter():
             try:
@@ -92,60 +97,60 @@ class ImportProcessor(object):
                 break
         self.post_process()
 
-    def warning(self, msg, *args):
+    def warning(self, msg: str, *args: Any) -> None:
         """Output a warning but timestamp it."""
         pass
 
-    def debug(self, mgs, *args):
+    def debug(self, msg: str, *args: Any) -> None:
         """Output a debug message."""
         pass
 
-    def _time_of_day(self):
+    def _time_of_day(self) -> str:
         """Time of day as a string."""
         # Note: this is a separate method so tests can patch in a fixed value
         return time.strftime("%H:%M:%S")
 
-    def pre_process(self):
+    def pre_process(self) -> None:
         """Hook for logic at start of processing."""
         pass
 
-    def post_process(self):
+    def post_process(self) -> None:
         """Hook for logic at end of processing."""
         pass
 
-    def pre_handler(self, cmd):
+    def pre_handler(self, cmd: Any) -> None:
         """Hook for logic before each handler starts."""
         pass
 
-    def post_handler(self, cmd):
+    def post_handler(self, cmd: Any) -> None:
         """Hook for logic after each handler finishes."""
         pass
 
-    def progress_handler(self, cmd):
+    def progress_handler(self, cmd: Any) -> None:
         """Process a ProgressCommand."""
         raise NotImplementedError(self.progress_handler)
 
-    def blob_handler(self, cmd):
+    def blob_handler(self, cmd: Any) -> None:
         """Process a BlobCommand."""
         raise NotImplementedError(self.blob_handler)
 
-    def checkpoint_handler(self, cmd):
+    def checkpoint_handler(self, cmd: Any) -> None:
         """Process a CheckpointCommand."""
         raise NotImplementedError(self.checkpoint_handler)
 
-    def commit_handler(self, cmd):
+    def commit_handler(self, cmd: Any) -> None:
         """Process a CommitCommand."""
         raise NotImplementedError(self.commit_handler)
 
-    def reset_handler(self, cmd):
+    def reset_handler(self, cmd: Any) -> None:
         """Process a ResetCommand."""
         raise NotImplementedError(self.reset_handler)
 
-    def tag_handler(self, cmd):
+    def tag_handler(self, cmd: Any) -> None:
         """Process a TagCommand."""
         raise NotImplementedError(self.tag_handler)
 
-    def feature_handler(self, cmd):
+    def feature_handler(self, cmd: Any) -> None:
         """Process a FeatureCommand."""
         raise NotImplementedError(self.feature_handler)
 
@@ -157,10 +162,10 @@ class CommitHandler(object):
     methods as appropriate.
     """
 
-    def __init__(self, command):
+    def __init__(self, command: Any) -> None:
         self.command = command
 
-    def process(self):
+    def process(self) -> None:
         self.pre_process_files()
         for fc in self.command.iter_files():
             try:
@@ -172,34 +177,34 @@ class CommitHandler(object):
                 handler(self, fc)
         self.post_process_files()
 
-    def warning(self, msg, *args):
+    def warning(self, msg: str, *args: Any) -> None:
         """Output a warning but add context."""
         pass
 
-    def pre_process_files(self):
+    def pre_process_files(self) -> None:
         """Prepare for committing."""
         pass
 
-    def post_process_files(self):
+    def post_process_files(self) -> None:
         """Save the revision."""
         pass
 
-    def modify_handler(self, filecmd):
+    def modify_handler(self, filecmd: Any) -> None:
         """Handle a filemodify command."""
         raise NotImplementedError(self.modify_handler)
 
-    def delete_handler(self, filecmd):
+    def delete_handler(self, filecmd: Any) -> None:
         """Handle a filedelete command."""
         raise NotImplementedError(self.delete_handler)
 
-    def copy_handler(self, filecmd):
+    def copy_handler(self, filecmd: Any) -> None:
         """Handle a filecopy command."""
         raise NotImplementedError(self.copy_handler)
 
-    def rename_handler(self, filecmd):
+    def rename_handler(self, filecmd: Any) -> None:
         """Handle a filerename command."""
         raise NotImplementedError(self.rename_handler)
 
-    def deleteall_handler(self, filecmd):
+    def deleteall_handler(self, filecmd: Any) -> None:
         """Handle a filedeleteall command."""
         raise NotImplementedError(self.deleteall_handler)

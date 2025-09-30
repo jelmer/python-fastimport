@@ -164,6 +164,7 @@ import collections
 import re
 import sys
 import codecs
+from typing import Optional, List, Dict, Any, Union, Iterator, Tuple, IO, cast
 
 from . import (
     commands,
@@ -177,21 +178,21 @@ from .helpers import (
 
 
 class LineBasedParser(object):
-    def __init__(self, input_stream):
+    def __init__(self, input_stream: IO[bytes]) -> None:
         """A Parser that keeps track of line numbers.
 
         :param input: the file-like object to read from
         """
         self.input = input_stream
-        self.lineno = 0
+        self.lineno: int = 0
         # Lines pushed back onto the input stream
-        self._buffer = []
+        self._buffer: List[bytes] = []
 
-    def abort(self, exception, *args):
+    def abort(self, exception: Any, *args: Any) -> None:
         """Raise an exception providing line number information."""
         raise exception(self.lineno, *args)
 
-    def readline(self):
+    def readline(self) -> bytes:
         """Get the next line including the newline or '' on EOF."""
         self.lineno += 1
         if self._buffer:
@@ -199,7 +200,7 @@ class LineBasedParser(object):
         else:
             return self.input.readline()
 
-    def next_line(self):
+    def next_line(self) -> Optional[bytes]:
         """Get the next line without the newline or None on EOF."""
         line = self.readline()
         if line:
@@ -207,7 +208,7 @@ class LineBasedParser(object):
         else:
             return None
 
-    def push_line(self, line):
+    def push_line(self, line: bytes) -> None:
         """Push line back onto the line buffer.
 
         :param line: the line with no trailing newline
@@ -215,7 +216,7 @@ class LineBasedParser(object):
         self.lineno -= 1
         self._buffer.append(line + b"\n")
 
-    def read_bytes(self, count):
+    def read_bytes(self, count: int) -> bytes:
         """Read a given number of bytes from the input stream.
 
         Throws MissingBytes if the bytes are not found.
@@ -231,7 +232,7 @@ class LineBasedParser(object):
             self.abort(errors.MissingBytes, count, found)
         return result
 
-    def read_until(self, terminator):
+    def read_until(self, terminator: bytes) -> bytes:
         """Read the input stream until the terminator is found.
 
         Throws MissingTerminator if the terminator is not found.
@@ -263,12 +264,12 @@ _WHO_RE = re.compile(rb"([^<]*)<(.*)>")
 class ImportParser(LineBasedParser):
     def __init__(
         self,
-        input_stream,
-        verbose=False,
-        output=sys.stdout,
-        user_mapper=None,
-        strict=True,
-    ):
+        input_stream: IO[bytes],
+        verbose: bool = False,
+        output: IO[str] = sys.stdout,
+        user_mapper: Optional[Any] = None,
+        strict: bool = True,
+    ) -> None:
         """A Parser of import commands.
 
         :param input_stream: the file-like object to read from
@@ -284,13 +285,13 @@ class ImportParser(LineBasedParser):
         self.user_mapper = user_mapper
         self.strict = strict
         # We auto-detect the date format when a date is first encountered
-        self.date_parser = None
-        self.features = {}
+        self.date_parser: Optional[Any] = None
+        self.features: Dict[bytes, Optional[bytes]] = {}
 
-    def warning(self, msg):
+    def warning(self, msg: str) -> None:
         sys.stderr.write("warning line %d: %s\n" % (self.lineno, msg))
 
-    def iter_commands(self):
+    def iter_commands(self) -> Iterator["commands.ImportCommand"]:
         """Iterator returning ImportCommand objects."""
         while True:
             line = self.next_line()
@@ -320,7 +321,7 @@ class ImportParser(LineBasedParser):
             else:
                 self.abort(errors.InvalidCommand, line)
 
-    def iter_file_commands(self):
+    def iter_file_commands(self) -> Iterator["commands.FileCommand"]:
         """Iterator returning FileCommand objects.
 
         If an invalid file command is found, the line is silently
@@ -350,14 +351,14 @@ class ImportParser(LineBasedParser):
                 self.push_line(line)
                 break
 
-    def _parse_blob(self):
+    def _parse_blob(self) -> "commands.BlobCommand":
         """Parse a blob command."""
         lineno = self.lineno
         mark = self._get_mark_if_any()
         data = self._get_data(b"blob")
         return commands.BlobCommand(mark, data, lineno)
 
-    def _parse_commit(self, ref):
+    def _parse_commit(self, ref: bytes) -> "commands.CommitCommand":
         """Parse a commit command."""
         lineno = self.lineno
         mark = self._get_mark_if_any()
@@ -391,6 +392,13 @@ class ImportParser(LineBasedParser):
                 properties[name] = value
             else:
                 break
+        # Keep Authorship objects as they are namedtuples that can be compared to tuples
+        # but also have named attributes that tests expect
+        assert committer is not None
+
+        # Keep properties as-is, including None values
+        fixed_properties = properties if properties else None
+
         return commands.CommitCommand(
             ref,
             mark,
@@ -401,11 +409,22 @@ class ImportParser(LineBasedParser):
             merges,
             list(self.iter_file_commands()),
             lineno=lineno,
-            more_authors=more_authors,
-            properties=properties,
+            more_authors=cast(
+                Optional[
+                    List[
+                        Union[
+                            Tuple[bytes, bytes, float, int],
+                            Tuple[bytes, bytes, int, int],
+                            "Authorship",
+                        ]
+                    ]
+                ],
+                more_authors,
+            ),
+            properties=fixed_properties,
         )
 
-    def _parse_feature(self, info):
+    def _parse_feature(self, info: bytes) -> "commands.FeatureCommand":
         """Parse a feature command."""
         parts = info.split(b"=", 1)
         name = parts[0]
@@ -416,7 +435,7 @@ class ImportParser(LineBasedParser):
         self.features[name] = value
         return commands.FeatureCommand(name, value, lineno=self.lineno)
 
-    def _parse_file_modify(self, info):
+    def _parse_file_modify(self, info: bytes) -> "commands.FileModifyCommand":
         """Parse a filemodify command within a commit.
 
         :param info: a string in the format "mode dataref path"
@@ -433,28 +452,30 @@ class ImportParser(LineBasedParser):
             data = None
         return commands.FileModifyCommand(path, mode, dataref, data)
 
-    def _parse_reset(self, ref):
+    def _parse_reset(self, ref: bytes) -> "commands.ResetCommand":
         """Parse a reset command."""
         from_ = self._get_from()
         return commands.ResetCommand(ref, from_)
 
-    def _parse_tag(self, name):
+    def _parse_tag(self, name: bytes) -> "commands.TagCommand":
         """Parse a tag command."""
         from_ = self._get_from(b"tag")
         tagger = self._get_user_info(b"tag", b"tagger", accept_just_who=True)
         message = self._get_data(b"tag", b"message")
+        # Keep Authorship object as namedtuple
         return commands.TagCommand(name, from_, tagger, message)
 
-    def _get_mark_if_any(self):
+    def _get_mark_if_any(self) -> Optional[bytes]:
         """Parse a mark section."""
         line = self.next_line()
-        if line.startswith(b"mark :"):
+        if line is not None and line.startswith(b"mark :"):
             return line[len(b"mark :") :]
         else:
-            self.push_line(line)
+            if line is not None:
+                self.push_line(line)
             return None
 
-    def _get_from(self, required_for=None):
+    def _get_from(self, required_for: Optional[bytes] = None) -> Optional[bytes]:
         """Parse a from section."""
         line = self.next_line()
         if line is None:
@@ -463,11 +484,12 @@ class ImportParser(LineBasedParser):
             return line[len(b"from ") :]
         elif required_for:
             self.abort(errors.MissingSection, required_for, "from")
+            return None  # Never reached but mypy needs it
         else:
             self.push_line(line)
             return None
 
-    def _get_merge(self):
+    def _get_merge(self) -> Optional[bytes]:
         """Parse a merge section."""
         line = self.next_line()
         if line is None:
@@ -478,7 +500,7 @@ class ImportParser(LineBasedParser):
             self.push_line(line)
             return None
 
-    def _get_property(self):
+    def _get_property(self) -> Optional[Tuple[bytes, Optional[bytes]]]:
         """Parse a property section."""
         line = self.next_line()
         if line is None:
@@ -489,10 +511,16 @@ class ImportParser(LineBasedParser):
             self.push_line(line)
             return None
 
-    def _get_user_info(self, cmd, section, required=True, accept_just_who=False):
+    def _get_user_info(
+        self,
+        cmd: bytes,
+        section: bytes,
+        required: bool = True,
+        accept_just_who: bool = False,
+    ) -> Optional["Authorship"]:
         """Parse a user section."""
         line = self.next_line()
-        if line.startswith(section + b" "):
+        if line is not None and line.startswith(section + b" "):
             return self._who_when(
                 line[len(section + b" ") :],
                 cmd,
@@ -501,14 +529,16 @@ class ImportParser(LineBasedParser):
             )
         elif required:
             self.abort(errors.MissingSection, cmd, section)
+            return None  # Never reached but mypy needs it
         else:
-            self.push_line(line)
+            if line is not None:
+                self.push_line(line)
             return None
 
-    def _get_data(self, required_for, section=b"data"):
+    def _get_data(self, required_for: bytes, section: bytes = b"data") -> bytes:
         """Parse a data section."""
         line = self.next_line()
-        if line.startswith(b"data "):
+        if line is not None and line.startswith(b"data "):
             rest = line[len(b"data ") :]
             if rest.startswith(b"<<"):
                 return self.read_until(rest[2:])
@@ -523,8 +553,11 @@ class ImportParser(LineBasedParser):
                 return read_bytes
         else:
             self.abort(errors.MissingSection, required_for, section)
+            return b""  # Never reached but mypy needs it
 
-    def _who_when(self, s, cmd, section, accept_just_who=False):
+    def _who_when(
+        self, s: bytes, cmd: bytes, section: bytes, accept_just_who: bool = False
+    ) -> "Authorship":
         """Parse who and when information from a string.
 
         :return: a tuple of (name,email,timestamp,timezone). name may be
@@ -545,7 +578,7 @@ class ImportParser(LineBasedParser):
             try:
                 when = self.date_parser(datestr, self.lineno)
             except ValueError:
-                print("failed to parse datestr '%s'" % (datestr,))
+                print("failed to parse datestr %r" % (datestr,))
                 raise
             name = match.group(1).rstrip()
             email = match.group(2)
@@ -554,7 +587,7 @@ class ImportParser(LineBasedParser):
             if accept_just_who and match:
                 # HACK around missing time
                 # TODO: output a warning here
-                when = dates.DATE_PARSERS_BY_NAME["now"]("now")
+                when = dates.DATE_PARSERS_BY_NAME["now"](b"now", 0)
                 name = match.group(1)
                 email = match.group(2)
             elif self.strict:
@@ -562,7 +595,7 @@ class ImportParser(LineBasedParser):
             else:
                 name = s
                 email = None
-                when = dates.DATE_PARSERS_BY_NAME["now"]("now")
+                when = dates.DATE_PARSERS_BY_NAME["now"](b"now", 0)
         if len(name) > 0:
             if name.endswith(b" "):
                 name = name[:-1]
@@ -574,7 +607,7 @@ class ImportParser(LineBasedParser):
 
         return Authorship(name, email, when[0], when[1])
 
-    def _name_value(self, s):
+    def _name_value(self, s: bytes) -> Tuple[bytes, Optional[bytes]]:
         """Parse a (name,value) tuple from 'name value-length value'."""
         parts = s.split(b" ", 2)
         name = parts[0]
@@ -589,7 +622,7 @@ class ImportParser(LineBasedParser):
                 value += b"\n" + read_bytes[: still_to_read - 1]
         return (name, value)
 
-    def _path(self, s):
+    def _path(self, s: bytes) -> bytes:
         """Parse a path."""
         if s.startswith(b'"'):
             if not s.endswith(b'"'):
@@ -598,7 +631,7 @@ class ImportParser(LineBasedParser):
                 return _unquote_c_string(s[1:-1])
         return s
 
-    def _path_pair(self, s):
+    def _path_pair(self, s: bytes) -> List[bytes]:
         """Parse two paths separated by a space."""
         # TODO: handle a space in the first path
         if s.startswith(b'"'):
@@ -613,7 +646,7 @@ class ImportParser(LineBasedParser):
             self.abort(errors.BadFormat, "?", "?", s)
         return [_unquote_c_string(part) for part in parts]
 
-    def _mode(self, s):
+    def _mode(self, s: bytes) -> int:
         """Check file mode format and parse into an int.
 
         :return: mode as integer
@@ -631,6 +664,7 @@ class ImportParser(LineBasedParser):
             return 0o160000
         else:
             self.abort(errors.BadFormat, "filemodify", "mode", s)
+            return 0  # This will never be reached due to abort, but mypy needs it
 
 
 ESCAPE_SEQUENCE_BYTES_RE = re.compile(
@@ -659,19 +693,22 @@ ESCAPE_SEQUENCE_RE = re.compile(
 )
 
 
-def _unquote_c_string(s):
+def _unquote_c_string(s: Union[str, bytes]) -> bytes:
     """replace C-style escape sequences (\n, \", etc.) with real chars."""
 
     # doing a s.encode('utf-8').decode('unicode_escape') can return an
     # incorrect output with unicode string (both in py2 and py3) the safest way
     # is to match the escape sequences and decoding them alone.
-    def decode_match(match):
+    def decode_match(match: Any) -> bytes:
         return utf8_bytes_string(codecs.decode(match.group(0), "unicode-escape"))
 
     if isinstance(s, bytes):
         return ESCAPE_SEQUENCE_BYTES_RE.sub(decode_match, s)
     else:
-        return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
+        result = ESCAPE_SEQUENCE_RE.sub(
+            lambda m: codecs.decode(m.group(0), "unicode-escape"), s
+        )
+        return result.encode("utf-8")
 
 
 Authorship = collections.namedtuple("Authorship", "name email timestamp timezone")

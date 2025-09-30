@@ -18,6 +18,7 @@
 import io
 import time
 import unittest
+from typing import cast
 
 from fastimport import (
     commands,
@@ -27,7 +28,7 @@ from fastimport import (
 
 
 class TestLineBasedParser(unittest.TestCase):
-    def test_push_line(self):
+    def test_push_line(self) -> None:
         s = io.BytesIO(b"foo\nbar\nbaz\n")
         p = parser.LineBasedParser(s)
         self.assertEqual(b"foo", p.next_line())
@@ -37,7 +38,7 @@ class TestLineBasedParser(unittest.TestCase):
         self.assertEqual(b"baz", p.next_line())
         self.assertEqual(None, p.next_line())
 
-    def test_read_bytes(self):
+    def test_read_bytes(self) -> None:
         s = io.BytesIO(b"foo\nbar\nbaz\n")
         p = parser.LineBasedParser(s)
         self.assertEqual(b"fo", p.read_bytes(2))
@@ -49,7 +50,7 @@ class TestLineBasedParser(unittest.TestCase):
         # Test missing bytes
         self.assertRaises(errors.MissingBytes, p.read_bytes, 10)
 
-    def test_read_until(self):
+    def test_read_until(self) -> None:
         # TODO
         return
         s = io.BytesIO(b"foo\nbar\nbaz\nabc\ndef\nghi\n")
@@ -146,115 +147,133 @@ _timefunc = time.time
 
 
 class TestImportParser(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.fake_time = 42.0123
         time.time = lambda: self.fake_time
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         time.time = _timefunc
         del self.fake_time
 
-    def test_iter_commands(self):
+    def test_iter_commands(self) -> None:
         s = io.BytesIO(_sample_import_text)
         p = parser.ImportParser(s)
         result = []
         for cmd in p.iter_commands():
             result.append(cmd)
             if cmd.name == b"commit":
-                for fc in cmd.iter_files():
+                commit_cmd = cast(commands.CommitCommand, cmd)
+                for fc in commit_cmd.iter_files():
                     result.append(fc)
 
         self.assertEqual(len(result), 17)
         cmd1 = result.pop(0)
         self.assertEqual(b"progress", cmd1.name)
-        self.assertEqual(b"completed", cmd1.message)
+        progress_cmd1 = cast(commands.ProgressCommand, cmd1)
+        self.assertEqual(b"completed", progress_cmd1.message)
         cmd2 = result.pop(0)
         self.assertEqual(b"blob", cmd2.name)
-        self.assertEqual(b"1", cmd2.mark)
-        self.assertEqual(b":1", cmd2.id)
-        self.assertEqual(b"aaaa", cmd2.data)
-        self.assertEqual(4, cmd2.lineno)
+        blob_cmd2 = cast(commands.BlobCommand, cmd2)
+        self.assertEqual(b"1", blob_cmd2.mark)
+        self.assertEqual(b":1", blob_cmd2.id)
+        self.assertEqual(b"aaaa", blob_cmd2.data)
+        self.assertEqual(4, blob_cmd2.lineno)
         cmd3 = result.pop(0)
         self.assertEqual(b"blob", cmd3.name)
-        self.assertEqual(b"@7", cmd3.id)
-        self.assertEqual(None, cmd3.mark)
-        self.assertEqual(b"bbbbb", cmd3.data)
-        self.assertEqual(7, cmd3.lineno)
+        blob_cmd3 = cast(commands.BlobCommand, cmd3)
+        self.assertEqual(b"@7", blob_cmd3.id)
+        self.assertEqual(None, blob_cmd3.mark)
+        self.assertEqual(b"bbbbb", blob_cmd3.data)
+        self.assertEqual(7, blob_cmd3.lineno)
         cmd4 = result.pop(0)
         self.assertEqual(b"commit", cmd4.name)
-        self.assertEqual(b"2", cmd4.mark)
-        self.assertEqual(b":2", cmd4.id)
-        self.assertEqual(b"initial import", cmd4.message)
+        commit_cmd4 = cast(commands.CommitCommand, cmd4)
+        self.assertEqual(b"2", commit_cmd4.mark)
+        self.assertEqual(b":2", commit_cmd4.id)
+        self.assertEqual(b"initial import", commit_cmd4.message)
 
         self.assertEqual(
-            (b"bugs bunny", b"bugs@bunny.org", self.fake_time, 0), cmd4.committer
+            (b"bugs bunny", b"bugs@bunny.org", self.fake_time, 0), commit_cmd4.committer
         )
         # namedtuple attributes
-        self.assertEqual(b"bugs bunny", cmd4.committer.name)
-        self.assertEqual(b"bugs@bunny.org", cmd4.committer.email)
-        self.assertEqual(self.fake_time, cmd4.committer.timestamp)
-        self.assertEqual(0, cmd4.committer.timezone)
+        self.assertEqual(b"bugs bunny", commit_cmd4.committer.name)  # type: ignore[union-attr]
+        self.assertEqual(b"bugs@bunny.org", commit_cmd4.committer.email)  # type: ignore[union-attr]
+        self.assertEqual(self.fake_time, commit_cmd4.committer.timestamp)  # type: ignore[union-attr]
+        self.assertEqual(0, commit_cmd4.committer.timezone)  # type: ignore[union-attr]
 
-        self.assertEqual(None, cmd4.author)
-        self.assertEqual(11, cmd4.lineno)
-        self.assertEqual(b"refs/heads/master", cmd4.ref)
-        self.assertEqual(None, cmd4.from_)
-        self.assertEqual([], cmd4.merges)
+        self.assertEqual(None, commit_cmd4.author)
+        self.assertEqual(11, commit_cmd4.lineno)
+        self.assertEqual(b"refs/heads/master", commit_cmd4.ref)
+        self.assertEqual(None, commit_cmd4.from_)
+        self.assertEqual([], commit_cmd4.merges)
         file_cmd1 = result.pop(0)
         self.assertEqual(b"filemodify", file_cmd1.name)
-        self.assertEqual(b"README", file_cmd1.path)
-        self.assertEqual(0o100644, file_cmd1.mode)
-        self.assertEqual(b"Welcome from bugs\n", file_cmd1.data)
+        file_modify_cmd1 = cast(commands.FileModifyCommand, file_cmd1)
+        self.assertEqual(b"README", file_modify_cmd1.path)
+        self.assertEqual(0o100644, file_modify_cmd1.mode)
+        self.assertEqual(b"Welcome from bugs\n", file_modify_cmd1.data)
         cmd5 = result.pop(0)
         self.assertEqual(b"commit", cmd5.name)
-        self.assertEqual(None, cmd5.mark)
-        self.assertEqual(b"@19", cmd5.id)
-        self.assertEqual(b"second commit", cmd5.message)
-        self.assertEqual((b"", b"bugs@bunny.org", self.fake_time, 0), cmd5.committer)
-        self.assertEqual(None, cmd5.author)
-        self.assertEqual(19, cmd5.lineno)
-        self.assertEqual(b"refs/heads/master", cmd5.ref)
-        self.assertEqual(b":2", cmd5.from_)
-        self.assertEqual([], cmd5.merges)
+        commit_cmd5 = cast(commands.CommitCommand, cmd5)
+        self.assertEqual(None, commit_cmd5.mark)
+        self.assertEqual(b"@19", commit_cmd5.id)
+        self.assertEqual(b"second commit", commit_cmd5.message)
+        self.assertEqual(
+            (b"", b"bugs@bunny.org", self.fake_time, 0), commit_cmd5.committer
+        )
+        self.assertEqual(None, commit_cmd5.author)
+        self.assertEqual(19, commit_cmd5.lineno)
+        self.assertEqual(b"refs/heads/master", commit_cmd5.ref)
+        self.assertEqual(b":2", commit_cmd5.from_)
+        self.assertEqual([], commit_cmd5.merges)
         file_cmd2 = result.pop(0)
         self.assertEqual(b"filemodify", file_cmd2.name)
-        self.assertEqual(b"README", file_cmd2.path)
-        self.assertEqual(0o100644, file_cmd2.mode)
-        self.assertEqual(b"Welcome from bugs, etc.", file_cmd2.data)
+        file_modify_cmd2 = cast(commands.FileModifyCommand, file_cmd2)
+        self.assertEqual(b"README", file_modify_cmd2.path)
+        self.assertEqual(0o100644, file_modify_cmd2.mode)
+        self.assertEqual(b"Welcome from bugs, etc.", file_modify_cmd2.data)
         cmd6 = result.pop(0)
         self.assertEqual(cmd6.name, b"checkpoint")
         cmd7 = result.pop(0)
         self.assertEqual(b"progress", cmd7.name)
-        self.assertEqual(b"completed", cmd7.message)
+        progress_cmd7 = cast(commands.ProgressCommand, cmd7)
+        self.assertEqual(b"completed", progress_cmd7.message)
         cmd = result.pop(0)
         self.assertEqual(b"commit", cmd.name)
-        self.assertEqual(b"3", cmd.mark)
-        self.assertEqual(None, cmd.from_)
+        commit_cmd = cast(commands.CommitCommand, cmd)
+        self.assertEqual(b"3", commit_cmd.mark)
+        self.assertEqual(None, commit_cmd.from_)
         cmd = result.pop(0)
         self.assertEqual(b"commit", cmd.name)
-        self.assertEqual(b"4", cmd.mark)
-        self.assertEqual(b"Commit with heredoc-style message\n", cmd.message)
+        commit_cmd = cast(commands.CommitCommand, cmd)
+        self.assertEqual(b"4", commit_cmd.mark)
+        self.assertEqual(b"Commit with heredoc-style message\n", commit_cmd.message)
         cmd = result.pop(0)
         self.assertEqual(b"commit", cmd.name)
-        self.assertEqual(b"5", cmd.mark)
-        self.assertEqual(b"submodule test\n", cmd.message)
+        commit_cmd = cast(commands.CommitCommand, cmd)
+        self.assertEqual(b"5", commit_cmd.mark)
+        self.assertEqual(b"submodule test\n", commit_cmd.message)
         file_cmd1 = result.pop(0)
         self.assertEqual(b"filemodify", file_cmd1.name)
-        self.assertEqual(b"tree-id", file_cmd1.path)
-        self.assertEqual(0o160000, file_cmd1.mode)
-        self.assertEqual(b"rev-id", file_cmd1.dataref)
+        file_modify_cmd = cast(commands.FileModifyCommand, file_cmd1)
+        self.assertEqual(b"tree-id", file_modify_cmd.path)
+        self.assertEqual(0o160000, file_modify_cmd.mode)
+        self.assertEqual(b"rev-id", file_modify_cmd.dataref)
         cmd = result.pop(0)
         self.assertEqual(b"feature", cmd.name)
-        self.assertEqual(b"whatever", cmd.feature_name)
-        self.assertEqual(None, cmd.value)
+        feature_cmd = cast(commands.FeatureCommand, cmd)
+        self.assertEqual(b"whatever", feature_cmd.feature_name)
+        self.assertEqual(None, feature_cmd.value)
         cmd = result.pop(0)
         self.assertEqual(b"feature", cmd.name)
-        self.assertEqual(b"foo", cmd.feature_name)
-        self.assertEqual(b"bar", cmd.value)
+        feature_cmd = cast(commands.FeatureCommand, cmd)
+        self.assertEqual(b"foo", feature_cmd.feature_name)
+        self.assertEqual(b"bar", feature_cmd.value)
         cmd = result.pop(0)
         self.assertEqual(b"commit", cmd.name)
-        self.assertEqual(b"6", cmd.mark)
-        self.assertEqual(b"test of properties", cmd.message)
+        commit_cmd = cast(commands.CommitCommand, cmd)
+        self.assertEqual(b"6", commit_cmd.mark)
+        self.assertEqual(b"test of properties", commit_cmd.message)
         self.assertEqual(
             {
                 b"p1": None,
@@ -262,22 +281,23 @@ class TestImportParser(unittest.TestCase):
                 b"p3": b"alpha\nbeta\ngamma",
                 b"p4": b"whatever",
             },
-            cmd.properties,
+            commit_cmd.properties,
         )
         cmd = result.pop(0)
         self.assertEqual(b"commit", cmd.name)
-        self.assertEqual(b"7", cmd.mark)
-        self.assertEqual(b"multi-author test", cmd.message)
-        self.assertEqual(b"", cmd.committer[0])
-        self.assertEqual(b"bugs@bunny.org", cmd.committer[1])
-        self.assertEqual(b"Fluffy", cmd.author[0])
-        self.assertEqual(b"fluffy@bunny.org", cmd.author[1])
-        self.assertEqual(b"Daffy", cmd.more_authors[0][0])
-        self.assertEqual(b"daffy@duck.org", cmd.more_authors[0][1])
-        self.assertEqual(b"Donald", cmd.more_authors[1][0])
-        self.assertEqual(b"donald@duck.org", cmd.more_authors[1][1])
+        commit_cmd = cast(commands.CommitCommand, cmd)
+        self.assertEqual(b"7", commit_cmd.mark)
+        self.assertEqual(b"multi-author test", commit_cmd.message)
+        self.assertEqual(b"", commit_cmd.committer[0])
+        self.assertEqual(b"bugs@bunny.org", commit_cmd.committer[1])
+        self.assertEqual(b"Fluffy", commit_cmd.author[0])  # type: ignore[index]
+        self.assertEqual(b"fluffy@bunny.org", commit_cmd.author[1])  # type: ignore[index]
+        self.assertEqual(b"Daffy", commit_cmd.more_authors[0][0])  # type: ignore[index]
+        self.assertEqual(b"daffy@duck.org", commit_cmd.more_authors[0][1])  # type: ignore[index]
+        self.assertEqual(b"Donald", commit_cmd.more_authors[1][0])  # type: ignore[index]
+        self.assertEqual(b"donald@duck.org", commit_cmd.more_authors[1][1])  # type: ignore[index]
 
-    def test_done_feature_missing_done(self):
+    def test_done_feature_missing_done(self) -> None:
         s = io.BytesIO(b"""feature done
 """)
         p = parser.ImportParser(s)
@@ -285,7 +305,7 @@ class TestImportParser(unittest.TestCase):
         self.assertEqual(b"feature", next(cmds).name)
         self.assertRaises(errors.PrematureEndOfStream, lambda: next(cmds))
 
-    def test_done_with_feature(self):
+    def test_done_with_feature(self) -> None:
         s = io.BytesIO(b"""feature done
 done
 more data
@@ -295,7 +315,7 @@ more data
         self.assertEqual(b"feature", next(cmds).name)
         self.assertRaises(StopIteration, lambda: next(cmds))
 
-    def test_done_without_feature(self):
+    def test_done_without_feature(self) -> None:
         s = io.BytesIO(b"""done
 more data
 """)
@@ -305,23 +325,23 @@ more data
 
 
 class TestStringParsing(unittest.TestCase):
-    def test_unquote(self):
+    def test_unquote(self) -> None:
         s = rb"hello \"sweet\" wo\\r\tld"
         self.assertEqual(rb'hello "sweet" wo\r' + b"\tld", parser._unquote_c_string(s))
 
 
 class TestPathPairParsing(unittest.TestCase):
-    def test_path_pair_simple(self):
-        p = parser.ImportParser(b"")
+    def test_path_pair_simple(self) -> None:
+        p = parser.ImportParser(io.BytesIO(b""))
         self.assertEqual([b"foo", b"bar"], p._path_pair(b"foo bar"))
 
-    def test_path_pair_spaces_in_first(self):
-        p = parser.ImportParser("")
+    def test_path_pair_spaces_in_first(self) -> None:
+        p = parser.ImportParser(io.BytesIO(b""))
         self.assertEqual([b"foo bar", b"baz"], p._path_pair(b'"foo bar" baz'))
 
 
 class TestTagParsing(unittest.TestCase):
-    def test_tagger_with_email(self):
+    def test_tagger_with_email(self) -> None:
         p = parser.ImportParser(
             io.BytesIO(
                 b"tag refs/tags/v1.0\n"
@@ -334,34 +354,28 @@ class TestTagParsing(unittest.TestCase):
         cmds = list(p.iter_commands())
         self.assertEqual(1, len(cmds))
         self.assertIsInstance(cmds[0], commands.TagCommand)
+        tag_cmd = cast(commands.TagCommand, cmds[0])
         self.assertEqual(
-            cmds[0].tagger, (b"Joe Wong", b"joe@example.com", 1234567890.0, -21600)
+            tag_cmd.tagger, (b"Joe Wong", b"joe@example.com", 1234567890.0, -21600)
         )
 
-    def test_tagger_no_email_strict(self):
+    def test_tagger_no_email_strict(self) -> None:
         p = parser.ImportParser(
             io.BytesIO(
-                b"tag refs/tags/v1.0\n"
-                b"from :xxx\n"
-                b"tagger Joe Wong\n"
-                b"data 11\n"
-                b"create v1.0"
+                b"tag refs/tags/v1.0\nfrom :xxx\ntagger Joe Wong\ndata 11\ncreate v1.0"
             )
         )
         self.assertRaises(errors.BadFormat, list, p.iter_commands())
 
-    def test_tagger_no_email_not_strict(self):
+    def test_tagger_no_email_not_strict(self) -> None:
         p = parser.ImportParser(
             io.BytesIO(
-                b"tag refs/tags/v1.0\n"
-                b"from :xxx\n"
-                b"tagger Joe Wong\n"
-                b"data 11\n"
-                b"create v1.0"
+                b"tag refs/tags/v1.0\nfrom :xxx\ntagger Joe Wong\ndata 11\ncreate v1.0"
             ),
             strict=False,
         )
         cmds = list(p.iter_commands())
         self.assertEqual(1, len(cmds))
         self.assertIsInstance(cmds[0], commands.TagCommand)
-        self.assertEqual(cmds[0].tagger[:2], (b"Joe Wong", None))
+        tag_cmd = cast(commands.TagCommand, cmds[0])
+        self.assertEqual(tag_cmd.tagger[:2], (b"Joe Wong", None))  # type: ignore[index]

@@ -21,6 +21,7 @@ from .. import (
     processor,
 )
 import stat
+from typing import List, Optional, Dict, Any, Set
 
 
 class FilterProcessor(processor.ImportProcessor):
@@ -42,27 +43,31 @@ class FilterProcessor(processor.ImportProcessor):
 
     known_params = [b"include_paths", b"exclude_paths", b"squash_empty_commits"]
 
-    def pre_process(self):
-        self.includes = self.params.get(b"include_paths")
-        self.excludes = self.params.get(b"exclude_paths")
-        self.squash_empty_commits = bool(self.params.get(b"squash_empty_commits", True))
+    def pre_process(self) -> None:
+        self.includes: Optional[List[bytes]] = self.params.get(b"include_paths")
+        self.excludes: Optional[List[bytes]] = self.params.get(b"exclude_paths")
+        self.squash_empty_commits: bool = bool(
+            self.params.get(b"squash_empty_commits", True)
+        )
         # What's the new root, if any
-        self.new_root = helpers.common_directory(self.includes)
+        self.new_root: Optional[bytes] = (
+            helpers.common_directory(self.includes) if self.includes else None
+        )
         # Buffer of blobs until we know we need them: mark -> cmd
-        self.blobs = {}
+        self.blobs: Dict[bytes, "commands.BlobCommand"] = {}
         # These are the commits we've squashed so far
-        self.squashed_commits = set()
+        self.squashed_commits: Set[bytes] = set()
         # Map of commit-id to list of parents
-        self.parents = {}
+        self.parents: Dict[bytes, Optional[List[bytes]]] = {}
 
-    def pre_handler(self, cmd):
-        self.command = cmd
+    def pre_handler(self, cmd: "commands.ImportCommand") -> None:
+        self.command: "commands.ImportCommand" = cmd
         # Should this command be included in the output or not?
-        self.keep = False
+        self.keep: bool = False
         # Blobs to dump into the output before dumping the command itself
-        self.referenced_blobs = []
+        self.referenced_blobs: List[bytes] = []
 
-    def post_handler(self, cmd):
+    def post_handler(self, cmd: "commands.ImportCommand") -> None:
         if not self.keep:
             return
         # print referenced blobs and the command
@@ -70,24 +75,24 @@ class FilterProcessor(processor.ImportProcessor):
             self._print_command(self.blobs[blob_id])
         self._print_command(self.command)
 
-    def progress_handler(self, cmd):
+    def progress_handler(self, cmd: "commands.ProgressCommand") -> None:
         """Process a ProgressCommand."""
         # These always pass through
         self.keep = True
 
-    def blob_handler(self, cmd):
+    def blob_handler(self, cmd: "commands.BlobCommand") -> None:
         """Process a BlobCommand."""
         # These never pass through directly. We buffer them and only
         # output them if referenced by an interesting command.
         self.blobs[cmd.id] = cmd
         self.keep = False
 
-    def checkpoint_handler(self, cmd):
+    def checkpoint_handler(self, cmd: "commands.CheckpointCommand") -> None:
         """Process a CheckpointCommand."""
         # These always pass through
         self.keep = True
 
-    def commit_handler(self, cmd):
+    def commit_handler(self, cmd: "commands.CommitCommand") -> None:
         """Process a CommitCommand."""
         # These pass through if they meet the filtering conditions
         interesting_filecmds = self._filter_filecommands(cmd.iter_files)
@@ -110,7 +115,9 @@ class FilterProcessor(processor.ImportProcessor):
 
                 # Update from and merges to refer to commits in the output
                 cmd.from_ = self._find_interesting_from(cmd.from_)
-                cmd.merges = self._find_interesting_merges(cmd.merges)
+                merges = self._find_interesting_merges(cmd.merges)
+                if merges is not None:
+                    cmd.merges = merges
         else:
             self.squashed_commits.add(cmd.id)
 
@@ -122,9 +129,12 @@ class FilterProcessor(processor.ImportProcessor):
         else:
             parents = None
         if cmd.mark is not None:
-            self.parents[b":" + cmd.mark] = parents
+            if isinstance(cmd.mark, bytes):
+                self.parents[b":" + cmd.mark] = parents
+            elif isinstance(cmd.mark, int):
+                self.parents[b":" + str(cmd.mark).encode("ascii")] = parents
 
-    def reset_handler(self, cmd):
+    def reset_handler(self, cmd: "commands.ResetCommand") -> None:
         """Process a ResetCommand."""
         if cmd.from_ is None:
             # We pass through resets that init a branch because we have to
@@ -135,38 +145,54 @@ class FilterProcessor(processor.ImportProcessor):
             cmd.from_ = self._find_interesting_from(cmd.from_)
             self.keep = cmd.from_ is not None
 
-    def tag_handler(self, cmd):
+    def tag_handler(self, cmd: "commands.TagCommand") -> None:
         """Process a TagCommand."""
         # Keep tags if they indirectly reference something we kept
         cmd.from_ = self._find_interesting_from(cmd.from_)
         self.keep = cmd.from_ is not None
 
-    def feature_handler(self, cmd):
+    def feature_handler(self, cmd: "commands.FeatureCommand") -> None:
         """Process a FeatureCommand."""
         feature = cmd.feature_name
         if feature not in commands.FEATURE_NAMES:
-            self.warning("feature %s is not supported - parsing may fail" % (feature,))
+            self.warning(
+                "feature %s is not supported - parsing may fail"
+                % (feature.decode("utf-8"),)
+            )
         # These always pass through
         self.keep = True
 
-    def _print_command(self, cmd):
+    def _print_command(self, cmd: "commands.ImportCommand") -> None:
         """Wrapper to avoid adding unnecessary blank lines."""
         text = bytes(cmd)
-        self.outf.write(text)
-        if not text.endswith(b"\n"):
-            self.outf.write(b"\n")
+        try:
+            # Try to write bytes first (for BytesIO, binary files, stdout.buffer)
+            if hasattr(self.outf, "buffer"):
+                self.outf.buffer.write(text)
+                if not text.endswith(b"\n"):
+                    self.outf.buffer.write(b"\n")
+            else:
+                # For binary output streams
+                self.outf.write(text)  # type: ignore
+                if not text.endswith(b"\n"):
+                    self.outf.write(b"\n")  # type: ignore
+        except (TypeError, AttributeError):
+            # Last resort: decode and write as text
+            self.outf.write(text.decode("utf-8"))
+            if not text.endswith(b"\n"):
+                self.outf.write("\n")
 
-    def _filter_filecommands(self, filecmd_iter):
+    def _filter_filecommands(self, filecmd_iter: Any) -> List["commands.FileCommand"]:
         """Return the filecommands filtered by includes & excludes.
 
         :return: a list of FileCommand objects
         """
         if self.includes is None and self.excludes is None:
-            return list(filecmd_iter())
+            return list(filecmd_iter() if callable(filecmd_iter) else filecmd_iter)
 
         # Do the filtering, adjusting for the new_root
         result = []
-        for fc in filecmd_iter():
+        for fc in filecmd_iter() if callable(filecmd_iter) else filecmd_iter:
             if isinstance(fc, commands.FileModifyCommand) or isinstance(
                 fc, commands.FileDeleteCommand
             ):
@@ -189,7 +215,7 @@ class FilterProcessor(processor.ImportProcessor):
                 result.append(fc)
         return result
 
-    def _path_to_be_kept(self, path):
+    def _path_to_be_kept(self, path: bytes) -> bool:
         """Does the given path pass the filtering criteria?"""
         if self.excludes and (
             path in self.excludes or helpers.is_inside_any(self.excludes, path)
@@ -199,7 +225,7 @@ class FilterProcessor(processor.ImportProcessor):
             return path in self.includes or helpers.is_inside_any(self.includes, path)
         return True
 
-    def _adjust_for_new_root(self, path):
+    def _adjust_for_new_root(self, path: bytes) -> bytes:
         """Adjust a path given the new root directory of the output."""
         if self.new_root is None:
             return path
@@ -208,7 +234,7 @@ class FilterProcessor(processor.ImportProcessor):
         else:
             return path
 
-    def _find_interesting_parent(self, commit_ref):
+    def _find_interesting_parent(self, commit_ref: bytes) -> Optional[bytes]:
         while True:
             if commit_ref not in self.squashed_commits:
                 return commit_ref
@@ -217,12 +243,14 @@ class FilterProcessor(processor.ImportProcessor):
                 return None
             commit_ref = parents[0]
 
-    def _find_interesting_from(self, commit_ref):
+    def _find_interesting_from(self, commit_ref: Optional[bytes]) -> Optional[bytes]:
         if commit_ref is None:
             return None
         return self._find_interesting_parent(commit_ref)
 
-    def _find_interesting_merges(self, commit_refs):
+    def _find_interesting_merges(
+        self, commit_refs: Optional[List[bytes]]
+    ) -> Optional[List[bytes]]:
         if commit_refs is None:
             return None
         merges = []
@@ -235,7 +263,9 @@ class FilterProcessor(processor.ImportProcessor):
         else:
             return None
 
-    def _convert_rename(self, fc):
+    def _convert_rename(
+        self, fc: "commands.FileRenameCommand"
+    ) -> Optional["commands.FileCommand"]:
         """Convert a FileRenameCommand into a new FileCommand.
 
         :return: None if the rename is being ignored, otherwise a
@@ -262,10 +292,15 @@ class FilterProcessor(processor.ImportProcessor):
             # to. Maybe fast-import-info needs to be extended to
             # remember all renames and a config file can be passed
             # into here ala fast-import?
-            self.warning("cannot turn rename of %s into an add of %s yet" % (old, new))
+            self.warning(
+                "cannot turn rename of %s into an add of %s yet"
+                % (old.decode("utf-8"), new.decode("utf-8"))
+            )
         return None
 
-    def _convert_copy(self, fc):
+    def _convert_copy(
+        self, fc: "commands.FileCopyCommand"
+    ) -> Optional["commands.FileCommand"]:
         """Convert a FileCopyCommand into a new FileCommand.
 
         :return: None if the copy is being ignored, otherwise a
@@ -291,5 +326,8 @@ class FilterProcessor(processor.ImportProcessor):
             # to. Maybe fast-import-info needs to be extended to
             # remember all copies and a config file can be passed
             # into here ala fast-import?
-            self.warning("cannot turn copy of %s into an add of %s yet" % (src, dest))
+            self.warning(
+                "cannot turn copy of %s into an add of %s yet"
+                % (src.decode("utf-8"), dest.decode("utf-8"))
+            )
         return None

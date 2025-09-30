@@ -20,7 +20,7 @@
 import unittest
 
 
-def test_suite():
+def test_suite() -> unittest.TestSuite:
     names = [
         "test_commands",
         "test_dates",
