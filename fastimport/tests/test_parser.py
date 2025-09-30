@@ -434,7 +434,7 @@ B
     def test_original_oid_roundtrip(self) -> None:
         """Test that commands with original-oid can be serialized and parsed back correctly"""
         # Test blob roundtrip
-        blob = commands.BlobCommand(b"1", b"abc123", b"test data")
+        blob = commands.BlobCommand(b"1", b"test data", original_oid=b"abc123")
         blob_bytes = bytes(blob)
         p = parser.ImportParser(io.BytesIO(blob_bytes))
         parsed_blob = cast(commands.BlobCommand, next(p.iter_commands()))
@@ -445,13 +445,13 @@ B
         commit = commands.CommitCommand(
             b"refs/heads/master",
             b"2",
-            b"def456",
             None,
             (b"Joe", b"joe@example.com", 1234567890, 0),
             b"test",
             None,
             None,
             None,
+            original_oid=b"def456",
         )
         commit_bytes = bytes(commit)
         p = parser.ImportParser(io.BytesIO(commit_bytes))
@@ -463,9 +463,9 @@ B
         tag = commands.TagCommand(
             b"refs/tags/v1.0",
             b":2",
-            b"789xyz",
             (b"Jane", b"jane@example.com", 1234567890, 0),
             b"Version 1.0",
+            original_oid=b"789xyz",
         )
         tag_bytes = bytes(tag)
         p = parser.ImportParser(io.BytesIO(tag_bytes))

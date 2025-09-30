@@ -37,7 +37,6 @@ from fastimport import commands
 # Create a new blob
 blob = commands.BlobCommand(
     mark=b'1',
-    original_oid=None,
     data=b'Hello, World!\n',
     lineno=0
 )
@@ -46,7 +45,6 @@ blob = commands.BlobCommand(
 commit = commands.CommitCommand(
     ref=b'refs/heads/main',
     mark=b'2',
-    original_oid=None,
     author=(b'John Doe', b'john@example.com', 1234567890, 0),
     committer=(b'John Doe', b'john@example.com', 1234567890, 0),
     message=b'Initial commit\n',

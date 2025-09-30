@@ -138,9 +138,9 @@ class BlobCommand(ImportCommand):
     def __init__(
         self,
         mark: Optional[bytes],
-        original_oid: Optional[bytes],
         data: bytes,
         lineno: int = 0,
+        original_oid: Optional[bytes] = None,
     ) -> None:
         ImportCommand.__init__(self, b"blob")
         self.mark = mark
@@ -191,7 +191,6 @@ class CommitCommand(ImportCommand):
         self,
         ref: bytes,
         mark: Optional[Union[bytes, int]],
-        original_oid: Optional[Union[bytes, str]],
         author: Optional[Union[Tuple[bytes, bytes, float, int], "parser.Authorship"]],
         committer: Union[
             Tuple[bytes, bytes, float, int],
@@ -215,6 +214,7 @@ class CommitCommand(ImportCommand):
         properties: Optional[
             Union[Dict[bytes, Optional[bytes]], Dict[str, str]]
         ] = None,
+        original_oid: Optional[Union[bytes, str]] = None,
     ) -> None:
         ImportCommand.__init__(self, b"commit")
         self.ref = ref
@@ -441,7 +441,6 @@ class TagCommand(ImportCommand):
         self,
         id: bytes,
         from_: Optional[bytes],
-        original_oid: Optional[Union[bytes, str]],
         tagger: Optional[
             Union[
                 Tuple[bytes, bytes, float, int],
@@ -450,6 +449,7 @@ class TagCommand(ImportCommand):
             ]
         ],
         message: Optional[bytes],
+        original_oid: Optional[Union[bytes, str]] = None,
     ) -> None:
         ImportCommand.__init__(self, b"tag")
         self.id = id

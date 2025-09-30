@@ -360,7 +360,7 @@ class ImportParser(LineBasedParser):
         mark = self._get_mark_if_any()
         original_oid = self._get_original_oid_if_any()
         data = self._get_data(b"blob")
-        return commands.BlobCommand(mark, original_oid, data, lineno)
+        return commands.BlobCommand(mark, data, lineno, original_oid=original_oid)
 
     def _parse_commit(self, ref: bytes) -> "commands.CommitCommand":
         """Parse a commit command."""
@@ -407,7 +407,6 @@ class ImportParser(LineBasedParser):
         return commands.CommitCommand(
             ref,
             mark,
-            original_oid,
             author,
             committer,
             message,
@@ -428,6 +427,7 @@ class ImportParser(LineBasedParser):
                 more_authors,
             ),
             properties=fixed_properties,
+            original_oid=original_oid,
         )
 
     def _parse_feature(self, info: bytes) -> "commands.FeatureCommand":
@@ -470,7 +470,9 @@ class ImportParser(LineBasedParser):
         tagger = self._get_user_info(b"tag", b"tagger", accept_just_who=True)
         message = self._get_data(b"tag", b"message")
         # Keep Authorship object as namedtuple
-        return commands.TagCommand(name, from_, original_oid, tagger, message)
+        return commands.TagCommand(
+            name, from_, tagger, message, original_oid=original_oid
+        )
 
     def _get_mark_if_any(self) -> Optional[bytes]:
         """Parse a mark section."""

@@ -25,16 +25,18 @@ from fastimport import (
 
 class TestBlobDisplay(TestCase):
     def test_blob(self) -> None:
-        c = commands.BlobCommand(b"1", None, b"hello world")
+        c = commands.BlobCommand(b"1", b"hello world")
         self.assertEqual(b"blob\nmark :1\ndata 11\nhello world", bytes(c))
 
     def test_blob_no_mark(self) -> None:
-        c = commands.BlobCommand(None, None, b"hello world")
+        c = commands.BlobCommand(None, b"hello world")
         self.assertEqual(b"blob\ndata 11\nhello world", bytes(c))
 
     def test_blob_with_original_oid(self) -> None:
         c = commands.BlobCommand(
-            b"1", b"95d09f2b10159347eece71399a7e2e907ea3df4f", b"hello world"
+            b"1",
+            b"hello world",
+            original_oid=b"95d09f2b10159347eece71399a7e2e907ea3df4f",
         )
         self.assertEqual(
             b"blob\n"
@@ -60,7 +62,6 @@ class TestCommitDisplay(TestCase):
             b"refs/heads/master",
             b"bbb",
             None,
-            None,
             committer,
             b"release v1.0",
             b":aaa",
@@ -82,7 +83,6 @@ class TestCommitDisplay(TestCase):
         committer = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
         c = commands.CommitCommand(
             b"refs/heads/master",
-            None,
             None,
             None,
             committer,
@@ -107,7 +107,6 @@ class TestCommitDisplay(TestCase):
             b"refs/heads/master",
             b"bbb",
             None,
-            None,
             committer,
             b"release v1.0",
             None,
@@ -129,13 +128,13 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             b"bbb",
-            "6193131b432739c1c6c9ac85614f7ce1e2a59854",
             None,
             committer,
             b"release v1.0",
             b":aaa",
             None,
             None,
+            original_oid="6193131b432739c1c6c9ac85614f7ce1e2a59854",
         )
         self.assertEqual(
             b"commit refs/heads/master\n"
@@ -155,7 +154,6 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             b"bbb",
-            None,
             author,
             committer,
             b"release v1.0",
@@ -180,7 +178,6 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             b"ddd",
-            None,
             None,
             committer,
             b"release v1.0",
@@ -213,7 +210,6 @@ class TestCommitDisplay(TestCase):
             b"refs/heads/master",
             b"bbb",
             None,
-            None,
             committer,
             b"release v1.0",
             b":aaa",
@@ -245,7 +241,6 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             b"bbb",
-            None,
             author,
             committer,
             b"release v1.0",
@@ -278,7 +273,6 @@ class TestCommitDisplay(TestCase):
             b"refs/heads/master",
             b"bbb",
             None,
-            None,
             committer,
             b"release v1.0",
             b":aaa",
@@ -308,7 +302,6 @@ class TestCommitDisplay(TestCase):
         c = commands.CommitCommand(
             b"refs/heads/master",
             123,
-            None,
             None,
             committer,
             b"release v1.0",
@@ -344,7 +337,6 @@ class TestCommitCopy(TestCase):
         self.c = commands.CommitCommand(
             b"refs/heads/master",
             b"bbb",
-            None,
             None,
             committer,
             b"release v1.0",
@@ -394,9 +386,7 @@ class TestTagDisplay(TestCase):
     def test_tag(self) -> None:
         # tagger tuple is (name, email, secs-since-epoch, secs-offset-from-utc)
         tagger = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
-        c = commands.TagCommand(
-            b"refs/tags/v1.0", b":xxx", None, tagger, b"create v1.0"
-        )
+        c = commands.TagCommand(b"refs/tags/v1.0", b":xxx", tagger, b"create v1.0")
         self.assertEqual(
             b"tag refs/tags/v1.0\n"
             b"from :xxx\n"
@@ -412,9 +402,9 @@ class TestTagDisplay(TestCase):
         c = commands.TagCommand(
             b"refs/tags/v1.0",
             b":xxx",
-            "498a0acad8ad7e20e58933f954a3f1369d29b517",
             tagger,
             b"create v1.0",
+            original_oid="498a0acad8ad7e20e58933f954a3f1369d29b517",
         )
         self.assertEqual(
             b"tag refs/tags/v1.0\n"
@@ -428,7 +418,7 @@ class TestTagDisplay(TestCase):
 
     def test_tag_no_from(self) -> None:
         tagger = (b"Joe Wong", b"joe@example.com", 1234567890, -6 * 3600)
-        c = commands.TagCommand(b"refs/tags/v1.0", None, None, tagger, b"create v1.0")
+        c = commands.TagCommand(b"refs/tags/v1.0", None, tagger, b"create v1.0")
         self.assertEqual(
             b"tag refs/tags/v1.0\n"
             b"tagger Joe Wong <joe@example.com> 1234567890 -0600\n"
@@ -508,7 +498,6 @@ class TestNotesDisplay(TestCase):
             commands.CommitCommand(
                 ref=b"refs/heads/master",
                 mark=b"1",
-                original_oid=None,
                 author=committer,
                 committer=committer,
                 message=b"test\n",
@@ -519,18 +508,17 @@ class TestNotesDisplay(TestCase):
             commands.CommitCommand(
                 ref=b"refs/notes/commits",
                 mark=None,
-                original_oid="c0a594761e2226be654ccd0e0ff0b6af95aa1040",
                 author=None,
                 committer=committer,
                 message=b"Notes added by 'git notes add'\n",
                 from_=None,
                 merges=[],
                 file_iter=[commands.NoteModifyCommand(b"1", b"Test note\n")],
+                original_oid="c0a594761e2226be654ccd0e0ff0b6af95aa1040",
             ),
             commands.CommitCommand(
                 ref=b"refs/notes/test",
                 mark=None,
-                original_oid=None,
                 author=None,
                 committer=committer,
                 message=b"Notes added by 'git notes add'\n",
