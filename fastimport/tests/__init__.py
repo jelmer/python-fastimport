@@ -29,6 +29,7 @@ def test_suite() -> unittest.TestSuite:
         "test_info_processor",
         "test_helpers",
         "test_parser",
+        "test_processor",
     ]
     module_names = ["fastimport.tests." + name for name in names]
     result = unittest.TestSuite()

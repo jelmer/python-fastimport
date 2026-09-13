@@ -72,7 +72,8 @@ class ImportProcessor(object):
         """Validate that the parameters are correctly specified."""
         for p in self.params:
             if p not in self.known_params:
-                raise errors.UnknownParameter(p.decode("utf-8"), str(self.known_params))
+                name = p.decode("utf-8") if isinstance(p, bytes) else p
+                raise errors.UnknownParameter(name, str(self.known_params))
 
     def process(self, command_iter: Any) -> None:
         """Import data into Bazaar by processing a stream of commands.
@@ -162,13 +163,12 @@ class CommitHandler(object):
     def process(self) -> None:
         self.pre_process_files()
         for fc in self.command.iter_files():
+            name = (fc.name[4:] + b"_handler").decode("utf8")
             try:
-                name = (fc.name[4:] + b"_handler").decode("utf8")
                 handler = getattr(self.__class__, name)
-            except KeyError:  # noqa: PERF203
-                raise errors.MissingHandler(fc.name)
-            else:
-                handler(self, fc)
+            except AttributeError:
+                raise errors.MissingHandler(fc.name) from None
+            handler(self, fc)
         self.post_process_files()
 
     def warning(self, msg: str, *args: Any) -> None:
