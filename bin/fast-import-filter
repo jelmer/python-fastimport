@@ -65,7 +65,8 @@ parser.add_option('-i', '--include-paths', dest="include_paths",
                   help="Only include commits affecting these paths."
                        " Directories should have a trailing /.")
 parser.add_option('-x', '--exclude-paths', dest="exclude_paths",
-                  type=str, help="Exclude these paths from commits.")
+                  action="append", type=str,
+                  help="Exclude these paths from commits.")
 parser.add_option('--dont-squash-empty-commits',
                   dest="dont_squash_empty_commits", action="store_true",
                   help="Preserve all commits and links between them",
@@ -81,11 +82,19 @@ else:
     parser.print_usage()
 
 from fastimport.processors import filter_processor
+
+
+def encode_paths(paths):
+    if paths is None:
+        return None
+    return [p.encode('utf-8') for p in paths]
+
+
 params = {
-    'include_paths': opts.include_paths,
-    'exclude_paths': opts.exclude_paths,
+    b'include_paths': encode_paths(opts.include_paths),
+    b'exclude_paths': encode_paths(opts.exclude_paths),
     }
-params['squash_empty_commits'] = (not opts.dont_squash_empty_commits)
+params[b'squash_empty_commits'] = (not opts.dont_squash_empty_commits)
 
 from fastimport.errors import ParsingError
 from fastimport import parser

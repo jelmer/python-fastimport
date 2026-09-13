@@ -50,15 +50,10 @@ class QueryProcessor(processor.ImportProcessor):
                 )
                 del params[b"commit-mark"]
             for name, value in params.items():
-                if value == 1:
-                    # All fields
-                    fields = None
-                else:
-                    fields = (
-                        value.split(",")
-                        if isinstance(value, str)
-                        else value.decode("utf-8").split(",")
-                    )
+                if isinstance(value, bytes):
+                    value = value.decode("utf-8")
+                # No fields nominated means show all of them
+                fields = None if not value or value == 1 else value.split(",")
                 self.parsed_params[name] = fields
 
     def pre_handler(self, cmd: "commands.ImportCommand") -> None:

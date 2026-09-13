@@ -46,7 +46,7 @@ parser.add_option('-v', '--verbose', dest="verbose",
                   action="store_true", help="Be verbose")
 parser.add_option('-m', '--commit-mark', dest="commit_mark",
                   type=str, help="Mark of the commit to display.")
-parser.add_option('-C', '--commands', type=str,
+parser.add_option('-C', '--commands', action="append", type=str,
                   help="Display fields for these commands.")
 
 (opts, args) = parser.parse_args()
@@ -63,9 +63,12 @@ from fastimport.helpers import defines_to_dict, get_source_stream
 from fastimport.errors import ParsingError
 from fastimport import parser
 
-params = defines_to_dict(opts.commands) or {}
+params = {
+    k.encode('utf-8'): v
+    for k, v in (defines_to_dict(opts.commands) or {}).items()
+    }
 if opts.commit_mark:
-    params['commit-mark'] = opts.commit_mark
+    params[b'commit-mark'] = opts.commit_mark
 
 stream = get_source_stream(source_path)
 proc = query_processor.QueryProcessor(verbose=opts.verbose, params=params)
