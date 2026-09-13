@@ -16,13 +16,11 @@
 """Test InfoProcessor"""
 
 from io import BytesIO, StringIO
-
 from unittest import TestCase
 
 from fastimport import (
     parser,
 )
-
 from fastimport.processors import (
     info_processor,
 )

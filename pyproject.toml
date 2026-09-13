@@ -51,6 +51,19 @@ version = {attr = "fastimport.__version__"}
 [tool.distutils.bdist_wheel]
 universal = 1
 
+[tool.ruff.lint]
+select = [
+    "C4",  # comprehensions
+    "E",  # pycodestyle
+    "F",  # pyflakes
+    "I",  # isort
+    "PIE",
+    "PERF",
+    "SIM",  # simplify
+    "UP",  # pyupgrade
+    "RUF", # ruff-specific
+]
+
 [tool.mypy]
 packages = ["fastimport"]
 strict = true

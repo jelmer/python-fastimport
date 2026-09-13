@@ -15,8 +15,10 @@
 
 """Import processor that dump stats about the input (and doesn't import)."""
 
-from __future__ import absolute_import
-from typing import Dict, Set, Any, Optional, Callable
+import contextlib
+import stat
+from collections.abc import Callable
+from typing import Any
 
 from .. import (
     commands,
@@ -27,7 +29,6 @@ from ..helpers import (
     invert_dict,
     invert_dictset,
 )
-import stat
 
 
 class InfoProcessor(processor.ImportProcessor):
@@ -43,40 +44,40 @@ class InfoProcessor(processor.ImportProcessor):
 
     def __init__(
         self,
-        params: Optional[Dict[bytes, Any]] = None,
+        params: dict[bytes, Any] | None = None,
         verbose: int = 0,
-        outf: Optional[Any] = None,
+        outf: Any | None = None,
     ) -> None:
         processor.ImportProcessor.__init__(self, params, bool(verbose), outf=outf)
 
     def pre_process(self) -> None:
         # Init statistics
-        self.cmd_counts: Dict[bytes, int] = {}
+        self.cmd_counts: dict[bytes, int] = {}
         for cmd in commands.COMMAND_NAMES:
             self.cmd_counts[cmd] = 0
-        self.file_cmd_counts: Dict[bytes, int] = {}
+        self.file_cmd_counts: dict[bytes, int] = {}
         for fc in commands.FILE_COMMAND_NAMES:
             self.file_cmd_counts[fc] = 0
-        self.parent_counts: Dict[int, int] = {}
+        self.parent_counts: dict[int, int] = {}
         self.max_parent_count: int = 0
-        self.committers: Set[Any] = set()
+        self.committers: set[Any] = set()
         self.separate_authors_found: bool = False
         self.symlinks_found: bool = False
         self.executables_found: bool = False
         self.sha_blob_references: bool = False
         self.lightweight_tags: int = 0
         # Blob usage tracking
-        self.blobs: Dict[str, Set[bytes]] = {}
+        self.blobs: dict[str, set[bytes]] = {}
         for usage in ["new", "used", "unknown", "unmarked"]:
             self.blobs[usage] = set()
-        self.blob_ref_counts: Dict[bytes, int] = {}
+        self.blob_ref_counts: dict[bytes, int] = {}
         # Head tracking
-        self.reftracker: "reftracker.RefTracker" = reftracker.RefTracker()
+        self.reftracker: reftracker.RefTracker = reftracker.RefTracker()
         # Stuff to cache: a map from mark to # of times that mark is merged
-        self.merges: Dict[bytes, int] = {}
+        self.merges: dict[bytes, int] = {}
         # Stuff to cache: these are maps from mark to sets
-        self.rename_old_paths: Dict[bytes, Set[bytes]] = {}
-        self.copy_source_paths: Dict[bytes, Set[bytes]] = {}
+        self.rename_old_paths: dict[bytes, set[bytes]] = {}
+        self.copy_source_paths: dict[bytes, set[bytes]] = {}
 
     def post_process(self) -> None:
         # Dump statistics
@@ -99,7 +100,7 @@ class InfoProcessor(processor.ImportProcessor):
             for i in range(self.max_parent_count + 1):
                 if i in self.parent_counts:
                     count = self.parent_counts[i]
-                    p_items.append(("parents-%d" % i, count))
+                    p_items.append((f"parents-{i:d}", count))
             merges_count = len(self.merges)
             p_items.append(("total revisions merged", merges_count))
             flags = {
@@ -149,12 +150,10 @@ class InfoProcessor(processor.ImportProcessor):
                 [
                     (
                         k,
-                        set(
-                            [
-                                v1.decode("utf-8") if isinstance(v1, bytes) else v1
-                                for v1 in v
-                            ]
-                        ),
+                        {
+                            v1.decode("utf-8") if isinstance(v1, bytes) else v1
+                            for v1 in v
+                        },
                     )
                     for (k, v) in self.blobs.items()
                 ],
@@ -179,8 +178,8 @@ class InfoProcessor(processor.ImportProcessor):
         self,
         title: str,
         items: Any,
-        normal_formatter: Optional[Callable[[Any], Any]] = None,
-        verbose_formatter: Optional[Callable[[Any], Any]] = None,
+        normal_formatter: Callable[[Any], Any] | None = None,
+        verbose_formatter: Callable[[Any], Any] | None = None,
     ) -> None:
         """Dump a statistics group.
 
@@ -192,20 +191,20 @@ class InfoProcessor(processor.ImportProcessor):
           before displaying it in verbose mode
         """
         if self.verbose:
-            self.outf.write("[%s]\n" % (title,))
+            self.outf.write(f"[{title}]\n")
             for name, value in items:
                 if verbose_formatter is not None:
                     value = verbose_formatter(value)
                 if isinstance(name, str):
                     name = name.replace(" ", "-")
-                self.outf.write("%s = %s\n" % (name, value))
+                self.outf.write(f"{name} = {value}\n")
             self.outf.write("\n")
         else:
-            self.outf.write("%s:\n" % (title,))
+            self.outf.write(f"{title}:\n")
             for name, value in items:
                 if normal_formatter is not None:
                     value = normal_formatter(value)
-                self.outf.write("\t%s\t%s\n" % (value, name))
+                self.outf.write(f"\t{value}\t{name}\n")
 
     def progress_handler(self, cmd: "commands.ProgressCommand") -> None:
         """Process a ProgressCommand."""
@@ -221,10 +220,8 @@ class InfoProcessor(processor.ImportProcessor):
             # Marks can be re-used so remove it from used if already there.
             # Note: we definitely do NOT want to remove it from multi if
             # it's already in that set.
-            try:
+            with contextlib.suppress(KeyError):
                 self.blobs["used"].remove(cmd.id)
-            except KeyError:
-                pass
 
     def checkpoint_handler(self, cmd: "commands.CheckpointCommand") -> None:
         """Process a CheckpointCommand."""
@@ -292,14 +289,12 @@ class InfoProcessor(processor.ImportProcessor):
         feature = cmd.feature_name
         if feature not in commands.FEATURE_NAMES:
             self.warning(
-                "feature %s is not supported - parsing may fail"
-                % (feature.decode("utf-8"),)
+                f"feature {feature.decode('utf-8')} is not supported - parsing may fail"
             )
 
     def _track_blob(self, mark: bytes) -> None:
         if mark in self.blob_ref_counts:
             self.blob_ref_counts[mark] += 1
-            pass
         elif mark in self.blobs["used"]:
             self.blob_ref_counts[mark] = 2
             self.blobs["used"].remove(mark)
@@ -322,6 +317,6 @@ def _iterable_as_config_list(s: Any) -> str:
     """
     items = sorted(s)
     if len(items) == 1:
-        return "%s," % (items[0],)
+        return f"{items[0]},"
     else:
         return ", ".join(items)

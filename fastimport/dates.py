@@ -24,12 +24,12 @@ timestamp,timezone where
 """
 
 import time
-from typing import Tuple, Dict, Callable
+from collections.abc import Callable
 
 from . import errors
 
 
-def parse_raw(s: bytes, lineno: int = 0) -> Tuple[float, int]:
+def parse_raw(s: bytes, lineno: int = 0) -> tuple[float, int]:
     """Parse a date from a raw string.
 
     The format must be exactly "seconds-since-epoch offset-utc".
@@ -63,7 +63,7 @@ def parse_tz(tz: bytes) -> int:
     return sign * 60 * (60 * hours + minutes)
 
 
-def parse_rfc2822(s: bytes, lineno: int = 0) -> Tuple[float, int]:
+def parse_rfc2822(s: bytes, lineno: int = 0) -> tuple[float, int]:
     """Parse a date from a rfc2822 string.
 
     See the spec for details.
@@ -71,7 +71,7 @@ def parse_rfc2822(s: bytes, lineno: int = 0) -> Tuple[float, int]:
     raise NotImplementedError(parse_rfc2822)
 
 
-def parse_now(s: bytes, lineno: int = 0) -> Tuple[float, int]:
+def parse_now(s: bytes, lineno: int = 0) -> tuple[float, int]:
     """Parse a date from a string.
 
     The format must be exactly "now".
@@ -81,7 +81,7 @@ def parse_now(s: bytes, lineno: int = 0) -> Tuple[float, int]:
 
 
 # Lookup table of date parsing routines
-DATE_PARSERS_BY_NAME: Dict[str, Callable[[bytes, int], Tuple[float, int]]] = {
+DATE_PARSERS_BY_NAME: dict[str, Callable[[bytes, int], tuple[float, int]]] = {
     "raw": parse_raw,
     "rfc2822": parse_rfc2822,
     "now": parse_now,

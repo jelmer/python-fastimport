@@ -19,20 +19,14 @@ These objects are used by the parser to represent the content of
 a fast-import stream.
 """
 
-from __future__ import division
-
 import re
 import stat
+from collections.abc import Iterator
 from typing import (
-    Optional,
-    List,
-    Dict,
+    TYPE_CHECKING,
     Any,
     Union,
-    Iterator,
-    Tuple,
     cast,
-    TYPE_CHECKING,
 )
 
 if TYPE_CHECKING:
@@ -40,9 +34,10 @@ if TYPE_CHECKING:
 
 from .helpers import (
     newobject as object,
+)
+from .helpers import (
     utf8_bytes_string,
 )
-
 
 # There is a bug in git 1.5.4.3 and older by which unquoting a string consumes
 # one extra character. Set this variable to True to work-around it. It only
@@ -89,7 +84,7 @@ class ImportCommand(object):
     def __init__(self, name: bytes) -> None:
         self.name = name
         # List of field names not to display
-        self._binary: List[str] = []
+        self._binary: list[str] = []
 
     def __str__(self) -> str:
         return repr(self)
@@ -102,8 +97,8 @@ class ImportCommand(object):
 
     def dump_str(
         self,
-        names: Optional[List[str]] = None,
-        child_lists: Optional[Dict[str, Any]] = None,
+        names: list[str] | None = None,
+        child_lists: dict[str, Any] | None = None,
         verbose: bool = False,
     ) -> str:
         """Dump fields as a string.
@@ -129,7 +124,7 @@ class ImportCommand(object):
                 value = b"(...)"
             interesting[field] = value
         if verbose:
-            return "%s: %s" % (self.__class__.__name__, interesting)
+            return f"{self.__class__.__name__}: {interesting}"
         else:
             return "\t".join([repr(interesting[k]) for k in fields])
 
@@ -137,10 +132,10 @@ class ImportCommand(object):
 class BlobCommand(ImportCommand):
     def __init__(
         self,
-        mark: Optional[bytes],
+        mark: bytes | None,
         data: bytes,
         lineno: int = 0,
-        original_oid: Optional[bytes] = None,
+        original_oid: bytes | None = None,
     ) -> None:
         ImportCommand.__init__(self, b"blob")
         self.mark = mark
@@ -149,16 +144,13 @@ class BlobCommand(ImportCommand):
         self.lineno = lineno
         # Provide a unique id in case the mark is missing
         if mark is None:
-            self.id = b"@" + ("%d" % lineno).encode("utf-8")
+            self.id = b"@" + f"{lineno:d}".encode()
         else:
             self.id = b":" + mark
         self._binary = ["data"]
 
     def __bytes__(self) -> bytes:
-        if self.mark is None:
-            mark_line = b""
-        else:
-            mark_line = b"\nmark :" + self.mark
+        mark_line = b"" if self.mark is None else b"\nmark :" + self.mark
         if self.original_oid is None:
             original_oid_line = b""
         else:
@@ -173,7 +165,7 @@ class BlobCommand(ImportCommand):
             + mark_line
             + original_oid_line
             + b"\n"
-            + ("data %d\n" % len(self.data)).encode("utf-8")
+            + f"data {len(self.data):d}\n".encode()
             + self.data
         )
 
@@ -190,31 +182,28 @@ class CommitCommand(ImportCommand):
     def __init__(
         self,
         ref: bytes,
-        mark: Optional[Union[bytes, int]],
-        author: Optional[Union[Tuple[bytes, bytes, float, int], "parser.Authorship"]],
+        mark: bytes | int | None,
+        author: Union[tuple[bytes, bytes, float, int], "parser.Authorship"] | None,
         committer: Union[
-            Tuple[bytes, bytes, float, int],
-            Tuple[str, bytes, int, int],
+            tuple[bytes, bytes, float, int],
+            tuple[str, bytes, int, int],
             "parser.Authorship",
         ],
         message: bytes,
-        from_: Optional[bytes],
-        merges: Optional[List[bytes]],
+        from_: bytes | None,
+        merges: list[bytes] | None,
         file_iter: Any,
         lineno: int = 0,
-        more_authors: Optional[
-            List[
-                Union[
-                    Tuple[bytes, bytes, float, int],
-                    Tuple[bytes, bytes, int, int],
-                    "parser.Authorship",
-                ]
+        more_authors: list[
+            Union[
+                tuple[bytes, bytes, float, int],
+                tuple[bytes, bytes, int, int],
+                "parser.Authorship",
             ]
-        ] = None,
-        properties: Optional[
-            Union[Dict[bytes, Optional[bytes]], Dict[str, str]]
-        ] = None,
-        original_oid: Optional[Union[bytes, str]] = None,
+        ]
+        | None = None,
+        properties: dict[bytes, bytes | None] | dict[str, str] | None = None,
+        original_oid: bytes | str | None = None,
     ) -> None:
         ImportCommand.__init__(self, b"commit")
         self.ref = ref
@@ -232,7 +221,7 @@ class CommitCommand(ImportCommand):
         self._binary = ["file_iter"]
         # Provide a unique id in case the mark is missing
         if self.mark is None:
-            self.id = b"@" + ("%d" % lineno).encode("utf-8")
+            self.id = b"@" + f"{lineno:d}".encode()
         else:
             if isinstance(self.mark, (int)):
                 self.id = b":" + str(self.mark).encode("utf-8")
@@ -243,12 +232,12 @@ class CommitCommand(ImportCommand):
         if not isinstance(self.file_iter, list):
             self.file_iter = list(self.file_iter)
 
-        fields = dict(
-            (key, value)
+        fields = {
+            key: value
             for key, value in self.__dict__.items()
             if key not in ("id", "name")
             if not key.startswith("_")
-        )
+        }
 
         fields.update(kwargs)
 
@@ -296,11 +285,8 @@ class CommitCommand(ImportCommand):
             msg_section = b""
         else:
             msg = self.message
-            msg_section = ("\ndata %d\n" % len(msg)).encode("ascii") + msg
-        if self.from_ is None:
-            from_line = b""
-        else:
-            from_line = b"\nfrom " + self.from_
+            msg_section = f"\ndata {len(msg):d}\n".encode("ascii") + msg
+        from_line = b"" if self.from_ is None else b"\nfrom " + self.from_
         if self.merges is None:
             merge_lines = b""
         else:
@@ -364,8 +350,8 @@ class CommitCommand(ImportCommand):
 
     def dump_str(
         self,
-        names: Optional[List[str]] = None,
-        child_lists: Optional[Dict[str, Any]] = None,
+        names: list[str] | None = None,
+        child_lists: dict[str, Any] | None = None,
         verbose: bool = False,
     ) -> str:
         result = [ImportCommand.dump_str(self, names, verbose=verbose)]
@@ -380,7 +366,7 @@ class CommitCommand(ImportCommand):
                 child_names = child_lists[f_name_str]
             except KeyError:
                 continue
-            result.append("\t%s" % f.dump_str(child_names, verbose=verbose))
+            result.append(f"\t{f.dump_str(child_names, verbose=verbose)}")
         return "\n".join(result)
 
     def iter_files(self) -> Iterator["FileCommand"]:
@@ -393,7 +379,7 @@ class CommitCommand(ImportCommand):
 
 class FeatureCommand(ImportCommand):
     def __init__(
-        self, feature_name: bytes, value: Optional[bytes] = None, lineno: int = 0
+        self, feature_name: bytes, value: bytes | None = None, lineno: int = 0
     ) -> None:
         ImportCommand.__init__(self, b"feature")
         self.feature_name = feature_name
@@ -401,10 +387,7 @@ class FeatureCommand(ImportCommand):
         self.lineno = lineno
 
     def __bytes__(self) -> bytes:
-        if self.value is None:
-            value_text = b""
-        else:
-            value_text = b"=" + self.value
+        value_text = b"" if self.value is None else b"=" + self.value
         return b"feature " + self.feature_name + value_text
 
 
@@ -418,13 +401,13 @@ class ProgressCommand(ImportCommand):
 
 
 class ResetCommand(ImportCommand):
-    def __init__(self, ref: bytes, from_: Optional[bytes]) -> None:
+    def __init__(self, ref: bytes, from_: bytes | None) -> None:
         ImportCommand.__init__(self, b"reset")
         self.ref = ref
         self.from_ = from_
 
     def __bytes__(self) -> bytes:
-        if self.from_ is None:
+        if self.from_ is None:  # noqa: SIM108
             from_line = b""
         else:
             # According to git-fast-import(1), the extra LF is optional here;
@@ -440,16 +423,15 @@ class TagCommand(ImportCommand):
     def __init__(
         self,
         id: bytes,
-        from_: Optional[bytes],
-        tagger: Optional[
-            Union[
-                Tuple[bytes, bytes, float, int],
-                Tuple[bytes, bytes, int, int],
-                "parser.Authorship",
-            ]
-        ],
-        message: Optional[bytes],
-        original_oid: Optional[Union[bytes, str]] = None,
+        from_: bytes | None,
+        tagger: Union[
+            tuple[bytes, bytes, float, int],
+            tuple[bytes, bytes, int, int],
+            "parser.Authorship",
+        ]
+        | None,
+        message: bytes | None,
+        original_oid: bytes | str | None = None,
     ) -> None:
         ImportCommand.__init__(self, b"tag")
         self.id = id
@@ -459,10 +441,7 @@ class TagCommand(ImportCommand):
         self.message = message
 
     def __bytes__(self) -> bytes:
-        if self.from_ is None:
-            from_line = b""
-        else:
-            from_line = b"\nfrom " + self.from_
+        from_line = b"" if self.from_ is None else b"\nfrom " + self.from_
         if self.original_oid is None:
             original_oid_line = b""
         else:
@@ -480,7 +459,7 @@ class TagCommand(ImportCommand):
             msg_section = b""
         else:
             msg = self.message
-            msg_section = ("\ndata %d\n" % len(msg)).encode("ascii") + msg
+            msg_section = f"\ndata {len(msg):d}\n".encode("ascii") + msg
         return (
             b"tag "
             + self.id
@@ -494,12 +473,10 @@ class TagCommand(ImportCommand):
 class FileCommand(ImportCommand):
     """Base class for file commands."""
 
-    pass
-
 
 class FileModifyCommand(FileCommand):
     def __init__(
-        self, path: bytes, mode: int, dataref: Optional[bytes], data: Optional[bytes]
+        self, path: bytes, mode: int, dataref: bytes | None, data: bytes | None
     ) -> None:
         # Either dataref or data should be null
         FileCommand.__init__(self, b"filemodify")
@@ -527,7 +504,7 @@ class FileModifyCommand(FileCommand):
         elif mode == 0o160000:
             return b"160000"
         else:
-            raise AssertionError("Unknown mode %o" % mode)
+            raise AssertionError(f"Unknown mode {mode:o}")
 
     def to_string(self, include_file_contents: bool = False) -> bytes:
         datastr = b""
@@ -536,7 +513,7 @@ class FileModifyCommand(FileCommand):
         elif self.dataref is None:
             dataref = b"inline"
             if include_file_contents and self.data is not None:
-                datastr = ("\ndata %d\n" % len(self.data)).encode("ascii") + self.data
+                datastr = f"\ndata {len(self.data):d}\n".encode("ascii") + self.data
         else:
             dataref = self.dataref
         path = format_path(self.path)
@@ -595,7 +572,7 @@ class FileDeleteAllCommand(FileCommand):
 
 class NoteModifyCommand(FileCommand):
     def __init__(self, from_: bytes, data: bytes) -> None:
-        super(NoteModifyCommand, self).__init__(b"notemodify")
+        super().__init__(b"notemodify")
         self.from_ = from_
         self.data = data
         self._binary = ["data"]
@@ -604,12 +581,12 @@ class NoteModifyCommand(FileCommand):
         return (
             b"N inline :"
             + self.from_
-            + ("\ndata %d\n" % len(self.data)).encode("ascii")
+            + f"\ndata {len(self.data):d}\n".encode("ascii")
             + self.data
         )
 
 
-def check_path(path: Optional[bytes]) -> bytes:
+def check_path(path: bytes | None) -> bytes:
     """Check that a path is legal.
 
     :return: the path if all is OK
@@ -622,7 +599,7 @@ def check_path(path: Optional[bytes]) -> bytes:
         )
 
     if not isinstance(path, bytes):
-        raise TypeError("illegal type for path '%r'" % path)
+        raise TypeError(f"illegal type for path '{path!r}'")
 
     return path
 
@@ -635,16 +612,16 @@ def format_path(p: bytes, quote_spaces: bool = False) -> bytes:
     else:
         quote = p.startswith(b'"') or (quote_spaces and b" " in p)
     if quote:
-        extra = GIT_FAST_IMPORT_NEEDS_EXTRA_SPACE_AFTER_QUOTE and b" " or b""
+        extra = (GIT_FAST_IMPORT_NEEDS_EXTRA_SPACE_AFTER_QUOTE and b" ") or b""
         p = b'"' + p + b'"' + extra
     return p
 
 
 def format_who_when(
     fields: Union[
-        Tuple[bytes, bytes, float, int],
-        Tuple[bytes, bytes, int, int],
-        Tuple[str, bytes, int, int],
+        tuple[bytes, bytes, float, int],
+        tuple[bytes, bytes, int, int],
+        tuple[str, bytes, int, int],
         "parser.Authorship",
     ],
 ) -> bytes:
@@ -657,16 +634,11 @@ def format_who_when(
         offset_sign = b"+"
     offset_hours = offset // 3600
     offset_minutes = offset // 60 - offset_hours * 60
-    offset_str = offset_sign + ("%02d%02d" % (offset_hours, offset_minutes)).encode(
-        "ascii"
-    )
+    offset_str = offset_sign + f"{offset_hours:02d}{offset_minutes:02d}".encode("ascii")
     name = fields[0]
 
     name_bytes = utf8_bytes_string(name)
-    if name_bytes == b"":
-        sep = b""
-    else:
-        sep = b" "
+    sep = b"" if name_bytes == b"" else b" "
 
     name = name_bytes
 
@@ -681,14 +653,14 @@ def format_who_when(
             b"<",
             email,
             b"> ",
-            ("%d" % int(fields[2])).encode("ascii"),
+            f"{int(fields[2]):d}".encode("ascii"),
             b" ",
             offset_str,
         )
     )
 
 
-def format_property(name: bytes, value: Optional[bytes]) -> bytes:
+def format_property(name: bytes, value: bytes | None) -> bytes:
     """Format the name and value (both unicode) of a property as a string."""
     result = b""
     utf8_name = utf8_bytes_string(name)
@@ -696,6 +668,6 @@ def format_property(name: bytes, value: Optional[bytes]) -> bytes:
     result = b"property " + utf8_name
     if value is not None:
         utf8_value = utf8_bytes_string(value)
-        result += b" " + ("%d" % len(utf8_value)).encode("ascii") + b" " + utf8_value
+        result += b" " + f"{len(utf8_value):d}".encode("ascii") + b" " + utf8_value
 
     return result

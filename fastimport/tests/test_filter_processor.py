@@ -16,18 +16,15 @@
 """Test FilterProcessor"""
 
 from io import BytesIO
-from typing import Optional, Dict, Any
-
+from typing import Any
 from unittest import TestCase
 
 from fastimport import (
     parser,
 )
-
 from fastimport.processors import (
     filter_processor,
 )
-
 
 # A sample input stream containing all (top level) import commands
 _SAMPLE_ALL = b"""\
@@ -106,7 +103,7 @@ M 644 :4 doc/index.txt
 
 class TestCaseWithFiltering(TestCase):
     def assertFiltering(
-        self, input_stream: bytes, params: Optional[Dict[bytes, Any]], expected: bytes
+        self, input_stream: bytes, params: dict[bytes, Any] | None, expected: bytes
     ) -> None:
         outf = BytesIO()
         proc = filter_processor.FilterProcessor(params=params)

@@ -17,7 +17,6 @@
 
 from unittest import TestCase
 
-
 from fastimport import (
     commands,
 )
@@ -325,7 +324,7 @@ class TestCommitDisplay(TestCase):
 
 class TestCommitCopy(TestCase):
     def setUp(self) -> None:
-        super(TestCommitCopy, self).setUp()
+        super().setUp()
         file_cmds = iter(
             [
                 commands.FileDeleteCommand(b"readme.txt"),

@@ -163,8 +163,7 @@ class TestImportParser(unittest.TestCase):
             result.append(cmd)
             if cmd.name == b"commit":
                 commit_cmd = cast(commands.CommitCommand, cmd)
-                for fc in commit_cmd.iter_files():
-                    result.append(fc)
+                result.extend(commit_cmd.iter_files())
 
         self.assertEqual(len(result), 17)
         cmd1 = result.pop(0)
@@ -432,7 +431,7 @@ B
         self.assertEqual(b"def456", commit2.original_oid)
 
     def test_original_oid_roundtrip(self) -> None:
-        """Test that commands with original-oid can be serialized and parsed back correctly"""
+        """Test that original-oid commands round-trip through serialize and parse."""
         # Test blob roundtrip
         blob = commands.BlobCommand(b"1", b"test data", original_oid=b"abc123")
         blob_bytes = bytes(blob)

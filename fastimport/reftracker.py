@@ -16,17 +16,16 @@
 
 """Tracker of refs."""
 
-from __future__ import absolute_import
-from typing import Optional, Dict, Set, List, Any
+from typing import Any
 
 
-class RefTracker(object):
+class RefTracker:
     def __init__(self) -> None:
         # Head tracking: last ref, last id per ref & map of commit ids to
         # ref*s*
-        self.last_ref: Optional[bytes] = None
-        self.last_ids: Dict[bytes, bytes] = {}
-        self.heads: Dict[bytes, Set[bytes]] = {}
+        self.last_ref: bytes | None = None
+        self.last_ids: dict[bytes, bytes] = {}
+        self.heads: dict[bytes, set[bytes]] = {}
         self._show_stats_for: Any = None  # Method will be defined elsewhere
 
     def dump_stats(self, note: str) -> None:
@@ -38,7 +37,7 @@ class RefTracker(object):
         self.last_ids.clear()
         self.heads.clear()
 
-    def track_heads(self, cmd: Any) -> List[bytes]:
+    def track_heads(self, cmd: Any) -> list[bytes]:
         """Track the repository heads given a CommitCommand.
 
         :param cmd: the CommitCommand
@@ -49,10 +48,7 @@ class RefTracker(object):
             parents = [cmd.from_]
         else:
             last_id = self.last_ids.get(cmd.ref)
-            if last_id is not None:
-                parents = [last_id]
-            else:
-                parents = []
+            parents = [last_id] if last_id is not None else []
         parents.extend(cmd.merges)
 
         # Track the heads
@@ -60,7 +56,7 @@ class RefTracker(object):
         return parents
 
     def track_heads_for_ref(
-        self, cmd_ref: bytes, cmd_id: bytes, parents: Optional[List[bytes]] = None
+        self, cmd_ref: bytes, cmd_id: bytes, parents: list[bytes] | None = None
     ) -> None:
         if parents is not None:
             for parent in parents:

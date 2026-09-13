@@ -161,13 +161,12 @@ The grammar is:
   not_lf  ::= # Any byte that is not ASCII newline (LF);
 """
 
-from __future__ import print_function
-
+import codecs
 import collections
 import re
 import sys
-import codecs
-from typing import Optional, List, Dict, Any, Union, Iterator, Tuple, IO, cast
+from collections.abc import Iterator
+from typing import IO, Any, Optional, Union, cast
 
 from . import (
     commands,
@@ -176,6 +175,8 @@ from . import (
 )
 from .helpers import (
     newobject as object,
+)
+from .helpers import (
     utf8_bytes_string,
 )
 
@@ -189,7 +190,7 @@ class LineBasedParser(object):
         self.input = input_stream
         self.lineno: int = 0
         # Lines pushed back onto the input stream
-        self._buffer: List[bytes] = []
+        self._buffer: list[bytes] = []
 
     def abort(self, exception: Any, *args: Any) -> None:
         """Raise an exception providing line number information."""
@@ -203,7 +204,7 @@ class LineBasedParser(object):
         else:
             return self.input.readline()
 
-    def next_line(self) -> Optional[bytes]:
+    def next_line(self) -> bytes | None:
         """Get the next line without the newline or None on EOF."""
         line = self.readline()
         if line:
@@ -270,7 +271,7 @@ class ImportParser(LineBasedParser):
         input_stream: IO[bytes],
         verbose: bool = False,
         output: IO[str] = sys.stdout,
-        user_mapper: Optional[Any] = None,
+        user_mapper: Any | None = None,
         strict: bool = True,
     ) -> None:
         """A Parser of import commands.
@@ -288,11 +289,11 @@ class ImportParser(LineBasedParser):
         self.user_mapper = user_mapper
         self.strict = strict
         # We auto-detect the date format when a date is first encountered
-        self.date_parser: Optional[Any] = None
-        self.features: Dict[bytes, Optional[bytes]] = {}
+        self.date_parser: Any | None = None
+        self.features: dict[bytes, bytes | None] = {}
 
     def warning(self, msg: str) -> None:
-        sys.stderr.write("warning line %d: %s\n" % (self.lineno, msg))
+        sys.stderr.write(f"warning line {self.lineno:d}: {msg}\n")
 
     def iter_commands(self) -> Iterator["commands.ImportCommand"]:
         """Iterator returning ImportCommand objects."""
@@ -415,15 +416,14 @@ class ImportParser(LineBasedParser):
             list(self.iter_file_commands()),
             lineno=lineno,
             more_authors=cast(
-                Optional[
-                    List[
-                        Union[
-                            Tuple[bytes, bytes, float, int],
-                            Tuple[bytes, bytes, int, int],
-                            "Authorship",
-                        ]
+                list[
+                    Union[
+                        tuple[bytes, bytes, float, int],
+                        tuple[bytes, bytes, int, int],
+                        "Authorship",
                     ]
-                ],
+                ]
+                | None,
                 more_authors,
             ),
             properties=fixed_properties,
@@ -434,10 +434,7 @@ class ImportParser(LineBasedParser):
         """Parse a feature command."""
         parts = info.split(b"=", 1)
         name = parts[0]
-        if len(parts) > 1:
-            value = self._path(parts[1])
-        else:
-            value = None
+        value = self._path(parts[1]) if len(parts) > 1 else None
         self.features[name] = value
         return commands.FeatureCommand(name, value, lineno=self.lineno)
 
@@ -474,7 +471,7 @@ class ImportParser(LineBasedParser):
             name, from_, tagger, message, original_oid=original_oid
         )
 
-    def _get_mark_if_any(self) -> Optional[bytes]:
+    def _get_mark_if_any(self) -> bytes | None:
         """Parse a mark section."""
         line = self.next_line()
         if line is not None and line.startswith(b"mark :"):
@@ -484,7 +481,7 @@ class ImportParser(LineBasedParser):
                 self.push_line(line)
             return None
 
-    def _get_original_oid_if_any(self) -> Optional[bytes]:
+    def _get_original_oid_if_any(self) -> bytes | None:
         """Parse a original-oid section."""
         line = self.next_line()
         if line is not None and line.startswith(b"original-oid "):
@@ -494,7 +491,7 @@ class ImportParser(LineBasedParser):
                 self.push_line(line)
             return None
 
-    def _get_from(self, required_for: Optional[bytes] = None) -> Optional[bytes]:
+    def _get_from(self, required_for: bytes | None = None) -> bytes | None:
         """Parse a from section."""
         line = self.next_line()
         if line is None:
@@ -508,7 +505,7 @@ class ImportParser(LineBasedParser):
             self.push_line(line)
             return None
 
-    def _get_merge(self) -> Optional[bytes]:
+    def _get_merge(self) -> bytes | None:
         """Parse a merge section."""
         line = self.next_line()
         if line is None:
@@ -519,7 +516,7 @@ class ImportParser(LineBasedParser):
             self.push_line(line)
             return None
 
-    def _get_property(self) -> Optional[Tuple[bytes, Optional[bytes]]]:
+    def _get_property(self) -> tuple[bytes, bytes | None] | None:
         """Parse a property section."""
         line = self.next_line()
         if line is None:
@@ -597,7 +594,7 @@ class ImportParser(LineBasedParser):
             try:
                 when = self.date_parser(datestr, self.lineno)
             except ValueError:
-                print("failed to parse datestr %r" % (datestr,))
+                print(f"failed to parse datestr {datestr!r}")
                 raise
             name = match.group(1).rstrip()
             email = match.group(2)
@@ -615,9 +612,8 @@ class ImportParser(LineBasedParser):
                 name = s
                 email = None
                 when = dates.DATE_PARSERS_BY_NAME["now"](b"now", 0)
-        if len(name) > 0:
-            if name.endswith(b" "):
-                name = name[:-1]
+        if len(name) > 0 and name.endswith(b" "):
+            name = name[:-1]
         # While it shouldn't happen, some datasets have email addresses
         # which contain unicode characters. See bug 338186. We sanitize
         # the data at this level just in case.
@@ -626,7 +622,7 @@ class ImportParser(LineBasedParser):
 
         return Authorship(name, email, when[0], when[1])
 
-    def _name_value(self, s: bytes) -> Tuple[bytes, Optional[bytes]]:
+    def _name_value(self, s: bytes) -> tuple[bytes, bytes | None]:
         """Parse a (name,value) tuple from 'name value-length value'."""
         parts = s.split(b" ", 2)
         name = parts[0]
@@ -650,13 +646,10 @@ class ImportParser(LineBasedParser):
                 return _unquote_c_string(s[1:-1])
         return s
 
-    def _path_pair(self, s: bytes) -> List[bytes]:
+    def _path_pair(self, s: bytes) -> list[bytes]:
         """Parse two paths separated by a space."""
         # TODO: handle a space in the first path
-        if s.startswith(b'"'):
-            parts = s[1:].split(b'" ', 1)
-        else:
-            parts = s.split(b" ", 1)
+        parts = s[1:].split(b'" ', 1) if s.startswith(b'"') else s.split(b" ", 1)
         if len(parts) != 2:
             self.abort(errors.BadFormat, "?", "?", s)
         elif parts[1].startswith(b'"') and parts[1].endswith(b'"'):
@@ -712,7 +705,7 @@ ESCAPE_SEQUENCE_RE = re.compile(
 )
 
 
-def _unquote_c_string(s: Union[str, bytes]) -> bytes:
+def _unquote_c_string(s: str | bytes) -> bytes:
     """replace C-style escape sequences (\n, \", etc.) with real chars."""
 
     # doing a s.encode('utf-8').decode('unicode_escape') can return an

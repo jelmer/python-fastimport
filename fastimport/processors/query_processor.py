@@ -15,8 +15,7 @@
 
 """Import processor that queries the input (and doesn't import)."""
 
-from __future__ import print_function
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 from .. import (
     commands,
@@ -35,11 +34,11 @@ class QueryProcessor(processor.ImportProcessor):
     )
 
     def __init__(
-        self, params: Optional[Dict[bytes, Any]] = None, verbose: bool = False
+        self, params: dict[bytes, Any] | None = None, verbose: bool = False
     ) -> None:
         processor.ImportProcessor.__init__(self, params, verbose)
-        self.parsed_params: Dict[bytes, Optional[List[str]]] = {}
-        self.interesting_commit: Optional[str] = None
+        self.parsed_params: dict[bytes, list[str] | None] = {}
+        self.interesting_commit: str | None = None
         self._finished: bool = False
         if params:
             if b"commit-mark" in params:
@@ -85,37 +84,30 @@ class QueryProcessor(processor.ImportProcessor):
             str_fields = None if fields is None else fields
             str_params = {k.decode("utf-8"): v for k, v in self.parsed_params.items()}
             result_str = cmd.dump_str(str_fields, str_params, self.verbose)
-            print("%s" % (result_str,))
+            print(f"{result_str}")
 
     def progress_handler(self, cmd: "commands.ProgressCommand") -> None:
         """Process a ProgressCommand."""
-        pass
 
     def blob_handler(self, cmd: "commands.BlobCommand") -> None:
         """Process a BlobCommand."""
-        pass
 
     def checkpoint_handler(self, cmd: "commands.CheckpointCommand") -> None:
         """Process a CheckpointCommand."""
-        pass
 
     def commit_handler(self, cmd: "commands.CommitCommand") -> None:
         """Process a CommitCommand."""
-        pass
 
     def reset_handler(self, cmd: "commands.ResetCommand") -> None:
         """Process a ResetCommand."""
-        pass
 
     def tag_handler(self, cmd: "commands.TagCommand") -> None:
         """Process a TagCommand."""
-        pass
 
     def feature_handler(self, cmd: "commands.FeatureCommand") -> None:
         """Process a FeatureCommand."""
         feature = cmd.feature_name
         if feature not in commands.FEATURE_NAMES:
             self.warning(
-                "feature %s is not supported - parsing may fail"
-                % (feature.decode("utf-8"),)
+                f"feature {feature.decode('utf-8')} is not supported - parsing may fail"
             )

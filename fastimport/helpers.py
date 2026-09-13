@@ -15,12 +15,12 @@
 
 """Miscellaneous useful stuff."""
 
-from typing import List, Optional, Dict, Any, Union, Tuple, Set, TextIO, BinaryIO
+from typing import Any, BinaryIO, TextIO
 
 
 def _common_path_and_rest(
-    l1: bytes, l2: bytes, common: Optional[List[bytes]] = None
-) -> Tuple[List[bytes], bytes, bytes]:
+    l1: bytes, l2: bytes, common: list[bytes] | None = None
+) -> tuple[list[bytes], bytes, bytes]:
     if common is None:
         common = []
     # From http://code.activestate.com/recipes/208993/
@@ -33,11 +33,8 @@ def _common_path_and_rest(
     return _common_path_and_rest(
         l1[1:],
         l2[1:],
-        common
-        + [
-            l1[0:1]  # return a byte string in python 3 unlike l1[0] that
-            # would return an integer.
-        ],
+        # l1[0:1] returns a byte string, unlike l1[0] which returns an integer.
+        [*common, l1[0:1]],
     )
 
 
@@ -46,7 +43,7 @@ def common_path(path1: bytes, path2: bytes) -> bytes:
     return b"".join(_common_path_and_rest(path1, path2)[0])
 
 
-def common_directory(paths: List[bytes]) -> Optional[bytes]:
+def common_directory(paths: list[bytes]) -> bytes | None:
     """Find the deepest common directory of a list of paths.
 
     :return: if no paths are provided, None is returned;
@@ -59,7 +56,7 @@ def common_directory(paths: List[bytes]) -> Optional[bytes]:
         if path == b"" or path.endswith(b"/"):
             return path
         else:
-            dirname, basename = posixpath.split(path)
+            dirname, _basename = posixpath.split(path)
             if dirname == b"":
                 return dirname
             else:
@@ -100,15 +97,12 @@ def is_inside(directory: bytes, fname: bytes) -> bool:
     return fname.startswith(directory)
 
 
-def is_inside_any(dir_list: List[bytes], fname: bytes) -> bool:
+def is_inside_any(dir_list: list[bytes], fname: bytes) -> bool:
     """True if fname is inside any of given dirs."""
-    for dirname in dir_list:
-        if is_inside(dirname, fname):
-            return True
-    return False
+    return any(is_inside(dirname, fname) for dirname in dir_list)
 
 
-def utf8_bytes_string(s: Union[str, bytes]) -> bytes:
+def utf8_bytes_string(s: str | bytes) -> bytes:
     """Convert a string to a bytes string (if necessary, encode in utf8)"""
     if isinstance(s, str):
         return bytes(s, encoding="utf8")
@@ -116,7 +110,7 @@ def utf8_bytes_string(s: Union[str, bytes]) -> bytes:
         return s
 
 
-class newobject(object):
+class newobject:
     """
     A magical object class that provides Python 2 compatibility methods::
         next
@@ -138,13 +132,10 @@ class newobject(object):
     def __unicode__(self) -> str:
         # All subclasses of the builtin object should have __str__ defined.
         # Note that old-style classes do not have __str__ defined.
-        if hasattr(self, "__str__"):
-            s = type(self).__str__(self)
-        else:
-            s = str(self)
+        s = type(self).__str__(self) if hasattr(self, "__str__") else str(self)
         try:
             # Python 2 compatibility
-            unicode_type = unicode  # type: ignore # noqa: F821
+            unicode_type = unicode  # type: ignore
             if isinstance(s, unicode_type):
                 return str(s)
             elif hasattr(s, "decode"):
@@ -228,10 +219,10 @@ def binary_stream(stream: TextIO) -> TextIO:
     return stream
 
 
-def invert_dictset(d: Dict[Any, Set[Any]]) -> Dict[Any, List[Any]]:
+def invert_dictset(d: dict[Any, set[Any]]) -> dict[Any, list[Any]]:
     """Invert a dict with keys matching a set of values, turned into lists."""
     # Based on recipe from ASPN
-    result: Dict[Any, List[Any]] = {}
+    result: dict[Any, list[Any]] = {}
     for k, c in d.items():
         for v in c:
             keys = result.setdefault(v, [])
@@ -239,17 +230,17 @@ def invert_dictset(d: Dict[Any, Set[Any]]) -> Dict[Any, List[Any]]:
     return result
 
 
-def invert_dict(d: Dict[Any, Any]) -> Dict[Any, List[Any]]:
+def invert_dict(d: dict[Any, Any]) -> dict[Any, list[Any]]:
     """Invert a dictionary with keys matching each value turned into a list."""
     # Based on recipe from ASPN
-    result: Dict[Any, List[Any]] = {}
+    result: dict[Any, list[Any]] = {}
     for k, v in d.items():
         keys = result.setdefault(v, [])
         keys.append(k)
     return result
 
 
-def defines_to_dict(defines: Optional[List[str]]) -> Optional[Dict[str, str]]:
+def defines_to_dict(defines: list[str] | None) -> dict[str, str] | None:
     """Convert a list of definition strings to a dictionary."""
     if defines is None:
         return None
@@ -263,7 +254,7 @@ def defines_to_dict(defines: Optional[List[str]]) -> Optional[Dict[str, str]]:
     return result
 
 
-def get_source_stream(source: Optional[str]) -> Union[TextIO, BinaryIO]:
+def get_source_stream(source: str | None) -> TextIO | BinaryIO:
     if source == "-" or source is None:
         import sys
 

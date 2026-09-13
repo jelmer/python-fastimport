@@ -15,8 +15,6 @@
 
 """Exception classes for fastimport"""
 
-from typing import Optional
-
 # Prefix to messages to show location information
 _LOCATION_FMT = "line %(lineno)d: "
 
@@ -27,7 +25,7 @@ class ImportError(Exception):
     _fmt: str = "Unknown Import Error"
 
     def __init__(self) -> None:
-        super(ImportError, self).__init__(self._fmt % self.__dict__)
+        super().__init__(self._fmt % self.__dict__)
 
 
 class ParsingError(ImportError):
@@ -104,9 +102,7 @@ class InvalidTimezone(ParsingError):
 
     _fmt = _LOCATION_FMT + "Timezone %(timezone)r could not be converted.%(reason)s"
 
-    def __init__(
-        self, lineno: int, timezone: str, reason: Optional[str] = None
-    ) -> None:
+    def __init__(self, lineno: int, timezone: str, reason: str | None = None) -> None:
         self.timezone = timezone
         if reason:
             self.reason = " " + reason

@@ -32,7 +32,7 @@ processors package for examples.
 
 import sys
 import time
-from typing import List, Optional, Dict, Any, TextIO
+from typing import Any, ClassVar, TextIO
 
 from . import errors
 from .helpers import newobject as object
@@ -45,13 +45,13 @@ class ImportProcessor(object):
     methods as appropriate.
     """
 
-    known_params: List[bytes] = []
+    known_params: ClassVar[list[bytes]] = []
 
     def __init__(
         self,
-        params: Optional[Dict[bytes, Any]] = None,
+        params: dict[bytes, Any] | None = None,
         verbose: bool = False,
-        outf: Optional[TextIO] = None,
+        outf: TextIO | None = None,
     ) -> None:
         if outf is None:
             self.outf = sys.stdout
@@ -99,11 +99,9 @@ class ImportProcessor(object):
 
     def warning(self, msg: str, *args: Any) -> None:
         """Output a warning but timestamp it."""
-        pass
 
     def debug(self, msg: str, *args: Any) -> None:
         """Output a debug message."""
-        pass
 
     def _time_of_day(self) -> str:
         """Time of day as a string."""
@@ -112,19 +110,15 @@ class ImportProcessor(object):
 
     def pre_process(self) -> None:
         """Hook for logic at start of processing."""
-        pass
 
     def post_process(self) -> None:
         """Hook for logic at end of processing."""
-        pass
 
     def pre_handler(self, cmd: Any) -> None:
         """Hook for logic before each handler starts."""
-        pass
 
     def post_handler(self, cmd: Any) -> None:
         """Hook for logic after each handler finishes."""
-        pass
 
     def progress_handler(self, cmd: Any) -> None:
         """Process a ProgressCommand."""
@@ -171,7 +165,7 @@ class CommitHandler(object):
             try:
                 name = (fc.name[4:] + b"_handler").decode("utf8")
                 handler = getattr(self.__class__, name)
-            except KeyError:
+            except KeyError:  # noqa: PERF203
                 raise errors.MissingHandler(fc.name)
             else:
                 handler(self, fc)
@@ -179,15 +173,12 @@ class CommitHandler(object):
 
     def warning(self, msg: str, *args: Any) -> None:
         """Output a warning but add context."""
-        pass
 
     def pre_process_files(self) -> None:
         """Prepare for committing."""
-        pass
 
     def post_process_files(self) -> None:
         """Save the revision."""
-        pass
 
     def modify_handler(self, filecmd: Any) -> None:
         """Handle a filemodify command."""
